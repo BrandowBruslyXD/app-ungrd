@@ -8,6 +8,7 @@ Cuatro documentos, cada uno responde una pregunta distinta.
 | **[FASES.md](FASES.md)** | ¿Qué se construye, en qué orden, qué se corta? | Todos |
 | **[ARQUITECTURA.md](ARQUITECTURA.md)** | ¿Dónde va cada archivo y por qué? | **Backend y frontend — antes de escribir código** |
 | **[MODELO-DATOS.md](MODELO-DATOS.md)** | ¿Qué datos guarda el sistema? | Backend |
+| **[AGENTE-WHATSAPP.md](AGENTE-WHATSAPP.md)** | ¿Cómo debe comportarse el agente de IA y qué nunca hace? | Quien construya el bot |
 | **[CONTRATO-API.md](CONTRATO-API.md)** | ¿Qué endpoints hay y qué devuelven? | Backend y frontend |
 
 Y sobre cómo trabajamos, todo está en **[`CLAUDE.md`](../CLAUDE.md)** en la raíz: convenciones de
