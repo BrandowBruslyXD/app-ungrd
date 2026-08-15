@@ -33,23 +33,36 @@ npm install --prefix front && npm run dev --prefix front  # web → localhost:51
 
 Para confirmar que la API quedó arriba: `curl http://localhost:5000/health` debe responder `200`.
 
+## Ambientes
+
+| Ambiente | URL |
+|:---|:---|
+| Backend (producción) | https://conectariesgoai-api.delightfulsand-f3f95f4d.brazilsouth.azurecontainerapps.io |
+| Frontend (producción) | _pendiente — bloqueado por issue #33 (front sin inicializar)_ |
+
+El backend corre en Azure Container Apps (`conectariesgoai-rg`, región `brazilsouth`) con
+PostgreSQL en Azure Database for PostgreSQL Flexible Server. Cada push a `main` que toque `back/`
+dispara [`deploy-backend.yml`](.github/workflows/deploy-backend.yml), que reconstruye la imagen y
+la despliega automáticamente.
+
 ## Usuarios de demo
 
-En Development, la primera vez que arranca la API con la tabla `usuarios` vacía, se siembran tres
-cuentas —una por rol— para poder probar login sin pasar por `/api/auth/registro`:
+La migración inicial siembra tres cuentas —una por rol— para poder probar login sin pasar por
+`/api/auth/registro` (que solo crea Ciudadanos). Quedan en la base en cuanto corrés
+`dotnet ef database update`:
 
 | Rol | Email | Password |
 |:---|:---|:---|
-| Ciudadano | `ciudadano@conectariesgoai.com` | `Demo1234!` |
-| Gestor | `gestor@conectariesgoai.com` | `Demo1234!` |
-| Admin | `admin@conectariesgoai.com` | `Demo1234!` |
+| Ciudadano | `ciudadano@conectariesgoai.demo` | `Demo1234!` |
+| Gestor | `gestor@conectariesgoai.demo` | `Demo1234!` |
+| Admin | `admin@conectariesgoai.demo` | `Demo1234!` |
 
 Probar con `POST http://localhost:5000/api/auth/login` (o desde `/swagger`):
 
 ```bash
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{ "email": "gestor@conectariesgoai.com", "password": "Demo1234!" }'
+  -d '{ "email": "gestor@conectariesgoai.demo", "password": "Demo1234!" }'
 ```
 
 ## Documentación

@@ -204,9 +204,23 @@ prueba que lo hace caer.
 `main` está **protegida**: no se hace push directo. Todo entra por Pull Request con **una
 aprobación de cualquier compañero** — basta una, y nadie aprueba su propio trabajo.
 
+**Nombrado de ramas:** `<tipo>/CR-<número>`, donde `<número>` es el número del issue de GitHub que
+la rama resuelve. El `<tipo>` corresponde al label del issue:
+
+| Tipo de issue | Prefijo de rama |
+|---|---|
+| Épica | `epic/` |
+| Feature | `feat/` |
+| Bug | `fix/` |
+| Deuda técnica | `chore/` |
+
+Para trabajo que no nace de un issue con esas plantillas (infraestructura, documentación suelta),
+usa el prefijo que mejor describa la naturaleza del cambio (`infra/`, `docs/`) seguido igual de
+`CR-<número>` si existe un issue asociado, o de una descripción corta en kebab-case si no lo hay.
+
 ```bash
-git checkout -b feat/mi-tarea
-gh pr create --fill          # el PR debe decir: Closes #<número del issue>
+git checkout -b feat/CR-12
+gh pr create --fill          # el PR debe decir: Closes #12
 ```
 
 - PRs pequeños y frecuentes. Uno gigante a la hora 17 no lo revisa nadie.
