@@ -1,0 +1,76 @@
+name: "Reporte de bug"
+description: "Reportar un defecto: comportamiento que contradice lo esperado o lo especificado."
+title: "[Bug] <resumen del defecto>"
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Área afectada"
+      options:
+        - "backend"
+        - "frontend"
+        - "ia"
+        - "integración"
+        - "infraestructura"
+        - "documentación"
+    validations:
+      required: true
+  - type: dropdown
+    id: severidad
+    attributes:
+      label: "Severidad"
+      description: "Crítica: caída, pérdida de datos o problema de seguridad · Alta: funcionalidad principal rota sin alternativa · Media: rota pero hay forma de sortearla · Baja: cosmético o menor."
+      options:
+        - "Crítica"
+        - "Alta"
+        - "Media"
+        - "Baja"
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: "Comportamiento esperado"
+      description: "Qué debería pasar, y de dónde sale esa expectativa (criterio de aceptación, mensaje al ciudadano, contrato del endpoint)."
+    validations:
+      required: true
+  - type: textarea
+    id: observado
+    attributes:
+      label: "Comportamiento observado"
+      description: "Qué pasa en realidad. Sé literal: el mensaje exacto, el código HTTP, el dato que quedó mal guardado. Si el sistema falló en silencio, dilo — eso es parte del defecto."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduccion
+    attributes:
+      label: "Pasos para reproducir"
+      description: "La secuencia mínima que lo hace aparecer, empezando desde un estado conocido."
+      placeholder: |
+        1. Ir a...
+        2. Ejecutar...
+        3. Observar...
+    validations:
+      required: true
+  - type: input
+    id: frecuencia
+    attributes:
+      label: "¿Siempre ocurre? (opcional)"
+      placeholder: "Ej.: siempre / 1 de cada 5 intentos / solo con audios largos"
+    validations:
+      required: false
+  - type: textarea
+    id: evidencia
+    attributes:
+      label: "Evidencia (opcional)"
+      description: "Logs, capturas, respuesta HTTP, traza de la excepción. Oculta secretos y datos personales antes de pegarlos."
+    validations:
+      required: false
+  - type: input
+    id: entorno
+    attributes:
+      label: "Entorno (opcional)"
+      placeholder: "Ej.: entorno local, rama main, navegador o dispositivo usado"
+    validations:
+      required: false
