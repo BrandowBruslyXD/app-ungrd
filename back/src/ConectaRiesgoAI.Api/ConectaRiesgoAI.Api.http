@@ -1,0 +1,10 @@
+@host = http://localhost:5000
+
+### Comprobación de vida — no depende de la base de datos
+GET {{host}}/api/health
+
+### Documento OpenAPI (la UI está en {{host}}/swagger)
+GET {{host}}/swagger/v1/swagger.json
+
+### A medida que cada slice quede listo, agrega aquí su petición de ejemplo.
+### Las formas exactas están en docs/CONTRATO-API.md.
