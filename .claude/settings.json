@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet test)",
+      "Bash(dotnet test *)",
+      "Bash(dotnet restore *)",
+      "Bash(dotnet clean *)",
+      "Bash(dotnet sln *)",
+      "Bash(dotnet new *)",
+      "Bash(dotnet tool *)",
+      "Bash(npm install)",
+      "Bash(npm ci)",
+      "Bash(npm run *)",
+      "Bash(npm ls *)",
+      "Bash(npx tsc *)",
+      "Bash(git check-ignore *)",
+      "PowerShell(dotnet build 2>&1)",
+      "PowerShell(dotnet test 2>&1)"
+    ],
+    "deny": [
+      "Bash(git reset --hard*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git clean*)",
+      "Bash(git branch -D*)",
+      "Bash(rm -r*)",
+      "Bash(rm -fr*)",
+      "Bash(rm -rf*)",
+      "PowerShell(git reset --hard*)",
+      "PowerShell(git push --force*)",
+      "PowerShell(git push -f*)",
+      "PowerShell(git clean*)",
+      "PowerShell(git branch -D*)",
+      "PowerShell(Remove-Item -Recurse*)",
+      "PowerShell(Remove-Item * -Recurse*)"
+    ]
+  }
+}
