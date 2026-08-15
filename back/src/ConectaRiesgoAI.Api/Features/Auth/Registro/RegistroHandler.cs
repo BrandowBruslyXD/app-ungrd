@@ -11,7 +11,7 @@ namespace ConectaRiesgoAI.Api.Features.Auth.Registro;
 /// Crea un usuario con rol Ciudadano y le devuelve el token de una vez: no hace falta loguearse
 /// después de registrarse.
 /// </summary>
-public class RegistroHandler(AppDbContext db, IGeneradorTokenJwt generadorToken)
+public class RegistroHandler(AppDbContext db, IGeneradorTokenJwt generadorToken, ILogger<RegistroHandler> logger)
     : IRequestHandler<RegistroCommand, RegistroResponse>
 {
     public async Task<RegistroResponse> Handle(RegistroCommand command, CancellationToken cancellationToken)
@@ -45,6 +45,8 @@ public class RegistroHandler(AppDbContext db, IGeneradorTokenJwt generadorToken)
             // de que ninguno haya guardado; el índice único de Email es la última barrera.
             throw new InvalidOperationException("El correo ya está registrado");
         }
+
+        logger.LogInformation("Nuevo registro: {Email}", email);
 
         string token = generadorToken.Generar(usuario);
         return new RegistroResponse(token, UsuarioDto.DeEntidad(usuario));

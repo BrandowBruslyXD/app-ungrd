@@ -2,6 +2,7 @@ using FluentValidation;
 
 namespace ConectaRiesgoAI.Api.Features.Auth.Registro;
 
+/// <summary>Reglas de entrada de registro: forma de los campos, no si el correo ya existe (eso lo decide el handler).</summary>
 public class RegistroValidator : AbstractValidator<RegistroCommand>
 {
     public RegistroValidator()

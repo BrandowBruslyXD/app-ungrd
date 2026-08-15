@@ -16,17 +16,26 @@ public interface IGeneradorTokenJwt
 /// <inheritdoc cref="IGeneradorTokenJwt" />
 public class GeneradorTokenJwt(IOptions<OpcionesJwt> opciones) : IGeneradorTokenJwt
 {
+    // "role" corto: no es un nombre registrado en JwtRegisteredClaimNames, pero es el que
+    // JwtSecurityTokenHandler.DefaultInboundClaimTypeMap reconoce y traduce a ClaimTypes.Role
+    // al validar. Verificado con un test: reduce el token sin que UsuarioActual note la diferencia.
+    private const string ClaimRolCorto = "role";
+
     /// <inheritdoc />
     public string Generar(Usuario usuario)
     {
         OpcionesJwt config = opciones.Value;
 
+        // Nombres cortos donde el mapeo de entrada por omisión los traduce de vuelta a los
+        // ClaimTypes largos que lee UsuarioActual (verificado con test); el token pesa menos en
+        // cada request, que en conexión mala no es gratis. "name" no tiene ese mapeo automático
+        // (también verificado), así que ese sí se manda con el ClaimType largo.
         Claim[] claims =
         [
-            new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
             new Claim(ClaimTypes.Name, usuario.Nombre),
-            new Claim(ClaimTypes.Email, usuario.Email),
-            new Claim(ClaimTypes.Role, usuario.Rol.ToString())
+            new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
+            new Claim(ClaimRolCorto, usuario.Rol.ToString())
         ];
 
         SigningCredentials credenciales = new(

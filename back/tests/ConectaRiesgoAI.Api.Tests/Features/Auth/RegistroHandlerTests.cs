@@ -4,6 +4,7 @@ using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Features.Auth.Registro;
 using ConectaRiesgoAI.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace ConectaRiesgoAI.Api.Tests.Features.Auth;
@@ -23,7 +24,7 @@ public class RegistroHandlerTests
             .Options);
 
     private static RegistroHandler NuevoHandler(AppDbContext db) =>
-        new(db, new GeneradorTokenJwt(Options.Create(OpcionesJwt)));
+        new(db, new GeneradorTokenJwt(Options.Create(OpcionesJwt)), NullLogger<RegistroHandler>.Instance);
 
     [Fact]
     public async Task Handle_EmailNuevo_CreaUsuarioConRolCiudadano()

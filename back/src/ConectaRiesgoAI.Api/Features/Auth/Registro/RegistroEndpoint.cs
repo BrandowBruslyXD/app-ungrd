@@ -3,6 +3,7 @@ using MediatR;
 
 namespace ConectaRiesgoAI.Api.Features.Auth.Registro;
 
+/// <summary>Mapea <c>POST /api/auth/registro</c> (ver CONTRATO-API.md).</summary>
 public class RegistroEndpoint : IEndpoint
 {
     public void Map(IEndpointRouteBuilder app)
