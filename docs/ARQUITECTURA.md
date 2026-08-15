@@ -222,17 +222,15 @@ En el frontend, `VITE_API_BASE_URL` va en `.env.local` (no se commitea), copiado
 **Nada de eso sirve fuera de local.** En despliegue se pasan como variables de entorno con doble guion
 bajo (`ConnectionStrings__Postgres`, `Jwt__Secret`), que sobrescriben lo del archivo.
 
-### PostgreSQL: Docker local hoy, Neon es el destino (issue #4)
+### PostgreSQL: Docker local para desarrollar, Azure en producción (issue #4 y #19)
 
-**Decisión:** Postgres en la nube con **Neon**, para que las 4 máquinas compartan los mismos datos
-de demo y nadie dependa de "en mi máquina sí funciona". Docker local (`docker-compose.yml`) sigue
-siendo el arranque de un solo comando mientras nadie crea el proyecto en Neon — ambos usan la misma
-clave `ConnectionStrings:Postgres`, así que cambiar de uno a otro es solo reemplazar el valor.
-
-**Falta un paso manual que no se puede hacer desde aquí:** alguien con acceso tiene que crear el
-proyecto gratis en [neon.tech](https://neon.tech) (5 minutos, no pide tarjeta) y compartir la cadena
-de conexión por el grupo privado — **nunca en un commit**. Con esa cadena, cada quien la pega en su
-`appsettings.Development.json` local y listo.
+**Decisión (D15 en `CONTROL.md`):** el backend desplegado usa **Azure Database for PostgreSQL
+Flexible Server** (región `brazilsouth`), no Neon/Supabase/Railway como se barajó antes. Docker
+local (`docker-compose.yml`) sigue siendo el arranque de un solo comando para desarrollar: ambos
+usan la misma clave `ConnectionStrings:Postgres`, así que apuntar el entorno local a la base
+compartida de Azure en vez de a Docker es solo reemplazar ese valor en tu
+`appsettings.Development.json` — la cadena real se comparte por el grupo privado, **nunca en un
+commit**. Ver [`README.md`](../README.md#ambientes) para la URL del backend en producción.
 
 ---
 
