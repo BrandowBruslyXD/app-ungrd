@@ -210,13 +210,28 @@ dotnet ef migrations add NombreDelCambio \
 | `VITE_API_BASE_URL` | frontend | `http://localhost:5000/api` |
 
 En el backend estas llaves viven en `appsettings.json` (vacías, es la plantilla) y se llenan en
-`appsettings.Development.json` para local. Ese archivo trae valores de desarrollo que sirven tal cual:
+`appsettings.Development.json` para local — copiado de
+[`appsettings.Development.example.json`](../back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json),
+que ya es JSON estrictamente válido (sin comentarios: ASP.NET Core sí tolera `//`/`/* */` vía
+`JsonCommentHandling.Skip`, verificado en vivo — se quitaron por portabilidad con herramientas que
+sí son estrictas, como `jq`, linters y editores) y trae valores de desarrollo que sirven tal cual:
 la cadena de conexión que corresponde al `docker-compose.yml` y un secreto JWT de juguete.
+
+En el frontend, `VITE_API_BASE_URL` va en `.env.local` (no se commitea), copiado de
+[`front/.env.example`](../front/.env.example).
 
 **Nada de eso sirve fuera de local.** En despliegue se pasan como variables de entorno con doble guion
 bajo (`ConnectionStrings__Postgres`, `Jwt__Secret`), que sobrescriben lo del archivo.
 
-En el frontend, `VITE_API_BASE_URL` va en `.env.local`, que no se commitea.
+### PostgreSQL: Docker local para desarrollar, Azure en producción (issue #4 y #19)
+
+**Decisión (D15 en `CONTROL.md`):** el backend desplegado usa **Azure Database for PostgreSQL
+Flexible Server** (región `brazilsouth`), no Neon/Supabase/Railway como se barajó antes. Docker
+local (`docker-compose.yml`) sigue siendo el arranque de un solo comando para desarrollar: ambos
+usan la misma clave `ConnectionStrings:Postgres`, así que apuntar el entorno local a la base
+compartida de Azure en vez de a Docker es solo reemplazar ese valor en tu
+`appsettings.Development.json` — la cadena real se comparte por el grupo privado, **nunca en un
+commit**. Ver [`README.md`](../README.md#ambientes) para la URL del backend en producción.
 
 ---
 

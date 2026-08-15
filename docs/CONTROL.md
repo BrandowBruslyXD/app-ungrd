@@ -36,7 +36,10 @@ Todas gratuitas. **El repositorio es público: ninguna se escribe en el código.
 | **SECOP** | Contratos públicos | Gratis | No requiere clave | ✅ |
 | **X / Twitter** | Monitoreo de redes | **~USD 100+/mes** | — | ❌ Descartado |
 
-**Cómo se comparten:** por el grupo privado. Cada servicio tiene su `appsettings.Example.json` o `.env.example` con valores falsos.
+**Cómo se comparten:** por el grupo privado. El backend tiene
+[`appsettings.Development.example.json`](../back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json),
+el frontend [`front/.env.example`](../front/.env.example), y cada microservicio en `servicios/` su
+propio `appsettings.Example.json` — todos con valores falsos.
 
 ---
 
@@ -52,7 +55,7 @@ Se anotan para no volver a discutir lo mismo a las 3 de la mañana.
 | D12 | **Sí se usa MediatR** | Lo preguntó Jhon en el PR #34, porque `CLAUDE.md` decía «ni un mediator si no está pagando su coste». Paga su coste: el `ValidationBehavior` valida toda petición sin que haya que acordarse de invocar el validador en cada endpoint — ese olvido es un agujero de seguridad clásico. `CLAUDE.md` queda corregido para que no haya contradicción |
 | D13 | **El proyecto se llama ConectaRiesgoAI** | El nombre anterior era «RespondeYA» y cambió al definir la estructura, pero la documentación quedó a medias: ocho archivos seguían con el nombre viejo. Unificado |
 | D14 | **Las carpetas son `back/` y `front/`**, no `backend/` y `frontend/` | Igual que arriba: la documentación citaba rutas que ya no existían |
-| D15 | **Backend en Azure Container Apps + Azure Database for PostgreSQL Flexible Server** (región `brazilsouth`), no en Railway/Render como se sugería antes | El App Service Plan chocó con cuota de cómputo en 0 en la suscripción (`Intelapps Subscription`); Container Apps usa cuota de consumo y no tuvo ese problema. Se aprovecha la suscripción de Azure ya disponible. Cada push a `main` que toca `back/` se despliega solo vía `deploy-backend.yml` (GitHub Actions + Azure Container Registry) |
+| D15 | **Backend en Azure Container Apps + Azure Database for PostgreSQL Flexible Server** (región `brazilsouth`), no en Railway/Render ni Neon como se sugería antes | El App Service Plan chocó con cuota de cómputo en 0 en la suscripción (`Intelapps Subscription`); Container Apps usa cuota de consumo y no tuvo ese problema. Se aprovecha la suscripción de Azure ya disponible. Cada push a `main` que toca `back/` se despliega solo vía `deploy-backend.yml` (GitHub Actions + Azure Container Registry) |
 | D2 | **Sin monitoreo de X** | Buscar publicaciones dejó de ser gratis. Se usa Bluesky, que sí lo es |
 | D3 | **Integraciones como clientes HTTP internos** en `back/src/ConectaRiesgoAI.Api/Integrations/` | Detalle en `docs/ARQUITECTURA.md`. ⚠️ **Sin ejecutar todavía:** ya existen microservicios reales en `servicios/` (`ms-satelital`, `ms-transparencia`, `ms-social`) que cubren esto mismo — falta decidir si se migran a `Integrations/` o si esta decisión se revierte |
 | D4 | **Sin panel de administrador** (pantalla 6) | No aporta al pitch y cuesta horas |
