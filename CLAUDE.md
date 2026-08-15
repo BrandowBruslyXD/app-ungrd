@@ -204,6 +204,21 @@ prueba que lo hace caer.
 `main` está **protegida**: no se hace push directo. Todo entra por Pull Request con **una
 aprobación de cualquier compañero** — basta una, y nadie aprueba su propio trabajo.
 
+**Nombrado de ramas:** `<tipo>/<descripción-corta-en-kebab-case>`, en minúsculas y sin acentos. El
+`<tipo>` corresponde al label del issue que la rama resuelve:
+
+| Tipo de issue | Prefijo de rama |
+|---|---|
+| Épica | `epic/` |
+| Feature | `feat/` |
+| Bug | `fix/` |
+| Deuda técnica | `chore/` |
+
+Para trabajo que no nace de un issue con esas plantillas (infraestructura, documentación suelta),
+usa el prefijo que mejor describa la naturaleza del cambio: `infra/`, `docs/`. La descripción va en
+kebab-case y resume el qué, no el issue completo (`feat/reportes-verificacion-satelital`, no
+`feat/12`).
+
 ```bash
 git checkout -b feat/mi-tarea
 gh pr create --fill          # el PR debe decir: Closes #<número del issue>
