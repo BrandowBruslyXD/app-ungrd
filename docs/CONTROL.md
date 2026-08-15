@@ -13,12 +13,11 @@ Cada uno de estos frena a varias personas.
 
 | # | Qué | Quién lo destraba | Frena a |
 |:---|:---|:---|:---|
-| B1 | **Roles sin repartir.** Los issues siguen sin dueño | PMO | **Todo el equipo** |
-| B2 | ~~El proyecto .NET no existe~~ → **resuelto** en el PR #34: compila y pasa 5/5 tests | Jason | — |
-| B3 | **El frontend son carpetas vacías** (issue #33) | Frontend | Todas las pantallas |
-| B4 | **Sin PostgreSQL en la nube.** Hoy solo hay Docker local, así que cada uno tiene datos distintos | Infra | Datos de demo, despliegue |
-| B5 | **Sin MapKey de NASA** | PMO | Verificación satelital |
-| B6 | **CodeRabbit no está instalado.** El `.coderabbit.yaml` está en `main`, pero la app de GitHub no. Cero comentarios en los PRs #31, #32 y #34 | PMO — **solo el dueño puede** | Revisión automática |
+| B1 | **Roles sin repartir.** 22 de 25 issues sin dueño | PMO | **Todo el equipo** |
+| B2 | **`front/` son solo carpetas vacías** (`.gitkeep`, issue #33): falta el proyecto React real. El backend ya existe — PR #34 compila y pasa 5/5 tests | Frontend | Todas las pantallas |
+| B3 | **Sin PostgreSQL en la nube.** Hoy solo hay Docker local, así que cada uno tiene datos distintos | Infra | Datos de demo, despliegue |
+| B4 | **Sin MapKey de NASA** | PMO | Verificación satelital |
+| B5 | **CodeRabbit no está instalado.** El `.coderabbit.yaml` está en `main`, pero la app de GitHub no. Cero comentarios en los PRs #31, #32, #34 y #35 | PMO — **solo el dueño puede** | Revisión automática |
 
 > **B1 sigue siendo el que más cuesta.** Mientras nadie sepa qué le toca, hay gente esperando en vez de construir.
 
@@ -54,7 +53,7 @@ Se anotan para no volver a discutir lo mismo a las 3 de la mañana.
 | D13 | **El proyecto se llama ConectaRiesgoAI** | El nombre anterior era «RespondeYA» y cambió al definir la estructura, pero la documentación quedó a medias: ocho archivos seguían con el nombre viejo. Unificado |
 | D14 | **Las carpetas son `back/` y `front/`**, no `backend/` y `frontend/` | Igual que arriba: la documentación citaba rutas que ya no existían |
 | D2 | **Sin monitoreo de X** | Buscar publicaciones dejó de ser gratis. Se usa Bluesky, que sí lo es |
-| D3 | **Integraciones como microservicios** en `servicios/` | Para no bloquear al compañero que arma la estructura del backend |
+| D3 | **Integraciones como clientes HTTP internos** en `back/src/ConectaRiesgoAI.Api/Integrations/` | Detalle en `docs/ARQUITECTURA.md`. ⚠️ **Sin ejecutar todavía:** ya existen microservicios reales en `servicios/` (`ms-satelital`, `ms-transparencia`, `ms-social`) que cubren esto mismo — falta decidir si se migran a `Integrations/` o si esta decisión se revierte |
 | D4 | **Sin panel de administrador** (pantalla 6) | No aporta al pitch y cuesta horas |
 | D5 | **Sin modo offline** en el hackathon | 5-6 horas de trabajo y es lo que más fácil se rompe en vivo. Se muestra el indicador y se cuenta como visión |
 | D6 | **Registro de damnificados en Fase 3** | La Fase 1 sola ya es demostrable. Empezar por lo grande es apostar todo |
@@ -86,7 +85,7 @@ Encontrados al revisar el plan. **Sin issue creado todavía.**
 |:---|:---|:---|
 | H1 | **No hay pantalla de login/registro** en el frontend. Sin ella no hay sesión, sin sesión no hay rol, y sin rol el panel del gestor es inalcanzable | 🔴 |
 | H2 | **El rol de Mapas tiene una sola tarea.** Esa persona quedaría desocupada mientras backend carga con 4 issues P0 | 🔴 |
-| H3 | **Nadie tiene asignado conectar el backend con los microservicios** | 🟠 |
+| H3 | **`Integrations/Nasa` e `Integrations/Secop` no existen en `back/`** — la funcionalidad ya está en `servicios/ms-satelital` y `servicios/ms-transparencia`, pero nadie tiene asignado decidir si se migran o si D3 se revierte | 🟠 |
 | H4 | **El monitoreo social no tiene issue** — está construido pero invisible en el tablero | 🟠 |
 | H5 | **No hay issue de tramitar credenciales**, y bloquea a otros | 🟠 |
 | H6 | **#9 (fotos) está etiquetado backend** pero el trabajo real es del frontend | 🟡 |
@@ -113,10 +112,12 @@ Para no perder de vista que sí hay avance:
 - **Repositorio** público, con `main` protegida y 25 issues en 7 hitos
 - **Contrato de API** escrito, con endpoints y ejemplos listos para copiar
 - **Modelo de datos** definido, incluyendo el registro de damnificados
-- **Tres microservicios** compilando con 0 errores y 0 advertencias:
-  - `ms-transparencia` — probado con SECOP caído, devuelve el respaldo marcado
-  - `ms-social` — acierta los 8 casos de prueba del clasificador
-  - `ms-satelital` — responde correctamente sin credenciales
+- **Backend base en .NET 10** con PR #34: slice vertical con MediatR, EF Core + PostgreSQL,
+  autenticación JWT y la primera migración (`Usuario`, `Reporte`, `EventoCronologia`)
+- **Tres microservicios de integración** compilando con 0 errores y 0 advertencias en `servicios/`:
+  `ms-transparencia` (probado con SECOP caído, devuelve el respaldo marcado), `ms-social` (acierta
+  los 8 casos de prueba del clasificador) y `ms-satelital` (responde correctamente sin
+  credenciales) — ver D3/H3: falta decidir si se quedan aquí o migran a `back/.../Integrations/`
 - **CodeRabbit** configurado (falta que el dueño instale la app de GitHub)
 - **Plantillas de issues** aportadas por Jason, aprobadas
 

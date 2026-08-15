@@ -39,6 +39,6 @@ Para confirmar que la API quedó arriba: `curl http://localhost:5000/health` deb
 |:---|:---|
 | [ARQUITECTURA.md](docs/ARQUITECTURA.md) | dónde va cada archivo y por qué |
 | [CONTRATO-API.md](docs/CONTRATO-API.md) | qué devuelve cada endpoint — fuente de verdad entre back y front |
-| [investigacion/](docs/investigacion/) | la investigación que originó el proyecto |
+| [idea-negocio/](docs/idea-negocio/) | la investigación que originó el proyecto |
 
 > **Antes de escribir código, lee `ARQUITECTURA.md`.** Son cinco minutos y evitan que terminemos con cinco formas distintas de hacer lo mismo.

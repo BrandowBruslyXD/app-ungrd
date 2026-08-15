@@ -58,6 +58,6 @@ body:
     attributes:
       label: "Referencias (opcional)"
       description: "Archivos o tipos afectados, issues o PR donde se tomó la decisión."
-      placeholder: "Ej.: `apps/backend/src/Features/Reportes/CrearReporte/CrearReporteHandler.cs`, PR #12"
+      placeholder: "Ej.: `back/src/ConectaRiesgoAI.Api/Features/Reportes/CrearReporte/CrearReporteHandler.cs`, PR #12"
     validations:
       required: false
