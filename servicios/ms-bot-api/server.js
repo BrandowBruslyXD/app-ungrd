@@ -10,6 +10,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const PUERTO = process.env.PORT || 3001;
 const DIR_DATOS = process.env.DATA_DIR || path.join(__dirname, 'data');
@@ -34,10 +35,26 @@ const guardar = () => {
 // ── Utilidades ────────────────────────────────────────────────────────────────
 const hoy = () => new Date().toISOString().slice(0, 10);
 
-/** Código que ve el ciudadano: RPT-2026-08-16-0001 */
+/**
+ * Código que ve el ciudadano: RPT-2026-08-16-0001-K7M2
+ *
+ * El consecutivo sirve para ordenar y contar; el sufijo aleatorio evita que el
+ * código sea adivinable. Sin él, cualquiera podía recorrer 0001, 0002, 0003… y
+ * leer teléfono, ubicación y nivel de daño de reportes ajenos, porque la consulta
+ * es pública por diseño (el código funciona como número de guía: quien lo tiene,
+ * accede). Con 4 caracteres de un alfabeto sin ambigüedades hay ~1,3 millones de
+ * combinaciones por consecutivo: suficiente para que enumerar no sea práctico.
+ */
+const ALFABETO = 'ACDEFGHJKLMNPQRTUVWXY34679'; // sin I, O, S, B, 0, 1, 2, 5, 8
+
+const sufijo = (n = 4) => {
+  const bytes = crypto.randomBytes(n);
+  return Array.from(bytes, (b) => ALFABETO[b % ALFABETO.length]).join('');
+};
+
 const nuevoCodigo = (prefijo) => {
   datos.consecutivo += 1;
-  return `${prefijo}-${hoy()}-${String(datos.consecutivo).padStart(4, '0')}`;
+  return `${prefijo}-${hoy()}-${String(datos.consecutivo).padStart(4, '0')}-${sufijo()}`;
 };
 
 const json = (res, codigo, cuerpo) => {
@@ -49,21 +66,61 @@ const json = (res, codigo, cuerpo) => {
   res.end(texto);
 };
 
+const LIMITE_CUERPO = 1e6; // 1 MB
+
+/**
+ * Lee el cuerpo de la petición.
+ *
+ * Devuelve { ok, datos } en vez de lanzar: si el cuerpo excede el límite hay que
+ * responder 413 y cerrar, no dejar la promesa colgada. `req.destroy()` no dispara
+ * 'end', así que resolver ahí dentro era esperar un evento que nunca llega: el
+ * handler no respondía nunca y el par req/res quedaba retenido en memoria. En un
+ * contenedor de 128 MB, unas pocas peticiones así lo tumban.
+ */
 const leerCuerpo = (req) =>
   new Promise((resolve) => {
     let bruto = '';
+    let cerrado = false;
+    const terminar = (r) => {
+      if (!cerrado) {
+        cerrado = true;
+        resolve(r);
+      }
+    };
+
     req.on('data', (c) => {
       bruto += c;
-      if (bruto.length > 1e6) req.destroy(); // tope defensivo
+      if (bruto.length > LIMITE_CUERPO) {
+        // Pausar en vez de destruir: destruir cierra la conexión antes de que el
+        // 413 llegue al cliente, que solo ve "conexión cerrada". Se pausa, se
+        // responde, y quien responde cierra.
+        req.pause();
+        terminar({ ok: false, motivo: 'demasiado_grande', datos: {} });
+      }
     });
     req.on('end', () => {
       try {
-        resolve(bruto ? JSON.parse(bruto) : {});
+        terminar({ ok: true, datos: bruto ? JSON.parse(bruto) : {} });
       } catch {
-        resolve({});
+        terminar({ ok: false, motivo: 'json_invalido', datos: {} });
       }
     });
+    req.on('error', () => terminar({ ok: false, motivo: 'error_lectura', datos: {} }));
+    req.on('aborted', () => terminar({ ok: false, motivo: 'abortada', datos: {} }));
   });
+
+/** Lee el cuerpo y responde el error apropiado. Devuelve null si ya se respondió. */
+const cuerpoOResponder = async (req, res) => {
+  const r = await leerCuerpo(req);
+  if (r.ok) return r.datos;
+  if (r.motivo === 'demasiado_grande') {
+    json(res, 413, { error: 'El cuerpo es demasiado grande' });
+    req.destroy(); // ya se respondió: se corta lo que quede por llegar
+  } else {
+    json(res, 400, { error: 'Cuerpo inválido' });
+  }
+  return null;
+};
 
 /** Etiquetas legibles: el flujo manda el número que eligió el ciudadano. */
 const NIVEL_DANO = {
@@ -107,7 +164,8 @@ const servidor = http.createServer(async (req, res) => {
 
   // ── Crear reporte (ciudadano) ───────────────────────────────────────────────
   if (ruta === '/reportes' && req.method === 'POST') {
-    const b = await leerCuerpo(req);
+    const b = await cuerpoOResponder(req, res);
+    if (b === null) return;
     const codigo = nuevoCodigo('RPT');
 
     datos.reportes[codigo] = {
@@ -131,7 +189,9 @@ const servidor = http.createServer(async (req, res) => {
   }
 
   // ── Consultar reporte ───────────────────────────────────────────────────────
-  if (ruta.startsWith('/reportes/') && req.method === 'GET') {
+  // Anclado a un solo segmento: /reportes/X/estado con el método equivocado debe
+  // caer en 404, no responder aquí "No encontrado" y ocultar el error de uso.
+  if (/^\/reportes\/[^/]+$/.test(ruta) && req.method === 'GET') {
     const codigo = decodeURIComponent(ruta.slice('/reportes/'.length)).trim().toUpperCase();
     const r = datos.reportes[codigo];
 
@@ -173,12 +233,13 @@ const servidor = http.createServer(async (req, res) => {
   }
 
   // ── Avanzar el estado (para la demo en vivo) ────────────────────────────────
-  if (ruta.startsWith('/reportes/') && ruta.endsWith('/estado') && req.method === 'POST') {
+  if (/^\/reportes\/[^/]+\/estado$/.test(ruta) && req.method === 'POST') {
     const codigo = decodeURIComponent(ruta.split('/')[2]).trim().toUpperCase();
     const r = datos.reportes[codigo];
     if (!r) return json(res, 404, { error: 'No existe un reporte con ese código' });
 
-    const b = await leerCuerpo(req);
+    const b = await cuerpoOResponder(req, res);
+    if (b === null) return;
     const estado = b.estado || 'Verificado';
     r.estado = estado;
     r.cronologia.push({ estado, nota: b.nota || '', fecha: new Date().toISOString() });
@@ -190,10 +251,21 @@ const servidor = http.createServer(async (req, res) => {
 
   // ── Registro censal (brigadista) ────────────────────────────────────────────
   if (ruta === '/censo' && req.method === 'POST') {
-    const b = await leerCuerpo(req);
+    const b = await cuerpoOResponder(req, res);
+    if (b === null) return;
 
     // Sin consentimiento no se persiste (Ley 1581 de 2012).
-    if (!b.consentimiento) {
+    //
+    // Comparación ESTRICTA a propósito: un truthy check dejaba pasar la cadena "no",
+    // que es justo lo que manda un nodo de WhatsApp que captura texto. `!"no"` es
+    // false, la validación no disparaba, y se persistían nombre, dirección y jefe de
+    // hogar sin autorización real. Solo el booleano true o la cadena "true"/"si"
+    // cuentan como consentimiento.
+    const autoriza =
+      b.consentimiento === true ||
+      ['true', 'si', 'sí', '1'].includes(String(b.consentimiento).trim().toLowerCase());
+
+    if (!autoriza) {
       return json(res, 400, { error: 'Falta el consentimiento de tratamiento de datos' });
     }
 
@@ -217,7 +289,18 @@ const servidor = http.createServer(async (req, res) => {
   }
 
   // ── Listado, para ver lo capturado durante la demo ──────────────────────────
+  //
+  // Vuelca teléfonos, direcciones y jefes de hogar: datos personales de la Ley 1581.
+  // La red interna de Docker es la primera barrera, pero no puede ser la única —
+  // basta que otro contenedor comparta la red `edge` para que quede al alcance.
+  // Requiere clave; si no está configurada, la ruta no existe.
   if (ruta === '/todo' && req.method === 'GET') {
+    const clave = process.env.CLAVE_ADMIN || '';
+    if (!clave) return json(res, 404, { error: 'Ruta no habilitada' });
+    if (req.headers['x-api-key'] !== clave) {
+      console.warn('[api] intento de acceso a /todo sin clave válida');
+      return json(res, 401, { error: 'No autorizado' });
+    }
     return json(res, 200, {
       reportes: Object.values(datos.reportes),
       censos: Object.values(datos.censos),

@@ -117,10 +117,17 @@ Lo que hoy hace `ms-bot-api`. Crea el reporte y devuelve el código.
 > recibido»* con el código vacío. Frente al jurado. La ruta debe devolver 201 con código,
 > o fallar de forma que el bot lo note.
 
-### 3.2 `GET /api/reportes/{codigo}` — público
+### 3.2 `GET /api/ingesta/reportes/{codigo}` — público
 
-El bot ya lo llama. Debe devolver el estado y la cronología **ya formateada para WhatsApp**,
-porque el flujo no puede recorrer arreglos ni aplicar formato:
+**Ruta propia, no la de la web.** El bot necesita una forma de respuesta incompatible con
+la que consume el frontend: el flujo de WhatsApp **no puede recorrer arreglos ni aplicar
+formato**, solo interpolar variables planas.
+
+> Es el mismo razonamiento que aplica al `POST`: dos consumidores con contratos distintos
+> bajo la misma URL obligan a que todos los campos sean opcionales, y el día que alguien
+> ajuste uno rompe al otro sin enterarse. `GET /api/reportes/{codigo}` sigue devolviendo el
+> objeto completo para la web —`tipo`, `cronologia` como arreglo, `verificacionSatelital`,
+> `transparencia`— y esta ruta devuelve el texto ya armado.
 
 ```json
 {
@@ -223,10 +230,31 @@ Con lo que ya existe no alcanza. Tres cambios:
 > `Latitud` y `Longitud` deben poder quedar en `null` cuando el reporte entra por WhatsApp.
 > Hoy son obligatorias, y eso rompería la ingesta.
 
-**Entidad nueva `RegistroCensal`** — para el brigadista. Con la jerarquía del RUD:
-operación → vivienda → familia → personas, y sus tres validaciones: un solo jefe de hogar
-por familia, cédula no repetida en el mismo evento, y número de jefes igual al número de
-familias declarado.
+**Para el censo del brigadista: reutilizar el modelo que ya está documentado.**
+
+[`MODELO-DATOS.md`](MODELO-DATOS.md) ya modela este caso con `PersonaAfectada` +
+`MiembroNucleoFamiliar` + `DanoRegistrado`, con sus campos de vulnerabilidad,
+consentimiento y validaciones. **No hay que construir un modelo paralelo.**
+
+Lo único que falta es la capa de arriba: una entidad **`OperacionCenso`** que agrupe los
+registros de una misma jornada —municipio, vereda, brigadista, fecha— y de la que cuelguen
+varias `PersonaAfectada`. Eso completa la jerarquía del RUD sin duplicar nada:
+
+```
+OperacionCenso        ← NUEVA: la jornada (municipio, vereda, brigadista)
+  └─ PersonaAfectada  ← YA EXISTE en MODELO-DATOS.md
+      ├─ MiembroNucleoFamiliar  ← YA EXISTE
+      └─ DanoRegistrado         ← YA EXISTE
+```
+
+Las tres validaciones del RUD —un solo jefe de hogar por familia, cédula no repetida en el
+mismo evento, número de jefes igual al número de familias— se implementan sobre esas
+tablas, no sobre unas nuevas.
+
+> El flujo de WhatsApp captura hoy una versión reducida (jefe de hogar, número de personas,
+> nivel de daño, necesidad). Eso llena `PersonaAfectada` parcialmente y deja
+> `Estado = Borrador`: el brigadista completa el resto después, o queda como captura previa
+> para que la alcaldía la exporte.
 
 ---
 
