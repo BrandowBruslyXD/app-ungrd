@@ -24,7 +24,15 @@ pnpm-debug.log*
 .env
 .env.local
 .env.*.local
+
+# La configuracion por entorno es local de cada maquina y este repositorio es
+# publico: el dia que alguien escriba una clave real aqui se subiria sin que
+# nadie lo note. Se ignoran en cualquier subcarpeta; la forma esperada de la
+# configuracion se documenta en los appsettings.Example.json de cada servicio.
+appsettings.Development.json
 appsettings.Development.local.json
+appsettings.Production.json
+appsettings.Production.local.json
 
 # --- Editores y SO ---
 .idea/
