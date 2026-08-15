@@ -56,6 +56,12 @@ El endpoint que compone la respuesta las llama con timeout corto; si una falla, 
 bloque** y sigue respondiendo — nunca propaga el error. Detalle en
 [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
+> ⚠️ **Esto describe el diseño, no el código actual.** Hoy las integraciones ya existen y funcionan
+> como microservicios independientes en `servicios/` (`ms-satelital`, `ms-transparencia`,
+> `ms-social`), y `back/.../Integrations/` todavía no tiene código. Falta que el equipo decida si
+> `servicios/` se migra a `Integrations/` o si este documento se ajusta a `servicios/` como destino
+> final — ver `docs/ARQUITECTURA.md`.
+
 **Documentación de referencia:**
 
 | Documento | Para qué |
@@ -105,7 +111,15 @@ Detalle completo de la estructura en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md
 6. **El handler es el dueño de la regla de negocio** del caso de uso. Si una invariante debe
    sostenerse en varias rebanadas, vive en la entidad de la feature.
 7. **Sin capas fantasma.** No crees `Domain`/`Application`/`Infrastructure` dentro de una rebanada,
-   ni repositorios genéricos, ni un mediator si no está pagando su coste.
+   ni repositorios genéricos.
+
+**Sobre MediatR:** se usa, y está decidido. Paga su coste por una razón concreta: el
+`ValidationBehavior` del pipeline valida **toda** petición sin que haya que acordarse de llamar al
+validador en cada endpoint. Ese olvido es un agujero de seguridad clásico, y aquí no puede ocurrir.
+
+Lo que sí se prohíbe es la ceremonia vacía: nada de un `Handler` que solo reenvía a un servicio, ni
+interfaces con una sola implementación puestas «por si acaso». Si una rebanada no tiene lógica, su
+handler hace el trabajo directamente contra el `DbContext`.
 
 La pregunta de revisión no es "¿respeta las capas?" sino **"¿esta rebanada se entiende sola?"** y
 **"¿lo que subió a `Common/` lo comparten de verdad varias?"**.

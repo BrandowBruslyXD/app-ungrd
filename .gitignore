@@ -25,9 +25,14 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 
-# Trae credenciales locales. Se copia desde appsettings.Development.example.json
+# Configuracion por entorno: es local de cada maquina y trae credenciales.
+# Este repositorio es publico, asi que el dia que alguien escriba una clave real
+# aqui se subiria sin que nadie lo note. Se ignoran en cualquier subcarpeta.
+# La forma esperada se documenta en los appsettings.Example.json de cada proyecto.
 appsettings.Development.json
 appsettings.Development.local.json
+appsettings.Production.json
+appsettings.Production.local.json
 
 # --- Editores y SO ---
 .idea/

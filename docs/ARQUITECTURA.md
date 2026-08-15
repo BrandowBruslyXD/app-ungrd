@@ -222,5 +222,10 @@ En el frontend, `VITE_API_BASE_URL` va en `.env.local`, que no se commitea.
 
 ## Pendientes de este documento
 
+- **`servicios/` vs `Integrations/`:** ya existen tres microservicios reales y verificados en
+  `servicios/` (`ms-satelital`, `ms-transparencia`, `ms-social`) que cubren NASA FIRMS, SECOP y
+  redes sociales, pero este documento describe esas integraciones como clientes HTTP dentro de
+  `back/src/ConectaRiesgoAI.Api/Integrations/`, que todavía no tiene código. Falta que el equipo
+  decida cuál es la arquitectura real y ajuste este documento en consecuencia.
 - Los enums de este documento siguen `CONTRATO-API.md` (`Incendio`, `Inundacion`, …), que difiere de las categorías de `idea-negocio/investigacion-uno.md` (`vivienda_albergue`, …). **Manda el contrato**, porque es lo que frontend y backend ya acordaron.
 - Falta definir el despliegue (`docker-compose.yml` solo cubre la base de datos local).
