@@ -1,4 +1,4 @@
-# Control del proyecto — RespondeYA
+# Control del proyecto — ConectaRiesgoAI
 
 > El tablero del PMO. Aquí se ve **qué bloquea**, **qué se decidió** y **qué falta**.
 > Si alguien pregunta "¿en qué vamos?", la respuesta está en este archivo.
@@ -13,12 +13,14 @@ Cada uno de estos frena a varias personas.
 
 | # | Qué | Quién lo destraba | Frena a |
 |:---|:---|:---|:---|
-| B1 | **Roles sin repartir.** 22 de 25 issues sin dueño | PMO | **Todo el equipo** |
-| B2 | **El proyecto .NET no existe todavía.** Nadie puede integrar nada | Backend | Backend, integración |
-| B3 | **Sin PostgreSQL accesible** | Infra | Backend |
-| B4 | **Sin MapKey de NASA** | PMO | Verificación satelital |
+| B1 | **Roles sin repartir.** Los issues siguen sin dueño | PMO | **Todo el equipo** |
+| B2 | ~~El proyecto .NET no existe~~ → **resuelto** en el PR #34: compila y pasa 5/5 tests | Jason | — |
+| B3 | **El frontend son carpetas vacías** (issue #33) | Frontend | Todas las pantallas |
+| B4 | **Sin PostgreSQL en la nube.** Hoy solo hay Docker local, así que cada uno tiene datos distintos | Infra | Datos de demo, despliegue |
+| B5 | **Sin MapKey de NASA** | PMO | Verificación satelital |
+| B6 | **CodeRabbit no está instalado.** El `.coderabbit.yaml` está en `main`, pero la app de GitHub no. Cero comentarios en los PRs #31, #32 y #34 | PMO — **solo el dueño puede** | Revisión automática |
 
-> **B1 es el que más cuesta.** Mientras nadie sepa qué le toca, cuatro personas están esperando en vez de construir.
+> **B1 sigue siendo el que más cuesta.** Mientras nadie sepa qué le toca, hay gente esperando en vez de construir.
 
 ---
 
@@ -45,9 +47,12 @@ Se anotan para no volver a discutir lo mismo a las 3 de la mañana.
 
 | # | Decisión | Por qué |
 |:---|:---|:---|
-| D1 | **Stack: React + .NET 8 + PostgreSQL** | Lo definió el PMO. .NET pesa más al arrancar, pero el backend lo domina |
+| D1 | **Stack: React + .NET 10 + PostgreSQL** | Lo definió el PMO. .NET pesa más al arrancar, pero el backend lo domina |
 | D10 | **Backend con arquitectura Vertical Slice**, no capas `Api/Domain/Infrastructure` | Propuesta de Jason en su PR de herramientas. Un caso de uso vive completo en su carpeta y se lee sin saltar entre proyectos — en un hackatón eso vale más que la pureza de capas. Detalle en `CLAUDE.md` |
 | D11 | **Se adoptan las skills y agentes de Claude** que trajo Jason | Codifican el criterio de revisión para que no dependa de quién tenga tiempo a la hora 17 |
+| D12 | **Sí se usa MediatR** | Lo preguntó Jhon en el PR #34, porque `CLAUDE.md` decía «ni un mediator si no está pagando su coste». Paga su coste: el `ValidationBehavior` valida toda petición sin que haya que acordarse de invocar el validador en cada endpoint — ese olvido es un agujero de seguridad clásico. `CLAUDE.md` queda corregido para que no haya contradicción |
+| D13 | **El proyecto se llama ConectaRiesgoAI** | El nombre anterior era «RespondeYA» y cambió al definir la estructura, pero la documentación quedó a medias: ocho archivos seguían con el nombre viejo. Unificado |
+| D14 | **Las carpetas son `back/` y `front/`**, no `backend/` y `frontend/` | Igual que arriba: la documentación citaba rutas que ya no existían |
 | D2 | **Sin monitoreo de X** | Buscar publicaciones dejó de ser gratis. Se usa Bluesky, que sí lo es |
 | D3 | **Integraciones como microservicios** en `servicios/` | Para no bloquear al compañero que arma la estructura del backend |
 | D4 | **Sin panel de administrador** (pantalla 6) | No aporta al pitch y cuesta horas |

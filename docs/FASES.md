@@ -1,4 +1,4 @@
-# Fases del proyecto — RespondeYA
+# Fases del proyecto — ConectaRiesgoAI
 
 > Qué se construye, en qué orden y **qué se corta si el tiempo aprieta**.
 >

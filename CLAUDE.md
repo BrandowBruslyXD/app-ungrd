@@ -1,4 +1,4 @@
-# CLAUDE.md — RespondeYA
+# CLAUDE.md — ConectaRiesgoAI
 
 ## Qué es este proyecto
 
@@ -19,9 +19,9 @@ destinó a prevenirla.
 trabado**, en [docs/CONTROL.md](docs/CONTROL.md). Esos dos documentos mandan sobre cualquier idea
 suelta.
 
-Contexto original del problema: [docs/idea-negocio/](docs/idea-negocio/). Ojo: esos documentos son
+Contexto original del problema: [docs/investigacion/](docs/investigacion/). Ojo: esos documentos son
 de la exploración inicial, cuando el producto se pensaba como asistente por WhatsApp y con otro
-nombre. **El producto es una app web y se llama RespondeYA.**
+nombre. **El producto es una app web y se llama ConectaRiesgoAI.**
 
 Es un proyecto de **hackatón**: prioriza lo que se puede demostrar funcionando. Pragmatismo por
 encima de ceremonia, pero sin renunciar a las reglas de abajo — están para que el código siga
@@ -39,9 +39,9 @@ se presenta lo que sí funciona de punta a punta.
 
 | Parte | Stack | Ubicación |
 |---|---|---|
-| Backend | .NET 8, **arquitectura Vertical Slice** | `backend/` |
-| Frontend | React + TypeScript + Vite + Tailwind, **mobile-first** | `frontend/` |
-| Microservicios de integración | .NET 8, minimal API | `servicios/` |
+| Backend | .NET 10, **arquitectura Vertical Slice** | `back/` |
+| Frontend | React + TypeScript + Vite + Tailwind, **mobile-first** | `front/` |
+| Microservicios de integración | .NET 10, minimal API | `servicios/` |
 | Base de datos | PostgreSQL | — |
 | Mapas | Leaflet + OpenStreetMap | — |
 
@@ -49,7 +49,7 @@ Idioma de todo: **español neutro** — documentación, comentarios, mensajes de
 issues y de PR.
 
 **Por qué hay microservicios aparte:** las integraciones externas (NASA FIRMS, SECOP, redes
-sociales) viven en `servicios/` y no dentro de `backend/`, para que quien las construye no dependa
+sociales) viven en `servicios/` y no dentro de `back/`, para que quien las construye no dependa
 de que la estructura del backend esté lista. El backend las consume por HTTP. Si uno se cae, el
 backend **oculta ese bloque** y sigue respondiendo — nunca propaga el error.
 
@@ -99,7 +99,15 @@ backend/src/
 6. **El handler es el dueño de la regla de negocio** del caso de uso. Si una invariante debe
    sostenerse en varias rebanadas, vive en la entidad de la feature.
 7. **Sin capas fantasma.** No crees `Domain`/`Application`/`Infrastructure` dentro de una rebanada,
-   ni repositorios genéricos, ni un mediator si no está pagando su coste.
+   ni repositorios genéricos.
+
+**Sobre MediatR:** se usa, y está decidido. Paga su coste por una razón concreta: el
+`ValidationBehavior` del pipeline valida **toda** petición sin que haya que acordarse de llamar al
+validador en cada endpoint. Ese olvido es un agujero de seguridad clásico, y aquí no puede ocurrir.
+
+Lo que sí se prohíbe es la ceremonia vacía: nada de un `Handler` que solo reenvía a un servicio, ni
+interfaces con una sola implementación puestas «por si acaso». Si una rebanada no tiene lógica, su
+handler hace el trabajo directamente contra el `DbContext`.
 
 La pregunta de revisión no es "¿respeta las capas?" sino **"¿esta rebanada se entiende sola?"** y
 **"¿lo que subió a `Shared/` lo comparten de verdad varias?"**.
