@@ -9,9 +9,9 @@
 # protección de rama, los merges quedan BLOQUEADOS hasta que esa persona
 # concreta apruebe. En un hackathon de 20 horas eso es tiempo muerto.
 #
-# Mientras tanto la rotación en anillo de docs/REVISIONES-CRUZADAS.md es la que
-# manda: el autor pide revisión a mano a quien le toca. Funciona igual y no
-# bloquea a nadie.
+# Mientras tanto manda la política de docs/REVISIONES-CRUZADAS.md: basta UNA
+# aprobación de CUALQUIER compañero. La tabla de reparto de ese documento es
+# solo una sugerencia de a quién pedirle primero, no una obligación.
 #
 # CÓMO ACTIVARLO (cuando los roles estén confirmados, toma 30 segundos):
 #   1. Quita el "# " del inicio de las líneas de reglas que apliquen.

@@ -1,33 +1,41 @@
-# Revisiones cruzadas
+# Revisiones de código
 
-Regla única: **nadie aprueba su propio trabajo.** Todo PR lo revisa otra persona.
+**La política en una línea: UNA aprobación de CUALQUIER compañero y haces merge.**
 
-`main` está protegida y pide **1 aprobación** para hacer merge. No se puede pushear directo.
+`main` está protegida y pide **1 aprobación** para hacer merge. No se puede pushear directo. Eso es todo lo que exige el repo.
+
+Regla innegociable, la única: **nadie aprueba su propio PR.** GitHub ya lo impide solo, así que ni siquiera hay que acordarse.
+
+No hace falta que apruebe una persona concreta. No hace falta que apruebe un "dueño" del área. No hacen falta dos aprobaciones. **Una, de quien sea del equipo, y adelante.**
 
 ---
 
-## Quién revisa a quién (rotación en anillo)
+## A quién pedirle primero (sugerencia, no obligación)
 
-| Autor del PR | Se lo pide a | (y esa persona se lo pide a) |
-|---|---|---|
-| `@BrandowBruslyXD` | `@jasonfabian8` | ↓ |
-| `@jasonfabian8` | `@JefersonMunoz` | ↓ |
-| `@JefersonMunoz` | `@jhongarzon` | ↓ |
-| `@jhongarzon` | `@BrandowBruslyXD` | ↺ vuelve al inicio |
+Esta tabla existe por una sola razón: que revisar no le caiga siempre a la misma persona. Es un **reparto por defecto**, para no tener que pensar a quién escribirle.
 
-El anillo se cierra: nadie se revisa a sí mismo y nadie depende siempre de la misma persona.
+| Si el PR es tuyo… | …pídeselo primero a |
+|---|---|
+| `@BrandowBruslyXD` | `@jasonfabian8` |
+| `@jasonfabian8` | `@JefersonMunoz` |
+| `@JefersonMunoz` | `@jhongarzon` |
+| `@jhongarzon` | `@BrandowBruslyXD` |
 
-**Es un valor por defecto, no una cárcel.** Si a tu revisor le toca algo que no conoce, o simplemente no está disponible, pídeselo al siguiente del anillo y sigue. Lo que no se vale es aprobarte tú mismo.
+**Esto NO es "quién debe aprobar". Es "a quién le escribo primero".**
 
-> Los roles (backend / frontend / mapas y datos) todavía no están asignados. Cuando se confirmen, esta tabla no cambia: el anillo es por persona, no por rol.
+- Si esa persona está ocupada, en otra cosa, o simplemente no contesta: **pídeselo a cualquier otro y ya**. No hay que esperar a nadie.
+- Cualquiera de los cuatro puede aprobar cualquier PR, del área que sea, en cualquier momento. No necesitas permiso ni justificación para revisar un PR que no te "tocaba".
+- **Un PR bloqueado es tiempo muerto para todo el equipo**, no solo para el autor. Si ves un PR parado, ábrelo y apruébalo tú. Eso es ayudar, no meterte donde no te llaman.
+
+> Los roles (backend / frontend / mapas y datos) todavía no están asignados. Cuando se confirmen, esta tabla no cambia y sigue siendo una sugerencia: el reparto es por persona, no por rol.
 
 ---
 
 ## Acuerdo de tiempo: 15 minutos
 
 - Revisar un PR toma **máximo 15 minutos**. Si te toma más, el PR es demasiado grande: pide que lo partan.
-- **Si nadie revisó en 15 minutos**, el autor avisa por el grupo y **cualquiera del equipo puede aprobar**. No hay que esperar al revisor "oficial".
-- En un hackathon un PR bloqueado es tiempo muerto para todos, no solo para el autor. Ante la duda: aprueba y deja el comentario. Si algo se rompe, se arregla en el siguiente PR.
+- Si nadie revisó en 15 minutos, el autor avisa por el grupo y el primero que lo vea aprueba. Sin escalar, sin esperar turno.
+- Ante la duda: **aprueba y deja el comentario**. Si algo se rompe, se arregla en el siguiente PR.
 - PR chicos y seguido. Un PR de 40 archivos no lo revisa nadie en 15 minutos.
 
 ---
@@ -84,17 +92,28 @@ Si eso devuelve algo, **no apruebes** hasta que lo saquen.
 
 La protección de `main` tiene activado:
 
-- **Se descartan las aprobaciones al pushear.** Si te aprueban y después subes otro commit al mismo PR, la aprobación **se borra** y necesitas que te aprueben otra vez. Sube todo y *después* pide revisión.
-- **Hay que resolver los comentarios.** Un comentario sin resolver bloquea el merge. Si dejas un comentario menor y ya apruebas, **resuélvelo tú mismo** para no dejar el PR trancado.
+- **Se descartan las aprobaciones al pushear** (`dismiss_stale_reviews`). Si te aprueban y después subes otro commit al mismo PR, la aprobación **se borra** y necesitas que te aprueben otra vez. Sube todo y *después* pide revisión.
+- **Hay que resolver los comentarios** (`required_conversation_resolution`). Un comentario sin resolver bloquea el merge. Si dejas un comentario menor y ya apruebas, **resuélvelo tú mismo** para no dejar el PR trancado.
+
+---
+
+## CodeRabbit: revisor automático, no sustituto
+
+Vamos a sumar **CodeRabbit** como revisor automático de los PR. Sirve para que alguien (algo) mire el diff enseguida y cace lo obvio: credenciales, cambios de contrato, cosas que no compilan.
+
+**CodeRabbit NO cuenta como la aprobación.** GitHub sigue exigiendo **1 aprobación humana** y eso no cambia. Trátalo como un par de ojos extra y gratis:
+
+- Si CodeRabbit marca algo grave (una credencial, un endpoint que cambió), hazle caso antes de aprobar.
+- Si marca estilo, naming o refactors, aplica la sección "Qué NO se mira" y sigue. No bloquees por eso.
 
 ---
 
 ## Revisores automáticos (CODEOWNERS)
 
-Existe `.github/CODEOWNERS` pero está **todo comentado a propósito**, incluida la regla global.
+Existe `.github/CODEOWNERS` pero está **todo comentado a propósito**, incluida la regla global. Y con la política actual está bien así.
 
-Hoy los roles no están confirmados. Un CODEOWNERS con la persona equivocada manda las revisiones a quien no toca y, si alguien activa "Require review from Code Owners", **bloquea los merges** hasta que apruebe esa persona exacta.
+En la protección de rama, `require_code_owner_reviews` está en **`false`**: aunque el archivo se activara, GitHub no exigiría la aprobación de un dueño concreto. Eso es deliberado — activarlo convertiría a una persona específica en cuello de botella, que es exactamente lo que esta política quiere evitar.
 
-La regla global `* @BrandowBruslyXD` también quedó comentada, por dos razones: concentraría todas las revisiones en el PMO en lugar de repartirlas por el anillo, y en los PR del propio PMO GitHub no puede pedirle revisión a sí mismo, así que esos PR quedarían sin revisor asignado.
+La regla global `* @BrandowBruslyXD` también quedó comentada: concentraría todas las revisiones en el PMO en lugar de repartirlas, y en los PR del propio PMO GitHub no puede pedirle revisión a sí mismo.
 
-Mientras tanto: **el autor pide la revisión a mano** a quien le toca en el anillo. Cuando los roles estén claros, se descomenta el archivo (hay instrucciones adentro) y GitHub empieza a pedir revisión solo.
+Mientras tanto: el autor le escribe a quien le sugiere la tabla de arriba y, si no hay respuesta, a cualquiera. Cuando los roles estén claros se puede descomentar el archivo (hay instrucciones adentro) para que GitHub *sugiera* revisor solo — pero **sin** activar `require_code_owner_reviews`, o volvemos a bloquear merges.
