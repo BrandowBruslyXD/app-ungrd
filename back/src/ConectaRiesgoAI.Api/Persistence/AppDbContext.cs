@@ -8,6 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<Reporte> Reportes => Set<Reporte>();
     public DbSet<EventoCronologia> EventosCronologia => Set<EventoCronologia>();
+    public DbSet<VerificacionSatelital> VerificacionesSatelitales => Set<VerificacionSatelital>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -28,6 +28,7 @@ public class Reporte
     public Usuario Usuario { get; set; } = null!;
 
     public ICollection<EventoCronologia> Cronologia { get; set; } = new List<EventoCronologia>();
+    public ICollection<VerificacionSatelital> VerificacionesSatelitales { get; set; } = new List<VerificacionSatelital>();
 
     /// <summary>
     /// Arma el código público del reporte. El consecutivo lo calcula quien crea el reporte,
