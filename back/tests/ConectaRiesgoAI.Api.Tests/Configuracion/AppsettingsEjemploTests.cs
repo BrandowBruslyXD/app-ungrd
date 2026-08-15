@@ -3,6 +3,10 @@ using System.Text.Json;
 
 namespace ConectaRiesgoAI.Api.Tests.Configuracion;
 
+// ASP.NET Core sí tolera comentarios `//`/`/* */` en appsettings*.json (JsonConfigurationProvider
+// usa JsonCommentHandling.Skip): un comentario aquí NO rompe `dotnet run`, verificado en vivo.
+// Este archivo se mantiene como JSON estricto de todos modos, porque otras herramientas que sí
+// lo tocan (jq, editores, linters de JSON genéricos, un futuro script de CI) no son tan permisivas.
 public class AppsettingsEjemploTests
 {
     private static string RutaAppsettingsDevelopmentExample([CallerFilePath] string rutaDeEsteArchivo = "") =>
@@ -11,7 +15,7 @@ public class AppsettingsEjemploTests
             "..", "..", "..", "src", "ConectaRiesgoAI.Api", "appsettings.Development.example.json"));
 
     [Fact]
-    public void AppsettingsDevelopmentExample_EsJsonValido()
+    public void AppsettingsDevelopmentExample_EsJsonEstrictamenteValido()
     {
         var contenido = File.ReadAllText(RutaAppsettingsDevelopmentExample());
 
