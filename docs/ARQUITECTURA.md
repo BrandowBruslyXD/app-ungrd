@@ -212,9 +212,10 @@ dotnet ef migrations add NombreDelCambio \
 En el backend estas llaves viven en `appsettings.json` (vacías, es la plantilla) y se llenan en
 `appsettings.Development.json` para local — copiado de
 [`appsettings.Development.example.json`](../back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json),
-que ya es JSON válido (sin comentarios: un `//` ahí rompe el arranque) y trae valores de desarrollo
-que sirven tal cual: la cadena de conexión que corresponde al `docker-compose.yml` y un secreto JWT
-de juguete.
+que ya es JSON estrictamente válido (sin comentarios: ASP.NET Core sí tolera `//`/`/* */` vía
+`JsonCommentHandling.Skip`, verificado en vivo — se quitaron por portabilidad con herramientas que
+sí son estrictas, como `jq`, linters y editores) y trae valores de desarrollo que sirven tal cual:
+la cadena de conexión que corresponde al `docker-compose.yml` y un secreto JWT de juguete.
 
 En el frontend, `VITE_API_BASE_URL` va en `.env.local` (no se commitea), copiado de
 [`front/.env.example`](../front/.env.example).
