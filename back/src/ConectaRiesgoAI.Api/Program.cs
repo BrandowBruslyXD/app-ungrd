@@ -94,14 +94,17 @@ if (app.Environment.IsDevelopment())
 }
 
 // Comprobación de vida. Sirve para saber si la API está arriba sin depender de la base de datos.
-app.MapGet("/api/health", () => Results.Ok(new
+// Va en las dos rutas a propósito: /health es la que pide el issue de infraestructura y la que
+// esperan las sondas de despliegue; /api/health mantiene la regla del contrato de que todo cuelga de /api.
+var health = () => Results.Ok(new
 {
     estado = "ok",
     servicio = "ConectaRiesgoAI",
     fecha = DateTime.UtcNow
-}))
-.WithName("Health")
-.WithTags("Sistema");
+});
+
+app.MapGet("/health", health).WithName("Health").WithTags("Sistema");
+app.MapGet("/api/health", health).WithName("HealthApi").WithTags("Sistema");
 
 // Cada slice que implemente IEndpoint queda registrado aquí sin tocar este archivo.
 app.MapEndpointsDeSlices();

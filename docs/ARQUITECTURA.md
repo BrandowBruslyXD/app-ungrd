@@ -170,21 +170,26 @@ Ahí van los ejemplos de respuesta del contrato, copiados tal cual. El frontend 
 Requisitos: **.NET 10 SDK**, **Node 20+**, **Docker** (para PostgreSQL).
 
 ```bash
-# 1. Base de datos
+# 1. Configuración local (solo la primera vez)
+cp back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json \
+   back/src/ConectaRiesgoAI.Api/appsettings.Development.json
+
+# 2. Base de datos
 docker compose up -d
 
-# 2. Aplicar las migraciones (solo la primera vez y cuando alguien agregue una)
+# 3. Aplicar las migraciones (solo la primera vez y cuando alguien agregue una)
 dotnet ef database update --project back/src/ConectaRiesgoAI.Api
 
-# 3. Backend  → http://localhost:5000, Swagger en /swagger
+# 4. Backend  → http://localhost:5000, Swagger en /swagger
 dotnet run --project back/src/ConectaRiesgoAI.Api
 
-# 4. Frontend → http://localhost:5173
+# 5. Frontend → http://localhost:5173
 npm install --prefix front
 npm run dev --prefix front
 ```
 
-Para comprobar que la API está viva sin depender de la base de datos: `GET http://localhost:5000/api/health`.
+Para comprobar que la API está viva sin depender de la base de datos: `GET http://localhost:5000/health`
+(también responde en `/api/health`, para quien prefiera mantener todo bajo el prefijo del contrato).
 
 Si cambias una entidad, genera la migración:
 

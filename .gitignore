@@ -24,6 +24,9 @@ pnpm-debug.log*
 .env
 .env.local
 .env.*.local
+
+# Trae credenciales locales. Se copia desde appsettings.Development.example.json
+appsettings.Development.json
 appsettings.Development.local.json
 
 # --- Editores y SO ---
