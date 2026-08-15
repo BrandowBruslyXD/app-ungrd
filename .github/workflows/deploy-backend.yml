@@ -1,0 +1,50 @@
+name: Desplegar backend a Azure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "back/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: conectariesgoaiacr.azurecr.io
+  IMAGE_NAME: conectariesgoai-api
+  RESOURCE_GROUP: conectariesgoai-rg
+  CONTAINER_APP: conectariesgoai-api
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Iniciar sesión en Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Construir y publicar imagen en Azure Container Registry
+        run: |
+          az acr build \
+            --registry ${{ env.REGISTRY }} \
+            --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --image ${{ env.IMAGE_NAME }}:latest \
+            --file back/src/ConectaRiesgoAI.Api/Dockerfile \
+            back/src/ConectaRiesgoAI.Api
+
+      - name: Desplegar nueva revisión en Container Apps
+        run: |
+          az containerapp update \
+            --name ${{ env.CONTAINER_APP }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Cerrar sesión en Azure
+        if: always()
+        run: az logout

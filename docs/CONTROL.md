@@ -16,7 +16,7 @@ Cada uno de estos frena a varias personas.
 | B1 | **Roles sin repartir.** Los issues siguen sin dueño | PMO | **Todo el equipo** |
 | B2 | ~~El proyecto .NET no existe~~ → **resuelto** en el PR #34: compila y pasa 5/5 tests | Jason | — |
 | B3 | **El frontend son carpetas vacías** (issue #33) | Frontend | Todas las pantallas |
-| B4 | **Sin PostgreSQL en la nube.** Hoy solo hay Docker local, así que cada uno tiene datos distintos | Infra | Datos de demo, despliegue |
+| B4 | ~~Sin PostgreSQL en la nube~~ → **resuelto**: Azure Database for PostgreSQL Flexible Server en `conectariesgoai-rg` (región `brazilsouth`) | Infra | — |
 | B5 | **Sin MapKey de NASA** | PMO | Verificación satelital |
 | B6 | **CodeRabbit no está instalado.** El `.coderabbit.yaml` está en `main`, pero la app de GitHub no. Cero comentarios en los PRs #31, #32 y #34 | PMO — **solo el dueño puede** | Revisión automática |
 
@@ -31,7 +31,7 @@ Todas gratuitas. **El repositorio es público: ninguna se escribe en el código.
 | Servicio | Para qué | Costo | Dónde se pide | Estado |
 |:---|:---|:---|:---|:---|
 | **NASA FIRMS** | Verificación satelital | Gratis | `firms.modaps.eosdis.nasa.gov/api/area/` — llega al correo en minutos | ⬜ |
-| **PostgreSQL** | Base de datos | Gratis | Neon, Supabase o Railway | ⬜ |
+| **PostgreSQL** | Base de datos | Burstable B1ms (bajo costo, no gratis) | Azure Database for PostgreSQL Flexible Server, suscripción de Azure del equipo | ✅ |
 | **Cloudinary** | Fotos | Gratis | `cloudinary.com` | ⬜ |
 | **Bluesky** | Monitoreo de redes | Gratis | Cuenta normal + **contraseña de aplicación** | ⬜ |
 | **SECOP** | Contratos públicos | Gratis | No requiere clave | ✅ |
@@ -53,6 +53,7 @@ Se anotan para no volver a discutir lo mismo a las 3 de la mañana.
 | D12 | **Sí se usa MediatR** | Lo preguntó Jhon en el PR #34, porque `CLAUDE.md` decía «ni un mediator si no está pagando su coste». Paga su coste: el `ValidationBehavior` valida toda petición sin que haya que acordarse de invocar el validador en cada endpoint — ese olvido es un agujero de seguridad clásico. `CLAUDE.md` queda corregido para que no haya contradicción |
 | D13 | **El proyecto se llama ConectaRiesgoAI** | El nombre anterior era «RespondeYA» y cambió al definir la estructura, pero la documentación quedó a medias: ocho archivos seguían con el nombre viejo. Unificado |
 | D14 | **Las carpetas son `back/` y `front/`**, no `backend/` y `frontend/` | Igual que arriba: la documentación citaba rutas que ya no existían |
+| D15 | **Backend en Azure Container Apps + Azure Database for PostgreSQL Flexible Server** (región `brazilsouth`), no en Railway/Render como se sugería antes | El App Service Plan chocó con cuota de cómputo en 0 en la suscripción (`Intelapps Subscription`); Container Apps usa cuota de consumo y no tuvo ese problema. Se aprovecha la suscripción de Azure ya disponible. Cada push a `main` que toca `back/` se despliega solo vía `deploy-backend.yml` (GitHub Actions + Azure Container Registry) |
 | D2 | **Sin monitoreo de X** | Buscar publicaciones dejó de ser gratis. Se usa Bluesky, que sí lo es |
 | D3 | **Integraciones como microservicios** en `servicios/` | Para no bloquear al compañero que arma la estructura del backend |
 | D4 | **Sin panel de administrador** (pantalla 6) | No aporta al pitch y cuesta horas |
