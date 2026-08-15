@@ -197,6 +197,6 @@ Ninguna de estas se commitea. Cada carpeta lleva su `.env.example` con las llave
 
 ## Pendientes de este documento
 
-- **El nombre del producto está en disputa:** este repo y los namespaces dicen `ConectaRiesgoAI`; `CONTRATO-API.md` dice `RespondeYA`. Hay que cerrarlo en el grupo y que quede uno solo.
+- **El nombre del producto está en disputa:** este repo y los namespaces dicen `ConectaRiesgoAI`; `CONTRATO-API.md` dice `ConectaRiesgoAI`. Hay que cerrarlo en el grupo y que quede uno solo.
 - Los enums de este documento siguen `CONTRATO-API.md` (`Incendio`, `Inundacion`, …), que difiere de las categorías de `investigacion/investigacion-uno.md` (`vivienda_albergue`, …). **Manda el contrato**, porque es lo que frontend y backend ya acordaron.
 - Falta definir el despliegue (`docker-compose.yml` solo cubre la base de datos local).
