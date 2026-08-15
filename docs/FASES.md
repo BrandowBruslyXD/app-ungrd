@@ -24,7 +24,7 @@ Sin esto no existe nada más.
 | Contrato de API cerrado | ✅ Escrito, falta que el equipo lo confirme |
 | Modelo de datos definido | ✅ En `MODELO-DATOS.md` |
 | Estructura del proyecto compilando en las 4 máquinas | ⬜ **Bloqueante — es lo que más urge** |
-| PostgreSQL accesible para todos | ⬜ |
+| PostgreSQL accesible para todos | ✅ |
 | Roles repartidos | ⬜ **Bloqueante** |
 | Credenciales tramitadas | ⬜ Ver `CONTROL.md` |
 

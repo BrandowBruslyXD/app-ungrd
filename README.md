@@ -33,6 +33,18 @@ npm install --prefix front && npm run dev --prefix front  # web → localhost:51
 
 Para confirmar que la API quedó arriba: `curl http://localhost:5000/health` debe responder `200`.
 
+## Ambientes
+
+| Ambiente | URL |
+|:---|:---|
+| Backend (producción) | https://conectariesgoai-api.delightfulsand-f3f95f4d.brazilsouth.azurecontainerapps.io |
+| Frontend (producción) | _pendiente — bloqueado por issue #33 (front sin inicializar)_ |
+
+El backend corre en Azure Container Apps (`conectariesgoai-rg`, región `brazilsouth`) con
+PostgreSQL en Azure Database for PostgreSQL Flexible Server. Cada push a `main` que toque `back/`
+dispara [`deploy-backend.yml`](.github/workflows/deploy-backend.yml), que reconstruye la imagen y
+la despliega automáticamente.
+
 ## Documentación
 
 | Documento | Para qué |
