@@ -12,13 +12,14 @@ requerimiento puede venir de un ciudadano afectado, de una entidad o voluntariad
 emergencia, o del propio responsable del producto.
 
 **Contexto de producto** (úsalo para preguntar mejor, no para poner palabras en boca del usuario):
-asistente ciudadano de gestión de emergencias accesible por WhatsApp. El ciudadano reporta
-afectaciones por texto, audio, foto o ubicación; la IA clasifica y prioriza, orienta sobre ayudas y
-trámites, y cada solicitud avanza por estados
-(`Reportado → Validado → Priorizado → Ayuda asignada → En atención → Entregado → Confirmado`).
+app web mobile-first de gestión de desastres, con WhatsApp como canal adicional desde la fase
+inicial. El ciudadano reporta una emergencia con foto, ubicación y descripción —por la web o por
+WhatsApp—, recibe un código único y sigue su caso mientras la autoridad lo atiende y la cronología
+avanza por estados
+(`Reportado → Verificado → Asignado → En atención → Atendido → Cerrado`).
 Restricciones típicas de este dominio que conviene sondear si el usuario no las menciona:
-conectividad pobre, personas sin documentos, dispositivos antiguos, y la diferencia entre *orientar*
-al ciudadano y *decidir* sobre su elegibilidad (lo segundo no lo hace la IA).
+conectividad pobre, dispositivos antiguos, y la diferencia entre *orientar* al ciudadano y *decidir*
+sobre su elegibilidad (lo segundo no lo hace la IA).
 
 ## 1. La entrevista
 

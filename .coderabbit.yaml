@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://storage.googleapis.com/coderabbit_public_assets/schema.v2.json
 #
-# Configuracion de CodeRabbit para RespondeYA (hackathon UNGRD, 20 horas).
+# Configuracion de CodeRabbit para ConectaRiesgoAI (hackathon UNGRD, 20 horas).
 # Esquema oficial: https://storage.googleapis.com/coderabbit_public_assets/schema.v2.json
 # Referencia:      https://docs.coderabbit.ai/reference/configuration
 #
@@ -73,43 +73,31 @@ reviews:
     - "!**/package-lock.json"
 
   path_instructions:
-    # ---------------- .NET 8 (microservicios + backend) ----------------
-    - path: "servicios/**"
+    # ---------------- .NET 10 (backend + integraciones) ----------------
+    - path: "back/**"
       instructions: |
-        Codigo .NET 8 que consume APIs externas (NASA FIRMS, SECOP, redes sociales).
-        Revisa SOLO esto y en espanol:
-        1. DEGRADACION: si la API externa falla (timeout, 4xx, 5xx, JSON invalido),
-           el servicio debe devolver null o una lista vacia y registrar el error,
-           NUNCA propagar la excepcion ni tumbar el endpoint. Marca todo await de
-           HttpClient sin try/catch o sin manejo de !response.IsSuccessStatusCode.
-        2. TIMEOUT: todo HttpClient debe tener Timeout explicito (o CancellationToken
-           con tiempo limite). Un HttpClient sin timeout es un hallazgo.
-        3. SECRETOS: ninguna API key, MapKey de NASA FIRMS, token de SECOP,
-           credencial de Bluesky/X, cadena de conexion de PostgreSQL ni clave de
-           firma JWT puede aparecer en el codigo, en appsettings*.json versionado ni
-           en un valor por defecto. Deben venir de configuracion o variables de
-           entorno. Esto es CRITICO: el repositorio es PUBLICO.
-        4. Bugs que rompen la demo: null de referencia, deadlock por .Result/.Wait(),
-           bucles infinitos de reintento, DbContext o HttpClient mal manejados.
-        NO comentes estilo, nombres, orden de usings, XML docs, ni pidas tests.
-
-    - path: "backend/**"
-      instructions: |
-        Backend principal .NET 8 (ASP.NET Core + EF Core + PostgreSQL).
-        Revisa SOLO esto y en espanol:
+        Backend .NET 10 (ASP.NET Core + EF Core + PostgreSQL), incluidas las
+        integraciones con APIs externas en back/src/ConectaRiesgoAI.Api/Integrations/
+        (NASA FIRMS, SECOP). Revisa SOLO esto y en espanol:
         1. SECRETOS: cero cadenas de conexion de PostgreSQL, claves de firma JWT,
            API keys o tokens escritos en el codigo o en appsettings versionados.
            Deben leerse de configuracion/variables de entorno. Repositorio PUBLICO:
            cualquier credencial es hallazgo CRITICO.
-        2. DEGRADACION: las llamadas a servicios externos o a los microservicios de
-           servicios/ deben devolver null/vacio ante fallo, nunca propagar la
-           excepcion al cliente. Todo HttpClient con Timeout explicito.
-        3. Bugs que rompen la demo: excepciones no controladas en los endpoints,
-           migraciones EF Core que borran datos, CORS mal configurado que deja al
-           frontend sin poder llamar, endpoints sin autorizacion que exponen datos.
-        NO comentes estilo, nombres, arquitectura, patrones ni cobertura de tests.
+        2. DEGRADACION: si una integracion externa falla (timeout, 4xx, 5xx, JSON
+           invalido), debe devolver null o una lista vacia y registrar el error,
+           NUNCA propagar la excepcion ni tumbar el endpoint. Marca todo await de
+           HttpClient sin try/catch o sin manejo de !response.IsSuccessStatusCode.
+        3. TIMEOUT: todo HttpClient debe tener Timeout explicito (o CancellationToken
+           con tiempo limite). Un HttpClient sin timeout es un hallazgo.
+        4. Bugs que rompen la demo: excepciones no controladas en los endpoints,
+           null de referencia, deadlock por .Result/.Wait(), bucles infinitos de
+           reintento, migraciones EF Core que borran datos, CORS mal configurado
+           que deja al frontend sin poder llamar, endpoints sin autorizacion que
+           exponen datos.
+        NO comentes estilo, nombres, orden de usings, arquitectura, patrones,
+        XML docs ni cobertura de tests.
 
-    - path: "frontend/**"
+    - path: "front/**"
       instructions: |
         Frontend React + Vite + Tailwind, mobile-first, PWA, mapas con Leaflet.
         Revisa SOLO esto y en espanol:

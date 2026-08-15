@@ -1,4 +1,4 @@
-# Documentación — RespondeYA
+# Documentación — ConectaRiesgoAI
 
 Cuatro documentos, cada uno responde una pregunta distinta.
 

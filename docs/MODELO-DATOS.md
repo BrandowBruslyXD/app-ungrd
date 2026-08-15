@@ -1,4 +1,4 @@
-# Modelo de datos — RespondeYA
+# Modelo de datos — ConectaRiesgoAI
 
 > Todo lo que el sistema guarda. Es la referencia para el backend (.NET + EF Core) y para saber qué campos pedir en cada pantalla.
 >
@@ -234,7 +234,7 @@ Todas las fotos, de reportes y de registros.
 
 ## 8. VerificacionSatelital
 
-Resultado de consultar NASA FIRMS. Lo llena el microservicio `ms-satelital`.
+Resultado de consultar NASA FIRMS. Lo llena el cliente HTTP interno `Integrations/Nasa`.
 
 | Campo | Tipo | Notas |
 |:---|:---|:---|
