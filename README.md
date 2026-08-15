@@ -21,10 +21,17 @@ docs/     Documentación del proyecto
 ## Cómo correr
 
 ```bash
+# Solo la primera vez: configuración local
+cp back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json \
+   back/src/ConectaRiesgoAI.Api/appsettings.Development.json
+
 docker compose up -d                                   # base de datos
+dotnet ef database update --project back/src/ConectaRiesgoAI.Api
 dotnet run --project back/src/ConectaRiesgoAI.Api      # API  → localhost:5000
 npm install --prefix front && npm run dev --prefix front  # web → localhost:5173
 ```
+
+Para confirmar que la API quedó arriba: `curl http://localhost:5000/health` debe responder `200`.
 
 ## Documentación
 

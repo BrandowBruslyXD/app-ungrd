@@ -170,15 +170,33 @@ Ahí van los ejemplos de respuesta del contrato, copiados tal cual. El frontend 
 Requisitos: **.NET 10 SDK**, **Node 20+**, **Docker** (para PostgreSQL).
 
 ```bash
-# 1. Base de datos
+# 1. Configuración local (solo la primera vez)
+cp back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json \
+   back/src/ConectaRiesgoAI.Api/appsettings.Development.json
+
+# 2. Base de datos
 docker compose up -d
 
-# 2. Backend  → http://localhost:5000
+# 3. Aplicar las migraciones (solo la primera vez y cuando alguien agregue una)
+dotnet ef database update --project back/src/ConectaRiesgoAI.Api
+
+# 4. Backend  → http://localhost:5000, Swagger en /swagger
 dotnet run --project back/src/ConectaRiesgoAI.Api
 
-# 3. Frontend → http://localhost:5173
+# 5. Frontend → http://localhost:5173
 npm install --prefix front
 npm run dev --prefix front
+```
+
+Para comprobar que la API está viva sin depender de la base de datos: `GET http://localhost:5000/health`
+(también responde en `/api/health`, para quien prefiera mantener todo bajo el prefijo del contrato).
+
+Si cambias una entidad, genera la migración:
+
+```bash
+dotnet ef migrations add NombreDelCambio \
+  --project back/src/ConectaRiesgoAI.Api \
+  --output-dir Persistence/Migrations
 ```
 
 ## Variables de entorno
@@ -191,7 +209,14 @@ npm run dev --prefix front
 | `Secop__AppToken` | backend | datos.gov.co (opcional, sube el límite de consultas) |
 | `VITE_API_BASE_URL` | frontend | `http://localhost:5000/api` |
 
-Ninguna de estas se commitea. Cada carpeta lleva su `.env.example` con las llaves vacías.
+En el backend estas llaves viven en `appsettings.json` (vacías, es la plantilla) y se llenan en
+`appsettings.Development.json` para local. Ese archivo trae valores de desarrollo que sirven tal cual:
+la cadena de conexión que corresponde al `docker-compose.yml` y un secreto JWT de juguete.
+
+**Nada de eso sirve fuera de local.** En despliegue se pasan como variables de entorno con doble guion
+bajo (`ConnectionStrings__Postgres`, `Jwt__Secret`), que sobrescriben lo del archivo.
+
+En el frontend, `VITE_API_BASE_URL` va en `.env.local`, que no se commitea.
 
 ---
 
