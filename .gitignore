@@ -1,0 +1,37 @@
+# --- .NET ---
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.userprefs
+.vs/
+publish/
+*.nupkg
+
+# --- Node / React ---
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Entorno ---
+.env
+.env.local
+.env.*.local
+appsettings.Development.local.json
+
+# --- Editores y SO ---
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- Cobertura y pruebas ---
+coverage/
+TestResults/
