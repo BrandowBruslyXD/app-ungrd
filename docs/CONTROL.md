@@ -37,8 +37,9 @@ Todas gratuitas. **El repositorio es público: ninguna se escribe en el código.
 | **X / Twitter** | Monitoreo de redes | **~USD 100+/mes** | — | ❌ Descartado |
 
 **Cómo se comparten:** por el grupo privado. El backend tiene
-[`appsettings.Development.example.json`](../back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json)
-y el frontend [`front/.env.example`](../front/.env.example), ambos con valores falsos.
+[`appsettings.Development.example.json`](../back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json),
+el frontend [`front/.env.example`](../front/.env.example), y cada microservicio en `servicios/` su
+propio `appsettings.Example.json` — todos con valores falsos.
 
 ---
 
