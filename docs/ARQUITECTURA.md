@@ -210,13 +210,29 @@ dotnet ef migrations add NombreDelCambio \
 | `VITE_API_BASE_URL` | frontend | `http://localhost:5000/api` |
 
 En el backend estas llaves viven en `appsettings.json` (vacías, es la plantilla) y se llenan en
-`appsettings.Development.json` para local. Ese archivo trae valores de desarrollo que sirven tal cual:
-la cadena de conexión que corresponde al `docker-compose.yml` y un secreto JWT de juguete.
+`appsettings.Development.json` para local — copiado de
+[`appsettings.Development.example.json`](../back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json),
+que ya es JSON válido (sin comentarios: un `//` ahí rompe el arranque) y trae valores de desarrollo
+que sirven tal cual: la cadena de conexión que corresponde al `docker-compose.yml` y un secreto JWT
+de juguete.
+
+En el frontend, `VITE_API_BASE_URL` va en `.env.local` (no se commitea), copiado de
+[`front/.env.example`](../front/.env.example).
 
 **Nada de eso sirve fuera de local.** En despliegue se pasan como variables de entorno con doble guion
 bajo (`ConnectionStrings__Postgres`, `Jwt__Secret`), que sobrescriben lo del archivo.
 
-En el frontend, `VITE_API_BASE_URL` va en `.env.local`, que no se commitea.
+### PostgreSQL: Docker local hoy, Neon es el destino (issue #4)
+
+**Decisión:** Postgres en la nube con **Neon**, para que las 4 máquinas compartan los mismos datos
+de demo y nadie dependa de "en mi máquina sí funciona". Docker local (`docker-compose.yml`) sigue
+siendo el arranque de un solo comando mientras nadie crea el proyecto en Neon — ambos usan la misma
+clave `ConnectionStrings:Postgres`, así que cambiar de uno a otro es solo reemplazar el valor.
+
+**Falta un paso manual que no se puede hacer desde aquí:** alguien con acceso tiene que crear el
+proyecto gratis en [neon.tech](https://neon.tech) (5 minutos, no pide tarjeta) y compartir la cadena
+de conexión por el grupo privado — **nunca en un commit**. Con esa cadena, cada quien la pega en su
+`appsettings.Development.json` local y listo.
 
 ---
 
