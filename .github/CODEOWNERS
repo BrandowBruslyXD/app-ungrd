@@ -1,0 +1,43 @@
+# CODEOWNERS — DESACTIVADO A PROPÓSITO
+#
+# Todas las reglas están comentadas. Esto es intencional, no se nos olvidó.
+#
+# POR QUÉ: un CODEOWNERS activo hace que GitHub pida revisión automática a la
+# persona dueña de la carpeta. Si esa persona está mal asignada (y hoy los roles
+# de backend / frontend / mapas NO están confirmados), las revisiones le llegan
+# a quien no toca y, si alguien activa "Require review from Code Owners" en la
+# protección de rama, los merges quedan BLOQUEADOS hasta que esa persona
+# concreta apruebe. En un hackathon de 20 horas eso es tiempo muerto.
+#
+# Mientras tanto la rotación en anillo de docs/REVISIONES-CRUZADAS.md es la que
+# manda: el autor pide revisión a mano a quien le toca. Funciona igual y no
+# bloquea a nadie.
+#
+# CÓMO ACTIVARLO (cuando los roles estén confirmados, toma 30 segundos):
+#   1. Quita el "# " del inicio de las líneas de reglas que apliquen.
+#   2. Cambia el @usuario por el dueño real de esa carpeta.
+#   3. Commit + PR. Listo, GitHub empieza a pedir revisión solo.
+#
+# Sintaxis: <ruta>  <@usuario-github>   (gana la ÚLTIMA regla que haga match)
+#
+# Equipo: @BrandowBruslyXD @jasonfabian8 @JefersonMunoz @jhongarzon
+
+
+# --- Regla global -----------------------------------------------------------
+# Cae sobre todo archivo que no tenga una regla más específica abajo.
+# La dejamos comentada: hoy pediría revisión de @BrandowBruslyXD en TODOS los
+# PR, lo que choca con la rotación en anillo (concentra las revisiones en el
+# PMO en vez de repartirlas) y además en sus propios PR GitHub no puede pedirle
+# revisión a sí mismo, así que ese PR se quedaría sin revisor asignado.
+#
+# * @BrandowBruslyXD
+
+
+# --- Backend (.NET / ASP.NET Core Web API / EF Core) -------------------------
+# /backend/ @usuario-backend
+
+# --- Frontend (React + Vite + Tailwind) --------------------------------------
+# /frontend/ @usuario-frontend
+
+# --- Documentación -----------------------------------------------------------
+# /docs/ @BrandowBruslyXD
