@@ -1,0 +1,104 @@
+name: "Solicitud de feature"
+description: "Proponer una funcionalidad o mejora nueva."
+title: "[Feature] <resumen de la funcionalidad>"
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Solo la **historia**, el **área** y los **criterios de aceptación** son obligatorios; el resto
+        puede completarlo o refinarlo quien tome la feature. Si la feature nace de una épica,
+        vincúlala como sub-issue de esa épica.
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Área"
+      description: "Dónde viviría el trabajo. Puedes marcar varias si la feature las cruza."
+      multiple: true
+      options:
+        - "backend"
+        - "frontend"
+        - "ia"
+        - "integración"
+        - "infraestructura"
+        - "documentación"
+    validations:
+      required: true
+  - type: textarea
+    id: historia
+    attributes:
+      label: "Historia de usuario"
+      description: "La necesidad en forma de historia: el porqué y para quién, no el cómo."
+      placeholder: |
+        Como <rol>
+        Quiero <capacidad>
+        Para <valor esperado>
+    validations:
+      required: true
+  - type: textarea
+    id: alcance
+    attributes:
+      label: "Alcance funcional"
+      description: "Qué se construye y, tan importante como eso, qué queda explícitamente fuera."
+      value: |
+        **Incluye:**
+        -
+
+        **No incluye:**
+        -
+    validations:
+      required: false
+  - type: textarea
+    id: criterios
+    attributes:
+      label: "Criterios de aceptación"
+      description: "Escenarios en formato Gherkin (Given/When/Then), uno por comportamiento observable. **Obligatorio incluir el camino que falla además del feliz**: dependencia caída, dato ausente, permiso que falta, entrada inválida. Verificable significa que puedes nombrar la prueba que lo hace caer; si no puedes nombrarla, reescríbelo hasta poder."
+      placeholder: |
+        Scenario: <caso principal>
+          Given <contexto>
+          When <acción>
+          Then <resultado observable>
+
+        Scenario: <el camino que falla>
+          Given <la dependencia caída, el dato ausente, el permiso que falta>
+          When <la misma acción>
+          Then <qué ve quien la ejecuta, qué queda registrado y qué NO quedó a medias>
+    validations:
+      required: true
+  - type: textarea
+    id: consideraciones
+    attributes:
+      label: "Consideraciones técnicas (opcional)"
+      description: "Rebanadas o patrones existentes que se reusan, contratos con servicios externos, trampas conocidas. Si la lógica pertenece a una rebanada nueva, dilo aquí: cada caso de uso vive completo en su carpeta y no referencia tipos de otras rebanadas."
+    validations:
+      required: false
+  - type: textarea
+    id: observabilidad
+    attributes:
+      label: "Observabilidad y calidad (opcional)"
+      description: "Qué tests la protegen y cómo se verá funcionando. Para los caminos de fallo: qué queda registrado, con qué contexto mínimo, de forma que se pueda diagnosticar sin depurar."
+    validations:
+      required: false
+  - type: textarea
+    id: dod
+    attributes:
+      label: "Definition of Done"
+      description: "Checklist de terminado. Borra lo que no aplique y agrega lo propio de esta feature."
+      value: |
+        - [ ] Criterios de aceptación verificados de punta a punta
+        - [ ] Al menos un test cubre el camino que falla, no solo el feliz
+        - [ ] Build y tests en verde
+        - [ ] Backend: la rebanada es autocontenida y no referencia tipos de otras rebanadas
+        - [ ] Frontend: sin `any` y sin textos de UI hardcodeados
+        - [ ] Quien consulta o modifica un dato tiene permiso sobre él (verificado con un test)
+    validations:
+      required: false
+  - type: textarea
+    id: tareas
+    attributes:
+      label: "Tareas técnicas (opcional)"
+      description: "Descomposición del trabajo. Puede dejarse vacía al proponer; la completa quien la tome."
+      value: |
+        - [ ]
+    validations:
+      required: false

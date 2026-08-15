@@ -1,0 +1,115 @@
+name: "Requerimiento (Épica)"
+description: "Cuenta una necesidad grande del proyecto. No necesitas conocimientos técnicos: describe el problema y el equipo lo convierte en funcionalidades."
+title: "[Epic] <resumen corto de la necesidad>"
+labels: ["epic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Cuéntanos qué necesitas, en tus palabras.** No hace falta que propongas la solución ni que
+        uses términos técnicos: describe el problema o la necesidad y el equipo la convertirá en
+        funcionalidades concretas. Los primeros cuatro campos son obligatorios; los demás nos ayudan
+        a entender mejor y a entregarte algo más acertado.
+  - type: textarea
+    id: necesidad
+    attributes:
+      label: "¿Qué necesitas lograr?"
+      description: "La necesidad en tus palabras: qué quieres poder hacer que hoy no puedes, o qué quieres que deje de pasar. Describe la necesidad, no la pantalla o el botón que imaginas."
+      placeholder: "Ej.: el ciudadano debería poder consultar en qué va su solicitud de ayuda sin llamar a nadie."
+    validations:
+      required: true
+  - type: textarea
+    id: quienes
+    attributes:
+      label: "¿Quiénes lo van a usar?"
+      description: "Las personas o roles que usarían esto, en lenguaje cotidiano."
+      placeholder: "Ej.: ciudadanos afectados en zona rural y el personal que valida los reportes."
+    validations:
+      required: true
+  - type: textarea
+    id: valor
+    attributes:
+      label: "Valor esperado"
+      description: "Qué mejora concreta trae: tiempo que se ahorra, error que se evita, personas que quedan atendidas. Si no puedes nombrar el valor, probablemente la necesidad todavía no está clara."
+      placeholder: "Ej.: se evitan las llamadas repetidas para preguntar por el estado y el equipo deja de perder tiempo buscando el caso a mano."
+    validations:
+      required: true
+  - type: textarea
+    id: como-sabras
+    attributes:
+      label: "¿Cómo sabrás que quedó resuelto?"
+      description: "Ejemplos concretos de lo que deberías poder hacer o ver cuando esto funcione."
+      placeholder: "Ej.: escribo el número de mi reporte por WhatsApp y me responde en qué estado está y qué sigue."
+    validations:
+      required: true
+  - type: textarea
+    id: alcance
+    attributes:
+      label: "Alcance (opcional)"
+      description: "Qué entra y, tan importante como eso, qué queda explícitamente fuera. Lo que dejas fuera evita discusiones más adelante."
+      value: |
+        **Incluye:**
+        -
+
+        **No incluye:**
+        -
+    validations:
+      required: false
+  - type: textarea
+    id: criterios
+    attributes:
+      label: "Criterios de aceptación (opcional)"
+      description: "Si te resulta cómodo, escribe escenarios en formato Gherkin (Given/When/Then). Un escenario del camino feliz NO basta: incluye siempre al menos uno del camino que falla (dato ausente, servicio caído, permiso que falta). Si no lo escribes aquí, lo hará el equipo al desglosar la épica en features."
+      placeholder: |
+        Scenario: <caso principal>
+          Given <contexto>
+          When <acción>
+          Then <resultado observable>
+
+        Scenario: <el camino que falla>
+          Given <la dependencia caída, el dato ausente, el permiso que falta>
+          When <la misma acción>
+          Then <qué ve quien la ejecuta y qué queda registrado>
+    validations:
+      required: false
+  - type: textarea
+    id: como-hoy
+    attributes:
+      label: "¿Cómo se resuelve hoy? (opcional)"
+      description: "El proceso actual, aunque sea manual: hojas de cálculo, llamadas, radios, formatos en papel… o si simplemente no se hace. Esto ayuda muchísimo a entender el flujo real."
+      placeholder: "Ej.: hoy alguien anota el caso en un cuaderno y lo pasa por teléfono; se pierden reportes cuando hay mucho volumen."
+    validations:
+      required: false
+  - type: dropdown
+    id: urgencia
+    attributes:
+      label: "¿Qué tan urgente es? (opcional)"
+      options:
+        - "Hay una fecha límite (cuéntanos cuál en el siguiente campo)"
+        - "Hay personas esperándolo"
+        - "Mejoraría el trabajo del día a día"
+        - "Es una idea a futuro"
+    validations:
+      required: false
+  - type: input
+    id: urgencia-porque
+    attributes:
+      label: "¿Por qué esa urgencia? (opcional)"
+      placeholder: "Ej.: es lo que se va a mostrar en la demo / hay una emergencia activa que lo necesita ya."
+    validations:
+      required: false
+  - type: textarea
+    id: restricciones
+    attributes:
+      label: "Restricciones o condiciones (opcional)"
+      description: "Fechas límite, normativa que aplique, limitaciones del canal (conectividad baja, teléfonos antiguos), volúmenes esperados…"
+      placeholder: "Ej.: debe funcionar con conexión intermitente; el ciudadano puede no tener documento de identidad a la mano."
+    validations:
+      required: false
+  - type: textarea
+    id: ejemplos
+    attributes:
+      label: "Ejemplos o anexos (opcional)"
+      description: "Un caso real, una captura, el formato que exigen… Puedes arrastrar archivos e imágenes aquí. Un ejemplo concreto vale más que tres párrafos."
+    validations:
+      required: false

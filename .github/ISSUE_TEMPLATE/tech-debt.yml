@@ -1,0 +1,63 @@
+name: "Deuda técnica (propuesta)"
+description: "Registrar una decisión o un trabajo que se difiere a propósito. Este issue ES el registro: queda abierto mientras la deuda exista."
+title: "[TD] <título corto de la deuda>"
+labels: ["tech-debt"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Una deuda técnica no es un bug: es algo que **decidimos** dejar a medias, sabiendo lo que
+        cuesta. Si el sistema hace algo que no debería, abre un bug. Este issue queda abierto
+        mientras la deuda exista y se cierra cuando se paga.
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Área"
+      options:
+        - "backend"
+        - "frontend"
+        - "ia"
+        - "integración"
+        - "infraestructura"
+        - "documentación"
+    validations:
+      required: true
+  - type: textarea
+    id: que-se-difiere
+    attributes:
+      label: "Qué se difiere"
+      description: "La decisión o el trabajo que se deja fuera a propósito, y qué se hizo en su lugar."
+      placeholder: "Ej.: el reintento del envío se hace en memoria; si el proceso se reinicia, los envíos pendientes se pierden."
+    validations:
+      required: true
+  - type: textarea
+    id: impacto
+    attributes:
+      label: "Impacto y coste de no hacerlo"
+      description: "Qué se degrada hoy (funcional, operativo, de riesgo) y qué costará después: retrabajo previsible, incidentes probables, trabajo que queda bloqueado. Si no puedes nombrar un coste concreto, quizá no es deuda sino una preferencia."
+      placeholder: "Ej.: hoy se pierde trazabilidad de las entregas confirmadas; cuando haya que auditar la ayuda entregada tocará reconstruir el histórico a mano."
+    validations:
+      required: true
+  - type: textarea
+    id: disparador
+    attributes:
+      label: "Disparador para retomarla"
+      description: "El evento o condición concreta que obliga a resolverla, no una fecha arbitraria."
+      placeholder: "Ej.: cuando se conecte el primer canal real de WhatsApp con volumen de producción."
+    validations:
+      required: true
+  - type: textarea
+    id: salida
+    attributes:
+      label: "Salida propuesta (opcional)"
+      description: "Cómo se pagaría la deuda, si ya se intuye. Basta con la dirección, no un diseño completo."
+    validations:
+      required: false
+  - type: textarea
+    id: referencias
+    attributes:
+      label: "Referencias (opcional)"
+      description: "Archivos o tipos afectados, issues o PR donde se tomó la decisión."
+      placeholder: "Ej.: `apps/backend/src/Features/Reportes/CrearReporte/CrearReporteHandler.cs`, PR #12"
+    validations:
+      required: false
