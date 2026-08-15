@@ -8,6 +8,8 @@ public class LoginValidator : AbstractValidator<LoginCommand>
     public LoginValidator()
     {
         RuleFor(c => c.Email).NotEmpty().EmailAddress();
-        RuleFor(c => c.Password).NotEmpty();
+        // Mismo límite que en registro: por encima de 72 caracteres nunca puede coincidir con
+        // el hash guardado (BCrypt trunca ahí), así que ni vale la pena mandarlo al handler.
+        RuleFor(c => c.Password).NotEmpty().MaximumLength(72);
     }
 }

@@ -6,6 +6,7 @@ using ConectaRiesgoAI.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace ConectaRiesgoAI.Api.Tests.Features.Auth;
 
@@ -76,26 +77,49 @@ public class RegistroHandlerTests
 
     /// <summary>
     /// InMemory no hace cumplir <c>HasIndex(...).IsUnique()</c> (a diferencia de Postgres): dos
-    /// registros con el mismo correo se guardan sin quejarse. Este contexto imita lo que Postgres
-    /// sí haría — lanzar <see cref="DbUpdateException"/> por violar el índice único — para poder
-    /// probar el <c>catch</c> del handler que traduce esa carrera al mismo 400 amigable.
+    /// registros con el mismo correo se guardan sin quejarse. Este contexto lanza en el
+    /// <c>SaveChanges</c> lo que le pidas, para poder probar el <c>catch</c> del handler con la
+    /// forma exacta que arma Postgres (y con cualquier otra, para probar que esas sí lo atraviesan).
     /// </summary>
-    private sealed class ContextoQueFallaAlGuardar(DbContextOptions<AppDbContext> options) : AppDbContext(options)
+    private sealed class ContextoQueFallaAlGuardar(DbContextOptions<AppDbContext> options, DbUpdateException porLanzar)
+        : AppDbContext(options)
     {
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
-            throw new DbUpdateException("Simula la violación del índice único de Email en Postgres.");
+            throw porLanzar;
     }
 
+    private static DbUpdateException ExcepcionDeViolacionDeIndiceUnico() => new(
+        "23505: duplicate key value violates unique constraint",
+        new PostgresException("duplicate key value violates unique constraint \"IX_usuarios_Email\"",
+            "ERROR", "ERROR", PostgresErrorCodes.UniqueViolation));
+
     [Fact]
-    public async Task Handle_ElGuardadoViolaElIndiceUnico_LanzaInvalidOperationException()
+    public async Task Handle_ElGuardadoViolaElIndiceUnicoDeEmail_LanzaInvalidOperationException()
     {
         using var db = new ContextoQueFallaAlGuardar(
-            new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+            new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options,
+            ExcepcionDeViolacionDeIndiceUnico());
         var handler = NuevoHandler(db);
         var comando = new RegistroCommand("María Rodríguez", "carrera@ejemplo.com", "unaClaveSegura123", "Bogotá");
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(
             () => handler.Handle(comando, CancellationToken.None));
         Assert.Equal("El correo ya está registrado", error.Message);
+    }
+
+    [Fact]
+    public async Task Handle_ElGuardadoFallaPorOtraRazon_NoLoDisfrazaDeCorreoDuplicado()
+    {
+        // Un DbUpdateException que no viene del índice único de Email (conexión caída, otra
+        // restricción) no debe traducirse al 400 de "correo ya registrado": eso ocultaría el
+        // problema real. Tiene que seguir de largo tal cual, para que ManejadorGlobalDeErrores
+        // lo loguee como el 500 que es.
+        using var db = new ContextoQueFallaAlGuardar(
+            new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options,
+            new DbUpdateException("La conexión con la base de datos se perdió."));
+        var handler = NuevoHandler(db);
+        var comando = new RegistroCommand("María Rodríguez", "otra-falla@ejemplo.com", "unaClaveSegura123", "Bogotá");
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => handler.Handle(comando, CancellationToken.None));
     }
 }

@@ -4,6 +4,7 @@ using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace ConectaRiesgoAI.Api.Features.Auth.Registro;
 
@@ -39,10 +40,12 @@ public class RegistroHandler(AppDbContext db, IGeneradorTokenJwt generadorToken,
         {
             await db.SaveChangesAsync(cancellationToken);
         }
-        catch (DbUpdateException)
+        catch (DbUpdateException ex) when (ViolaElIndiceUnicoDeEmail(ex))
         {
             // Dos registros concurrentes con el mismo correo pasan el AnyAsync de arriba antes
             // de que ninguno haya guardado; el índice único de Email es la última barrera.
+            // Cualquier otro DbUpdateException (Postgres caído, otra restricción) no entra aquí:
+            // sigue de largo hasta ManejadorGlobalDeErrores, que sí lo loguea como 500.
             throw new InvalidOperationException("El correo ya está registrado");
         }
 
@@ -51,4 +54,7 @@ public class RegistroHandler(AppDbContext db, IGeneradorTokenJwt generadorToken,
         string token = generadorToken.Generar(usuario);
         return new RegistroResponse(token, UsuarioDto.DeEntidad(usuario));
     }
+
+    private static bool ViolaElIndiceUnicoDeEmail(DbUpdateException ex) =>
+        ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 }
