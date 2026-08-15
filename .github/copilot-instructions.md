@@ -1,14 +1,16 @@
-# Copilot Instructions — RespondeYA
+# Copilot Instructions — ConectaRiesgoAI
 
 ## El proyecto
 
-Asistente ciudadano de gestión de emergencias accesible por WhatsApp: el ciudadano reporta
-afectaciones por texto, audio, foto o ubicación, la IA clasifica y prioriza, orienta sobre ayudas y
-trámites, y el caso avanza por estados (`Reportado → Validado → Priorizado → Ayuda asignada →
-En atención → Entregado → Confirmado`). Es un hackatón: prioriza lo pragmático y lo que se puede
-demostrar funcionando, y no asumas infraestructura ni catálogos que el repo todavía no tiene.
+Aplicación web mobile-first de gestión de desastres, con WhatsApp como canal adicional desde la
+fase inicial: el ciudadano reporta una emergencia con foto, ubicación y descripción —por la web o
+por WhatsApp—, recibe un código único y sigue su caso mientras la autoridad lo atiende y la
+cronología avanza en tiempo real (`Reportado → Verificado → Asignado → En atención → Atendido →
+Cerrado`). Es un hackatón: prioriza lo pragmático y lo que se puede demostrar funcionando, y no
+asumas infraestructura ni catálogos que el repo todavía no tiene.
 
-- **Backend:** .NET, en `backend/src`. **Frontend:** React + TypeScript, en `frontend`.
+- **Backend:** .NET 10, en `back/src/ConectaRiesgoAI.Api`. **Frontend:** React + TypeScript, en
+  `front`.
 - Documentación, comentarios y mensajes al usuario en español neutro; mantén tildes (UTF-8).
 - Los mensajes de commit explican el PORQUÉ del cambio, no el QUÉ.
 - Nunca commitees secretos ni archivos `.env*`: van por variables de entorno o gestor de secretos.
@@ -16,29 +18,29 @@ demostrar funcionando, y no asumas infraestructura ni catálogos que el repo tod
 ## Arquitectura: Vertical Slice (no DDD por capas, no Clean Architecture por capas)
 
 ```
-backend/src/
+back/src/ConectaRiesgoAI.Api/
   Features/<Feature>/<CasoDeUso>/   # p. ej. Reportes/CrearReporte
       <CasoDeUso>Endpoint.cs        # transporte: minimal API / controller delgado
-      <CasoDeUso>Request.cs / Response.cs   # entrada y salida (records inmutables)
+      <CasoDeUso>Command.cs / Query.cs / Response.cs   # entrada y salida (records inmutables)
       <CasoDeUso>Handler.cs         # la lógica del caso de uso, de punta a punta
       <CasoDeUso>Validator.cs       # validación de entrada
-  Features/<Feature>/<Feature>Entity.cs   # modelo persistido de la feature
-  Shared/            # transversal real: auth, errores, paginación, logging
-  Infrastructure/    # acceso a datos, clientes externos, wiring
+  Domain/            # modelo compartido: entidades, enums, value objects
+  Common/            # transversal real: auth, errores, paginación, logging
+  Integrations/      # clientes HTTP de APIs externas (NASA FIRMS, SECOP)
   Program.cs
 ```
 
 1. **La rebanada es la unidad:** un caso de uso vive completo en su carpeta y se lee de arriba abajo.
 2. **Cero acoplamiento entre rebanadas:** no referencies tipos de otra — o duplicas (barato y
-   explícito) o subes a `Shared/`.
+   explícito) o subes a `Common/`.
 3. **Duplicar vale; abstraer antes de tiempo, no:** extrae en la tercera repetición, no en la segunda.
-4. **`Shared/` es solo lo genuinamente transversal.** Si algo ahí lo usa una sola rebanada, sobra.
+4. **`Common/` es solo lo genuinamente transversal.** Si algo ahí lo usa una sola rebanada, sobra.
 5. **El endpoint es delgado:** traduce HTTP ↔ handler, sin lógica de negocio.
 6. **El handler es dueño de la regla de negocio;** la invariante que vale para varias rebanadas vive
    en la entidad de la feature.
 7. **Nada de capas fantasma:** ni `Application`/`Domain`/`Infrastructure` por rebanada, ni
    repositorios genéricos, ni un mediator si no aporta.
-8. Al revisar pregunta *"¿es autocontenida?"* y *"¿lo que subió a `Shared/` lo usan varias?"*.
+8. Al revisar pregunta *"¿es autocontenida?"* y *"¿lo que subió a `Common/` lo usan varias?"*.
 9. Sin motor de datos decidido: persistencia agnóstica, con `IQueryable`/EF Core como ejemplo neutro.
 
 ## Convenciones — C#

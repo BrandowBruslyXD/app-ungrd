@@ -234,7 +234,7 @@ Todas las fotos, de reportes y de registros.
 
 ## 8. VerificacionSatelital
 
-Resultado de consultar NASA FIRMS. Lo llena el microservicio `ms-satelital`.
+Resultado de consultar NASA FIRMS. Lo llena el cliente HTTP interno `Integrations/Nasa`.
 
 | Campo | Tipo | Notas |
 |:---|:---|:---|

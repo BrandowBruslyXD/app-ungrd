@@ -54,9 +54,11 @@ resuelvelo. No pasa nada: CodeRabbit no bloquea el merge.
 
 ### Que le pedimos por carpeta
 
-- `servicios/**` y `back/**` (.NET 10): que las integraciones externas **degraden sin
-  romper** (si NASA FIRMS o SECOP fallan -> `null` o lista vacia + log, nunca propagar la
-  excepcion), que **todo `HttpClient` tenga timeout** y que **no haya credenciales en el codigo**.
+- `servicios/**` y `back/**` (.NET 10): que las integraciones externas (hoy microservicios en
+  `servicios/`; el destino de `Integrations/Nasa` e `Integrations/Secop` en `back/` esta pendiente
+  de decidir, ver `docs/ARQUITECTURA.md`) **degraden sin romper** (si NASA FIRMS o SECOP fallan ->
+  `null` o lista vacia + log, nunca propagar la excepcion), que **todo `HttpClient` tenga timeout**
+  y que **no haya credenciales en el codigo**.
 - `front/**` (React): que **no haya URLs de API quemadas** (deben venir de
   `import.meta.env.VITE_*`) y que **los estados de carga y vacio esten manejados**.
 - Archivos de configuracion (`appsettings*.json`, `.env`, `docker-compose*.yml`): barrido

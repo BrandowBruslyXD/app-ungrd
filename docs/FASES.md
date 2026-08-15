@@ -39,13 +39,14 @@ Lo mínimo que convierte esto en un producto y no en una maqueta.
 
 **Ciudadano:**
 - Inicia sesión
-- Reporta: foto, ubicación por GPS, descripción, categoría
+- Reporta: foto, ubicación por GPS, descripción, categoría — **por la web o por WhatsApp**, canal
+  disponible desde esta fase
 - Recibe un **código único** y ve la confirmación
 - Consulta el seguimiento con la cronología
 - Ve el mapa con las emergencias cercanas
 
 **Autoridad:**
-- Ve los reportes entrantes
+- Ve los reportes entrantes, sin importar si llegaron por la web o por WhatsApp
 - Cambia el estado, y **el ciudadano lo ve avanzar**
 
 **Cómo se sabe que terminó:** una persona reporta desde un celular, otra lo atiende desde un computador, y la primera ve el cambio en su pantalla. **Ese contraste en vivo es el momento decisivo del pitch.**
@@ -55,16 +56,16 @@ Lo mínimo que convierte esto en un producto y no en una maqueta.
 ---
 
 ## Fase 2 · Lo que nos diferencia
-**Estado: 🟡 parcial — los microservicios ya existen**
+**Estado: 🟡 parcial — la estructura de integraciones ya existe**
 
 Aquí es donde dejamos de parecernos a las apps que ya existen.
 
 | Qué | Estado |
 |:---|:---|
-| Verificación satelital NASA FIRMS | 🟡 Microservicio listo, **falta la MapKey** |
-| Transparencia del gasto con SECOP | 🟡 Microservicio listo y probado, con respaldo |
-| Monitoreo de redes sociales | 🟡 Microservicio listo, falta cuenta de Bluesky |
-| Que el backend consuma los tres | ⬜ **Sin dueño asignado** |
+| Verificación satelital NASA FIRMS | 🟡 `Integrations/Nasa` con la carpeta lista, **falta la MapKey** |
+| Transparencia del gasto con SECOP | 🟡 `Integrations/Secop` listo y probado, con respaldo |
+| Monitoreo de redes sociales | 🟡 Falta cuenta de Bluesky |
+| Que el backend consuma las integraciones | ⬜ **Sin dueño asignado** |
 | Instalable como PWA | ⬜ |
 
 **Cómo se sabe que terminó:** en el detalle de un reporte aparecen los bloques de satélite y de contratos públicos, y si un servicio externo se cae, el bloque desaparece sin romper la pantalla.
