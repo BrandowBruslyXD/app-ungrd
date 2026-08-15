@@ -1,4 +1,5 @@
 using ConectaRiesgoAI.Api.Common.Auth;
+using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ public class ObtenerPerfilHandler(AppDbContext db, IUsuarioActual usuarioActual)
 {
     public async Task<UsuarioDto> Handle(ObtenerPerfilQuery request, CancellationToken cancellationToken)
     {
-        var usuario = await db.Usuarios.SingleOrDefaultAsync(u => u.Id == usuarioActual.Id, cancellationToken)
+        Usuario usuario = await db.Usuarios.SingleOrDefaultAsync(u => u.Id == usuarioActual.Id, cancellationToken)
             ?? throw new KeyNotFoundException("El usuario del token ya no existe");
 
         return UsuarioDto.DeEntidad(usuario);

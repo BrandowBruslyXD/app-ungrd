@@ -5,6 +5,7 @@ using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Features.Auth.Login;
 using ConectaRiesgoAI.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace ConectaRiesgoAI.Api.Tests.Features.Auth;
@@ -40,7 +41,7 @@ public class LoginHandlerTests
     }
 
     private static LoginHandler NuevoHandler(AppDbContext db) =>
-        new(db, new GeneradorTokenJwt(Options.Create(OpcionesJwt)));
+        new(db, new GeneradorTokenJwt(Options.Create(OpcionesJwt)), NullLogger<LoginHandler>.Instance);
 
     [Fact]
     public async Task Handle_CredencialesCorrectas_DevuelveTokenYUsuario()

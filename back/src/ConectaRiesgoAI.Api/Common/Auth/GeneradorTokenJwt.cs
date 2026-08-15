@@ -13,25 +13,27 @@ public interface IGeneradorTokenJwt
     string Generar(Usuario usuario);
 }
 
+/// <inheritdoc cref="IGeneradorTokenJwt" />
 public class GeneradorTokenJwt(IOptions<OpcionesJwt> opciones) : IGeneradorTokenJwt
 {
+    /// <inheritdoc />
     public string Generar(Usuario usuario)
     {
-        var config = opciones.Value;
+        OpcionesJwt config = opciones.Value;
 
-        var claims = new[]
-        {
+        Claim[] claims =
+        [
             new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
             new Claim(ClaimTypes.Name, usuario.Nombre),
             new Claim(ClaimTypes.Email, usuario.Email),
             new Claim(ClaimTypes.Role, usuario.Rol.ToString())
-        };
+        ];
 
-        var credenciales = new SigningCredentials(
+        SigningCredentials credenciales = new(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config.Secret)),
             SecurityAlgorithms.HmacSha256);
 
-        var token = new JwtSecurityToken(
+        JwtSecurityToken token = new(
             issuer: config.Issuer,
             audience: config.Audience,
             claims: claims,

@@ -7,21 +7,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConectaRiesgoAI.Api.Features.Auth.Registro;
 
-/// <summary>Crea un usuario con rol Ciudadano y le devuelve el token de una vez: no hace falta loguearse después de registrarse.</summary>
+/// <summary>
+/// Crea un usuario con rol Ciudadano y le devuelve el token de una vez: no hace falta loguearse
+/// después de registrarse.
+/// </summary>
 public class RegistroHandler(AppDbContext db, IGeneradorTokenJwt generadorToken)
     : IRequestHandler<RegistroCommand, RegistroResponse>
 {
     public async Task<RegistroResponse> Handle(RegistroCommand command, CancellationToken cancellationToken)
     {
-        var email = command.Email.Trim().ToLowerInvariant();
+        string email = command.Email.Trim().ToLowerInvariant();
 
-        var yaExiste = await db.Usuarios.AnyAsync(u => u.Email == email, cancellationToken);
+        bool yaExiste = await db.Usuarios.AnyAsync(u => u.Email == email, cancellationToken);
         if (yaExiste)
         {
             throw new InvalidOperationException("El correo ya está registrado");
         }
 
-        var usuario = new Usuario
+        Usuario usuario = new()
         {
             Nombre = command.Nombre.Trim(),
             Email = email,
@@ -31,9 +34,19 @@ public class RegistroHandler(AppDbContext db, IGeneradorTokenJwt generadorToken)
         };
 
         db.Usuarios.Add(usuario);
-        await db.SaveChangesAsync(cancellationToken);
 
-        var token = generadorToken.Generar(usuario);
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            // Dos registros concurrentes con el mismo correo pasan el AnyAsync de arriba antes
+            // de que ninguno haya guardado; el índice único de Email es la última barrera.
+            throw new InvalidOperationException("El correo ya está registrado");
+        }
+
+        string token = generadorToken.Generar(usuario);
         return new RegistroResponse(token, UsuarioDto.DeEntidad(usuario));
     }
 }

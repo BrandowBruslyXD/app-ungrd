@@ -9,9 +9,10 @@ public class LoginEndpoint : IEndpoint
     {
         app.MapPost("/api/auth/login", async (LoginCommand comando, ISender sender, CancellationToken ct) =>
             {
-                var respuesta = await sender.Send(comando, ct);
+                LoginResponse respuesta = await sender.Send(comando, ct);
                 return Results.Ok(respuesta);
             })
+            // Anónimo porque loguearse es, por definición, lo que pasa antes de tener un token.
             .AllowAnonymous()
             .WithName("Login")
             .WithTags("Auth");

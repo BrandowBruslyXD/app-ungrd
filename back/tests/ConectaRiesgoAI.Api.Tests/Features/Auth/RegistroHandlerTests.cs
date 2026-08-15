@@ -72,4 +72,29 @@ public class RegistroHandlerTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(comando, CancellationToken.None));
     }
+
+    /// <summary>
+    /// InMemory no hace cumplir <c>HasIndex(...).IsUnique()</c> (a diferencia de Postgres): dos
+    /// registros con el mismo correo se guardan sin quejarse. Este contexto imita lo que Postgres
+    /// sí haría — lanzar <see cref="DbUpdateException"/> por violar el índice único — para poder
+    /// probar el <c>catch</c> del handler que traduce esa carrera al mismo 400 amigable.
+    /// </summary>
+    private sealed class ContextoQueFallaAlGuardar(DbContextOptions<AppDbContext> options) : AppDbContext(options)
+    {
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
+            throw new DbUpdateException("Simula la violación del índice único de Email en Postgres.");
+    }
+
+    [Fact]
+    public async Task Handle_ElGuardadoViolaElIndiceUnico_LanzaInvalidOperationException()
+    {
+        using var db = new ContextoQueFallaAlGuardar(
+            new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+        var handler = NuevoHandler(db);
+        var comando = new RegistroCommand("María Rodríguez", "carrera@ejemplo.com", "unaClaveSegura123", "Bogotá");
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => handler.Handle(comando, CancellationToken.None));
+        Assert.Equal("El correo ya está registrado", error.Message);
+    }
 }
