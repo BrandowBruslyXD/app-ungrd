@@ -2,17 +2,26 @@
 
 ## Qué es este proyecto
 
-Asistente ciudadano de gestión de emergencias accesible por **WhatsApp**. El ciudadano reporta
-afectaciones con texto, audio, fotos y ubicación; la IA clasifica y prioriza las necesidades,
-orienta sobre ayudas y trámites, y el caso avanza por estados hasta la confirmación de entrega:
+**Aplicación web mobile-first** de gestión de desastres. El ciudadano reporta una emergencia con
+foto, ubicación y descripción; recibe un código único y puede seguir su caso; la autoridad lo
+atiende y **el ciudadano ve avanzar la cronología en tiempo real**:
 
 ```
-Reportado → Validado → Priorizado → Ayuda asignada → En atención → Entregado → Confirmado
+Reportado → Verificado → Asignado → En atención → Atendido → Cerrado
 ```
 
-Contexto completo del problema y del alcance: [investigacion-uno.md](investigacion-uno.md) ·
-fuentes de datos exploradas: [investigacion-dos.md](investigacion-dos.md). Ojo: esos documentos son
-de la idea inicial y usan el nombre de trabajo anterior; el producto es **RespondeYA**.
+Lo que nos diferencia de lo que ya existe (Yo Reporto de la UNGRD, Ideam en tu Mano) es que
+**cerramos el ciclo**: seguimiento real, verificación satelital con NASA FIRMS y transparencia del
+gasto público con SECOP. Nadie más conecta el reporte de una emergencia con el dinero que se
+destinó a prevenirla.
+
+**Qué construimos y qué no** está en [docs/FASES.md](docs/FASES.md). **En qué vamos y qué está
+trabado**, en [docs/CONTROL.md](docs/CONTROL.md). Esos dos documentos mandan sobre cualquier idea
+suelta.
+
+Contexto original del problema: [docs/idea-negocio/](docs/idea-negocio/). Ojo: esos documentos son
+de la exploración inicial, cuando el producto se pensaba como asistente por WhatsApp y con otro
+nombre. **El producto es una app web y se llama RespondeYA.**
 
 Es un proyecto de **hackatón**: prioriza lo que se puede demostrar funcionando. Pragmatismo por
 encima de ceremonia, pero sin renunciar a las reglas de abajo — están para que el código siga
@@ -21,17 +30,37 @@ siendo tocable cuando queden pocas horas.
 **Los usuarios están en emergencia**, muchas veces con conexión mala y dispositivos limitados. Eso
 no es color: es un requisito. Un flujo que solo funciona con buena red no sirve.
 
+**Una cosa completa vale más que dos a medias.** Si a la hora 16 algo no está terminado, se corta y
+se presenta lo que sí funciona de punta a punta.
+
 ---
 
 ## Stack y estructura
 
 | Parte | Stack | Ubicación |
 |---|---|---|
-| Backend | .NET, **arquitectura Vertical Slice** | `backend/` |
-| Frontend | React + TypeScript | `frontend/` |
+| Backend | .NET 8, **arquitectura Vertical Slice** | `backend/` |
+| Frontend | React + TypeScript + Vite + Tailwind, **mobile-first** | `frontend/` |
+| Microservicios de integración | .NET 8, minimal API | `servicios/` |
+| Base de datos | PostgreSQL | — |
+| Mapas | Leaflet + OpenStreetMap | — |
 
 Idioma de todo: **español neutro** — documentación, comentarios, mensajes de commit, textos de
 issues y de PR.
+
+**Por qué hay microservicios aparte:** las integraciones externas (NASA FIRMS, SECOP, redes
+sociales) viven en `servicios/` y no dentro de `backend/`, para que quien las construye no dependa
+de que la estructura del backend esté lista. El backend las consume por HTTP. Si uno se cae, el
+backend **oculta ese bloque** y sigue respondiendo — nunca propaga el error.
+
+**Documentación de referencia:**
+
+| Documento | Para qué |
+|---|---|
+| [docs/CONTRATO-API.md](docs/CONTRATO-API.md) | Endpoints, formas de JSON, códigos de error |
+| [docs/MODELO-DATOS.md](docs/MODELO-DATOS.md) | Todas las entidades y campos |
+| [docs/FASES.md](docs/FASES.md) | Qué se construye, en qué orden, qué se corta |
+| [docs/CONTROL.md](docs/CONTROL.md) | Bloqueantes, decisiones, riesgos, credenciales |
 
 ---
 
@@ -143,8 +172,47 @@ La pregunta de revisión no es "¿respeta las capas?" sino **"¿esta rebanada se
 **Plantillas de GitHub** ([.github/](.github/)) — formularios de issue para épica, feature, bug y
 deuda técnica. Una feature no se construye sin **criterios de aceptación verificables en Gherkin**,
 y el escenario que **falla** es obligatorio, no solo el feliz. Verificable = puedes nombrar la
-prueba que lo hace caer. La plantilla de PR y el anillo de revisores cruzados los define el equipo
-en su propia rama.
+prueba que lo hace caer.
 
-`gh` no está en el PATH de las sesiones. Invócalo por ruta completa:
+`gh` puede no estar en el PATH según la máquina. En Windows, invócalo por ruta completa:
 `& "C:\Program Files\GitHub CLI\gh.exe"` (PowerShell) · `"/c/Program Files/GitHub CLI/gh.exe"` (Bash).
+
+---
+
+## Cómo se trabaja
+
+`main` está **protegida**: no se hace push directo. Todo entra por Pull Request con **una
+aprobación de cualquier compañero** — basta una, y nadie aprueba su propio trabajo.
+
+```bash
+git checkout -b feat/mi-tarea
+gh pr create --fill          # el PR debe decir: Closes #<número del issue>
+```
+
+- PRs pequeños y frecuentes. Uno gigante a la hora 17 no lo revisa nadie.
+- Máximo **15 minutos** para revisar. Si nadie responde, se avisa por el grupo y cualquiera aprueba.
+  Un PR bloqueado es tiempo muerto para todo el equipo.
+- Si subes un commit **después** de que te aprobaron, la aprobación se borra. Sube todo y *después*
+  pide revisión.
+- Un comentario sin resolver bloquea el merge.
+
+**Nadie espera a nadie.** El frontend construye contra datos falsos con la forma exacta del
+[contrato de API](docs/CONTRATO-API.md). Esperar al backend convierte 20 horas de trabajo paralelo
+en 20 horas en fila.
+
+---
+
+## Datos personales — Ley 1581
+
+El sistema captura **documentos de identidad, fotos de rostro, datos de salud y datos de menores**
+en el registro de damnificados. Bajo la Ley 1581 de 2012 son datos sensibles y de menores: las dos
+categorías con mayor protección.
+
+1. **El repositorio es público.** Nunca subir una foto de un documento real, ni siquiera "de
+   prueba": queda expuesta y sigue siendo recuperable del historial de Git aunque después se borre.
+2. **Toda la demo con datos inventados.** Nombres, cédulas y rostros falsos, siempre.
+3. **Sin consentimiento no se guarda.** El campo `ConsentimientoDatos` es obligatorio antes de
+   persistir una persona afectada.
+4. **Los datos completos solo los ve** quien registró y los gestores de su entidad.
+
+Detalle completo en [docs/MODELO-DATOS.md](docs/MODELO-DATOS.md).
