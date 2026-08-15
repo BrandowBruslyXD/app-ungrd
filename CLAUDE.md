@@ -196,6 +196,19 @@ gh pr create --fill          # el PR debe decir: Closes #<número del issue>
   pide revisión.
 - Un comentario sin resolver bloquea el merge.
 
+**CodeRabbit revisa todos los PRs.** Está configurado en [`.coderabbit.yaml`](.coderabbit.yaml) y
+comenta en español, priorizando bugs y credenciales filtradas por encima del estilo.
+
+> ⚠️ **Hay que dispararlo a mano.** El repositorio tiene menos de 10 estrellas, y en ese caso
+> CodeRabbit no arranca solo. Al abrir un PR, escribe como comentario:
+>
+> ```
+> @coderabbitai review
+> ```
+
+**No reemplaza la aprobación humana**: comenta, pero nunca aprueba. `main` sigue exigiendo que una
+persona apruebe. Detalle completo en [docs/CODERABBIT.md](docs/CODERABBIT.md).
+
 **Nadie espera a nadie.** El frontend construye contra datos falsos con la forma exacta del
 [contrato de API](docs/CONTRATO-API.md). Esperar al backend convierte 20 horas de trabajo paralelo
 en 20 horas en fila.

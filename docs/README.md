@@ -12,6 +12,9 @@ Cuatro documentos, cada uno responde una pregunta distinta.
 Y sobre cómo trabajamos, todo está en **[`CLAUDE.md`](../CLAUDE.md)** en la raíz: convenciones de
 código, arquitectura del backend, reglas de seguridad y flujo de Pull Requests.
 
+**[CODERABBIT.md](CODERABBIT.md)** — el revisor automático de PRs. Léelo antes de abrir tu primer
+PR: hay que **dispararlo a mano** escribiendo `@coderabbitai review` en el PR.
+
 También hay **skills y agentes** en [`.claude/`](../.claude/) para auditar código, crear épicas y
 consultar issues.
 
