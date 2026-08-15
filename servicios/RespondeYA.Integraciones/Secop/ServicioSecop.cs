@@ -11,7 +11,7 @@ namespace RespondeYA.Integraciones.Secop;
 
 public interface IServicioSecop
 {
-    Task<IReadOnlyList<ContratoPublico>> ObtenerContratosPrevencionAsync(
+    Task<ResultadoContratos> ObtenerContratosPrevencionAsync(
         string municipio, CancellationToken ct = default);
 }
 
@@ -56,15 +56,15 @@ public class ServicioSecop : IServicioSecop
         _log = log;
     }
 
-    public async Task<IReadOnlyList<ContratoPublico>> ObtenerContratosPrevencionAsync(
+    public async Task<ResultadoContratos> ObtenerContratosPrevencionAsync(
         string municipio, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(municipio))
-            return [];
+            return new ResultadoContratos([], OrigenDatos.ApiEnVivo);
 
         var llave = $"secop:{municipio.ToUpperInvariant()}";
-        if (_cache.TryGetValue<IReadOnlyList<ContratoPublico>>(llave, out var enCache))
-            return enCache ?? [];
+        if (_cache.TryGetValue<ResultadoContratos>(llave, out var enCache) && enCache is not null)
+            return enCache;
 
         try
         {
@@ -73,26 +73,49 @@ public class ServicioSecop : IServicioSecop
 
             if (!respuesta.IsSuccessStatusCode)
             {
-                _log.LogWarning("SECOP respondió {Codigo} para {Municipio}",
+                _log.LogWarning("SECOP respondió {Codigo} para {Municipio}. Se usa el respaldo.",
                     respuesta.StatusCode, municipio);
-                return [];
+                return UsarRespaldo(municipio, llave);
             }
 
             var json = await respuesta.Content.ReadAsStringAsync(ct);
             var contratos = Interpretar(json);
 
+            // Si la API responde pero no encuentra nada, se respeta ese vacío:
+            // es un dato real, no una falla. El frontend oculta el bloque.
+            var resultado = new ResultadoContratos(contratos, OrigenDatos.ApiEnVivo);
+
             // Los datos de contratación no cambian durante un hackathon.
             // Una hora de caché evita golpear la API en cada carga de pantalla.
-            _cache.Set(llave, contratos, TimeSpan.FromHours(1));
-            return contratos;
+            _cache.Set(llave, resultado, TimeSpan.FromHours(1));
+            return resultado;
         }
         catch (Exception ex)
         {
-            // Si SECOP falla, el bloque de transparencia simplemente no aparece.
-            // Nunca debe tumbar la pantalla de detalle del reporte.
-            _log.LogError(ex, "Falló la consulta a SECOP para {Municipio}", municipio);
-            return [];
+            // Si SECOP se cae, se recurre al respaldo antes que dejar la pantalla
+            // sin su bloque más llamativo. Nunca se propaga la excepción.
+            _log.LogError(ex, "Falló la consulta a SECOP para {Municipio}. Se usa el respaldo.", municipio);
+            return UsarRespaldo(municipio, llave);
         }
+    }
+
+    /// <summary>
+    /// Recurre a los datos de respaldo cuando SECOP no responde.
+    /// El resultado queda marcado como tal para que la interfaz lo advierta:
+    /// mostrar datos de respaldo como si fueran reales sería engañar al jurado.
+    /// </summary>
+    private ResultadoContratos UsarRespaldo(string municipio, string llave)
+    {
+        if (!_opciones.UsarRespaldoSiFalla)
+            return new ResultadoContratos([], OrigenDatos.ApiEnVivo);
+
+        var resultado = new ResultadoContratos(
+            ContratosRespaldo.Para(municipio),
+            OrigenDatos.Respaldo);
+
+        // Caché corta: si SECOP vuelve en 5 minutos, se prefieren los datos reales.
+        _cache.Set(llave, resultado, TimeSpan.FromMinutes(5));
+        return resultado;
     }
 
     private string ConstruirConsulta(string municipio)

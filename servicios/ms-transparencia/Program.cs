@@ -1,4 +1,5 @@
 using RespondeYA.Integraciones.Configuracion;
+using RespondeYA.Integraciones.Modelos;
 using RespondeYA.Integraciones.Secop;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -52,14 +53,25 @@ app.MapGet("/contratos", async (
     if (string.IsNullOrWhiteSpace(municipio))
         return Results.BadRequest(new { error = "El municipio es obligatorio", detalles = (object?)null });
 
-    var contratos = await secop.ObtenerContratosPrevencionAsync(municipio, ct);
+    var resultado = await secop.ObtenerContratosPrevencionAsync(municipio, ct);
+    var esRespaldo = resultado.Origen == OrigenDatos.Respaldo;
 
     return Results.Ok(new
     {
         municipio,
-        total = contratos.Count,
-        valorTotal = contratos.Sum(c => c.Valor),
-        contratos
+        total = resultado.Contratos.Count,
+        valorTotal = resultado.Contratos.Sum(c => c.Valor),
+
+        // El origen viaja explícito para que la interfaz pueda advertirlo.
+        // Mostrar datos de respaldo como si fueran reales sería engañar al jurado.
+        origen = resultado.Origen.ToString(),
+        datosReales = !esRespaldo,
+        advertencia = esRespaldo
+            ? "SECOP no respondió. Estos son datos de respaldo, NO son contratos reales. " +
+              "La interfaz debe advertirlo y hay que decirlo en el pitch."
+            : null,
+
+        contratos = resultado.Contratos
     });
 });
 

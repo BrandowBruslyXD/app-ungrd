@@ -38,6 +38,19 @@ public class OpcionesSecop
 
     /// <summary>Máximo de contratos a devolver por municipio.</summary>
     public int MaximoContratos { get; set; } = 5;
+
+    /// <summary>
+    /// Si SECOP no responde, usar datos de respaldo en vez de devolver vacío.
+    ///
+    /// Se deja activo porque datos.gov.co ha estado intermitente, y quedarse sin
+    /// el bloque de transparencia le quita a la demo su parte más llamativa.
+    /// La respuesta siempre declara el origen: la interfaz debe advertir cuando
+    /// los datos no son reales, y en el pitch hay que decirlo en voz alta.
+    ///
+    /// Pónganlo en false si prefieren que el bloque no aparezca antes que
+    /// mostrar datos que no son verificables.
+    /// </summary>
+    public bool UsarRespaldoSiFalla { get; set; } = true;
 }
 
 public class OpcionesSocial
