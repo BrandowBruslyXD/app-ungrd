@@ -29,6 +29,7 @@ public static class AuthExtensions
         services.Configure<OpcionesJwt>(configuration.GetSection(OpcionesJwt.Seccion));
         services.AddHttpContextAccessor();
         services.AddScoped<IUsuarioActual, UsuarioActual>();
+        services.AddScoped<IGeneradorTokenJwt, GeneradorTokenJwt>();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(o =>

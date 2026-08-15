@@ -27,6 +27,10 @@ public class ManejadorGlobalDeErrores(ILogger<ManejadorGlobalDeErrores> logger) 
                 StatusCodes.Status400BadRequest,
                 new RespuestaError(e.Message)),
 
+            CredencialesInvalidasException e => (
+                StatusCodes.Status401Unauthorized,
+                new RespuestaError(e.Message)),
+
             UnauthorizedAccessException => (
                 StatusCodes.Status403Forbidden,
                 new RespuestaError("No tiene permiso para realizar esta acción")),

@@ -33,6 +33,25 @@ npm install --prefix front && npm run dev --prefix front  # web → localhost:51
 
 Para confirmar que la API quedó arriba: `curl http://localhost:5000/health` debe responder `200`.
 
+## Usuarios de demo
+
+En Development, la primera vez que arranca la API con la tabla `usuarios` vacía, se siembran tres
+cuentas —una por rol— para poder probar login sin pasar por `/api/auth/registro`:
+
+| Rol | Email | Password |
+|:---|:---|:---|
+| Ciudadano | `ciudadano@conectariesgoai.com` | `Demo1234!` |
+| Gestor | `gestor@conectariesgoai.com` | `Demo1234!` |
+| Admin | `admin@conectariesgoai.com` | `Demo1234!` |
+
+Probar con `POST http://localhost:5000/api/auth/login` (o desde `/swagger`):
+
+```bash
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{ "email": "gestor@conectariesgoai.com", "password": "Demo1234!" }'
+```
+
 ## Documentación
 
 | Documento | Para qué |

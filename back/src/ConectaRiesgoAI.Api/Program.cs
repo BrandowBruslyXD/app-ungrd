@@ -4,6 +4,7 @@ using ConectaRiesgoAI.Api.Common.Behaviors;
 using ConectaRiesgoAI.Api.Common.Endpoints;
 using ConectaRiesgoAI.Api.Common.Errors;
 using ConectaRiesgoAI.Api.Persistence;
+using ConectaRiesgoAI.Api.Persistence.Seeding;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -91,6 +92,10 @@ if (app.Environment.IsDevelopment())
         o.SwaggerEndpoint("/swagger/v1/swagger.json", "ConectaRiesgoAI v1");
         o.RoutePrefix = "swagger";
     });
+
+    // Para que login funcione desde el primer arranque sin pasar por /auth/registro.
+    using var scope = app.Services.CreateScope();
+    await DatosDemo.SembrarAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>());
 }
 
 // Comprobación de vida. Sirve para saber si la API está arriba sin depender de la base de datos.
