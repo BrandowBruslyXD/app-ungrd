@@ -1,6 +1,6 @@
+import { useTranslation } from 'react-i18next';
 import { ShieldCheck, ShieldAlert, ClipboardCheck, BadgeCheck } from 'lucide-react';
 import type { TrustLevel } from '@/types';
-import { TRUST_LEVEL_LABELS } from '@/types';
 
 const config: Record<TrustLevel, { icon: typeof ShieldAlert; bg: string; text: string; ring: string }> = {
   autorreportado: { icon: ShieldAlert, bg: 'bg-amber-50', text: 'text-amber-700', ring: 'ring-amber-200' },
@@ -15,8 +15,9 @@ interface TrustBadgeProps {
 }
 
 export default function TrustBadge({ level, size = 'sm' }: TrustBadgeProps) {
+  const { t } = useTranslation();
   const { icon: Icon, bg, text, ring } = config[level];
-  const label = TRUST_LEVEL_LABELS[level];
+  const label = t(`trust.${level}`);
 
   return (
     <span
@@ -24,7 +25,7 @@ export default function TrustBadge({ level, size = 'sm' }: TrustBadgeProps) {
         size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-sm'
       }`}
     >
-      <Icon className={size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
+      <Icon className={size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5'} aria-hidden="true" />
       {label}
     </span>
   );

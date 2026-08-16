@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   Droplets,
   Mountain,
@@ -26,15 +27,6 @@ const colors: Record<EmergencyType, string> = {
   Otro: 'text-slate-500 bg-slate-50',
 };
 
-const labels: Record<EmergencyType, string> = {
-  Inundacion: 'Inundación',
-  Deslizamiento: 'Deslizamiento',
-  Incendio: 'Incendio',
-  ViaAfectada: 'Vía afectada',
-  ColapsoEstructural: 'Colapso estructural',
-  Otro: 'Otro',
-};
-
 interface Props {
   type: EmergencyType;
   size?: 'sm' | 'md' | 'lg';
@@ -42,18 +34,18 @@ interface Props {
 }
 
 export default function EmergencyIcon({ type, size = 'md', showLabel }: Props) {
+  const { t } = useTranslation();
   const Icon = icons[type];
   const sizeMap = { sm: 'h-8 w-8', md: 'h-10 w-10', lg: 'h-14 w-14' };
   const iconSize = { sm: 'h-4 w-4', md: 'h-5 w-5', lg: 'h-7 w-7' };
+  const label = t(`emergencyType.${type}`);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" role="img" aria-label={label}>
       <div className={`flex items-center justify-center rounded-xl ${sizeMap[size]} ${colors[type]}`}>
-        <Icon className={iconSize[size]} />
+        <Icon className={iconSize[size]} aria-hidden="true" />
       </div>
-      {showLabel && <span className="text-sm font-medium text-slate-700">{labels[type]}</span>}
+      {showLabel && <span className="text-sm font-medium text-slate-700">{label}</span>}
     </div>
   );
 }
-
-export { labels as emergencyLabels };

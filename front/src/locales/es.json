@@ -15,12 +15,30 @@
       "summary": "{{families}} familia(s) y {{persons}} persona(s) en {{address}}."
     },
     "steps": {
-      "1": { "title": "Contexto", "short": "Op." },
-      "2": { "title": "Vivienda", "short": "Viv." },
-      "3": { "title": "Personas", "short": "Pers." },
-      "4": { "title": "Daños", "short": "Daños" },
-      "5": { "title": "Necesidades", "short": "Nec." },
-      "6": { "title": "Revisión", "short": "Enviar" }
+      "1": {
+        "title": "Contexto",
+        "short": "Op."
+      },
+      "2": {
+        "title": "Vivienda",
+        "short": "Viv."
+      },
+      "3": {
+        "title": "Personas",
+        "short": "Pers."
+      },
+      "4": {
+        "title": "Daños",
+        "short": "Daños"
+      },
+      "5": {
+        "title": "Necesidades",
+        "short": "Nec."
+      },
+      "6": {
+        "title": "Revisión",
+        "short": "Enviar"
+      }
     },
     "eventTypes": {
       "inundacion": "Inundación",
@@ -440,5 +458,308 @@
       "decreaseOccupants": "Disminuir ocupantes presentes",
       "increaseOccupants": "Aumentar ocupantes presentes"
     }
+  },
+  "brand": {
+    "conecta": "Conecta",
+    "riesgo": "Riesgo",
+    "full": "ConectaRiesgo"
+  },
+  "app": {
+    "loadingPage": "Cargando la pantalla…"
+  },
+  "nav": {
+    "home": "Inicio",
+    "myReports": "Mis Reportes",
+    "report": "Reportar",
+    "aid": "Ayudas",
+    "alerts": "Alertas",
+    "triagePanel": "Panel de Triage",
+    "myPanel": "Mi Panel",
+    "newCensus": "Nuevo Censo",
+    "incident": "Incidente",
+    "evaluateHousing": "Evaluar Vivienda"
+  },
+  "roles": {
+    "Ciudadano": "Ciudadano",
+    "Gestor": "Gestor CMGRD",
+    "Admin": "Administrador",
+    "Brigadista": "Brigadista",
+    "Socorro": "Org. Socorro"
+  },
+  "header": {
+    "menu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "closeRoleMenu": "Cerrar menú de rol",
+    "changeView": "Cambiar vista (demo)",
+    "view": "Vista: {{role}}",
+    "roleMenu": "Cambiar rol de demostración"
+  },
+  "status": {
+    "Reportado": "Reportado",
+    "Verificado": "Verificado",
+    "Asignado": "Asignado",
+    "EnAtencion": "En atención",
+    "Atendido": "Atendido",
+    "Cerrado": "Cerrado"
+  },
+  "prioridad": {
+    "Baja": "Baja",
+    "Media": "Media",
+    "Alta": "Alta"
+  },
+  "emergencyType": {
+    "Inundacion": "Inundación",
+    "Deslizamiento": "Deslizamiento",
+    "Incendio": "Incendio",
+    "ViaAfectada": "Vía afectada",
+    "ColapsoEstructural": "Colapso estructural",
+    "Otro": "Otro"
+  },
+  "trust": {
+    "autorreportado": "Autorreportado",
+    "verificado": "Verificado por entidad",
+    "censado": "Censado por brigadista",
+    "avalado": "Avalado por CMGRD"
+  },
+  "time": {
+    "lessThanOneHour": "Hace menos de 1h",
+    "hoursAgo": "Hace {{hours}}h",
+    "days": "{{days}}d",
+    "lessThanOneHourShort": "<1h",
+    "hoursShort": "{{hours}}h"
+  },
+  "citizen": {
+    "satelliteMonitoring": "Monitoreo activo satelital",
+    "heroTitle": "Tu comunidad, protegida.",
+    "heroSubtitle": "Reporta emergencias, recibe ayuda y haz seguimiento en tiempo real.",
+    "activeReports": "{{count}} reportes activos",
+    "responseTime": "Respuesta: 2h 14min",
+    "reportEmergency": "Reportar emergencia",
+    "reportEmergencyDesc": "Foto, ubicación y descripción",
+    "myReports": "Mis reportes",
+    "myReportsDesc": "Seguimiento de tus reportes",
+    "availableAid": "Ayudas disponibles",
+    "availableAidDesc": "Subsidios, trámites y documentos",
+    "activeAlerts": "Alertas activas",
+    "activeAlertsDesc": "Alertas en tu zona",
+    "criticalAlert": "Alerta crítica activa",
+    "zoneMap": "Mapa de tu zona",
+    "interactiveMap": "Mapa interactivo con emergencias cercanas",
+    "nearbyEmergencies": "Emergencias cercanas",
+    "seeAll": "Ver todas",
+    "reportsAttended": "Reportes atendidos",
+    "verified": "Verificados",
+    "spendingTracked": "Gasto rastreado",
+    "attendedValue": "1,247",
+    "verifiedValue": "94%",
+    "spendingValue": "$2.1B"
+  },
+  "wizard": {
+    "steps": {
+      "reportType": "Tipo de reporte",
+      "whatHappened": "¿Qué pasó?",
+      "yourSituation": "Tu situación",
+      "whereAreYou": "¿Dónde estás?",
+      "importantNotice": "Aviso importante",
+      "whatDidYouSee": "¿Qué viste?",
+      "tellUsMore": "Cuéntanos más",
+      "whereItHappens": "¿Dónde ocurre?"
+    },
+    "submitted": {
+      "affectedTitle": "Reporte de afectación enviado",
+      "witnessTitle": "Aviso enviado",
+      "affectedBody": "Tu reporte fue recibido y será priorizado para una visita técnica. Un equipo de socorro evaluará tu situación.",
+      "witnessBody": "Tu aviso fue registrado con éxito. Un gestor de emergencias lo revisará pronto.",
+      "trackingNumber": "Tu número de seguimiento",
+      "saveNumber": "Guarda este número para consultar el estado de tu reporte",
+      "selfReported": "Autorreportado",
+      "remember": "Recuerda:",
+      "rememberBody": "Este reporte genera una solicitud de visita técnica. El censo oficial de damnificados es un trámite presencial, realizado por personal identificado del municipio. Nunca pagues por entrar al censo.",
+      "seeMyReports": "Ver mis reportes",
+      "backHome": "Volver al inicio"
+    },
+    "type": {
+      "title": "¿Cuál es tu situación?",
+      "subtitle": "Esto nos permite dirigir tu reporte al equipo correcto",
+      "witnessTitle": "Vi un evento",
+      "witnessBody": "Presencié una emergencia pero yo no soy víctima directa. Quiero avisar para que envíen ayuda.",
+      "witnessBadge": "Aviso rápido",
+      "affectedTitle": "Mi casa o familia está afectada",
+      "affectedBody": "La emergencia afectó mi vivienda o a las personas de mi hogar. Necesito que vengan a evaluar mi situación.",
+      "affectedBadge": "Solicitud de visita"
+    },
+    "emergency": {
+      "affectedTitle": "¿Qué tipo de evento afectó tu hogar?",
+      "witnessTitle": "¿Qué tipo de emergencia viste?",
+      "subtitle": "Selecciona la opción que mejor describe la situación"
+    },
+    "details": {
+      "affectedTitle": "Cuéntanos sobre tu situación",
+      "witnessTitle": "Cuéntanos qué está pasando",
+      "affectedSubtitle": "Describe los daños en tu vivienda y la situación de tu familia",
+      "witnessSubtitle": "Describe la situación con tus propias palabras",
+      "description": "Descripción",
+      "descriptionId": "report-description",
+      "placeholderAffected": "Ejemplo: El agua entró a mi casa y perdimos muebles. Somos 4 personas incluyendo 2 niños. Necesitamos un lugar donde dormir…",
+      "placeholderWitness": "Ejemplo: El río se desbordó y el agua está entrando a las casas. Hay varias familias afectadas…",
+      "minChars": "Mínimo 10 caracteres ({{count}}/10)",
+      "goodDescription": "Perfecto, describe lo mejor que puedas la situación",
+      "contactPhone": "Teléfono de contacto",
+      "phonePlaceholder": "Ej: 310 555 1234",
+      "householdSize": "¿Cuántas personas viven en tu hogar?",
+      "decreaseHousehold": "Quitar una persona",
+      "increaseHousehold": "Agregar una persona",
+      "isHabitable": "¿Tu vivienda es habitable?",
+      "habitableYes": "Sí, puedo quedarme",
+      "habitableNo": "No, está inhabitable",
+      "urgentNeed": "¿Cuál es tu necesidad más urgente?",
+      "needFood": "Alimentos y agua",
+      "needShelter": "Un lugar donde dormir",
+      "needMedical": "Atención médica",
+      "needRescue": "Rescate / evacuación",
+      "howSevere": "¿Qué tan grave es la situación?",
+      "severityMild": "Leve",
+      "severityMildDesc": "Sin heridos",
+      "severityModerate": "Moderado",
+      "severityModerateDesc": "Daños materiales",
+      "severitySevere": "Grave",
+      "severitySevereDesc": "Hay heridos o riesgo",
+      "photoOptional": "Foto (opcional)",
+      "photoSelected": "Foto seleccionada",
+      "photoUpload": "Toca para tomar o subir una foto"
+    },
+    "location": {
+      "affectedTitle": "¿Dónde queda tu vivienda?",
+      "witnessTitle": "¿Dónde está ocurriendo?",
+      "affectedSubtitle": "Necesitamos la dirección exacta para programar la visita técnica",
+      "witnessSubtitle": "Necesitamos saber la ubicación para enviar ayuda",
+      "useGps": "Usar mi ubicación actual",
+      "gpsDetected": "Ubicación detectada correctamente",
+      "gpsHint": "La forma más rápida y precisa",
+      "orAddress": "O escribe la dirección",
+      "addressLabel": "Dirección",
+      "placeholderAffected": "Ej: Cra 5 #12-34, Barrio Los Pinos, Mocoa",
+      "placeholderWitness": "Ej: Vereda El Carmen, municipio de Mocoa",
+      "hintAffected": "Escribe tu dirección completa con barrio o vereda",
+      "hintWitness": "Escribe el nombre de la vereda, barrio o lugar más cercano",
+      "damagePhoto": "Foto de los daños (opcional pero muy útil)",
+      "damagePhotoUpload": "Toca para tomar o subir fotos de los daños"
+    },
+    "disclaimer": {
+      "title": "Aviso importante antes de enviar",
+      "notCensusTitle": "Este reporte NO te inscribe como damnificado",
+      "body1": "Tu reporte genera una <strong>solicitud de visita técnica</strong> para que un equipo de socorro evalúe tu situación. Es el primer paso, pero no es el censo oficial.",
+      "body2": "El <strong>censo de damnificados es un trámite presencial</strong>, realizado casa por casa por personal identificado y uniformado del municipio, con formatos oficiales.",
+      "body3": "<strong>Nunca pagues para entrar al censo.</strong> El trámite es completamente gratuito. Si alguien te pide dinero o datos bancarios a cambio de inscribirte, es una estafa. Denuncia al 123.",
+      "whatNext": "¿Qué pasa después de enviar?",
+      "step1": "Tu reporte entra a la cola de visitas del CMGRD y organismos de socorro",
+      "step2": "Un equipo de bomberos, Defensa Civil o Cruz Roja evaluará tu vivienda",
+      "step3": "Si procede, un brigadista acreditado realizará el censo oficial en tu hogar",
+      "step4": "Podrás consultar el avance con tu número de seguimiento",
+      "accept": "Entiendo que este reporte <strong>no me inscribe como damnificado</strong> y que el censo oficial es presencial. Confirmo que la información que proporcioné es verídica."
+    },
+    "nav": {
+      "back": "Anterior",
+      "cancel": "Cancelar",
+      "next": "Siguiente",
+      "submitVisit": "Enviar solicitud de visita",
+      "submitNotice": "Enviar aviso"
+    }
+  },
+  "myReports": {
+    "title": "Mis Reportes",
+    "subtitle": "Seguimiento de todas tus emergencias reportadas",
+    "newReport": "Nuevo reporte",
+    "total": "Total",
+    "active": "Activos",
+    "verified": "Verificados",
+    "witness": "Testigo",
+    "affected": "Afectado",
+    "updates": "{{count}} actualizaciones"
+  },
+  "reportDetail": {
+    "notFound": "Reporte no encontrado",
+    "notFoundBody": "El reporte {{id}} no existe o fue eliminado.",
+    "seeMyReports": "Ver mis reportes",
+    "backToMyReports": "Mis reportes",
+    "copyId": "Copiar número de seguimiento",
+    "copied": "Número copiado",
+    "reportedOn": "Reportado el {{date}}",
+    "cycleProgress": "Progreso del ciclo",
+    "received": "Recibido",
+    "verified": "Verificado",
+    "inCare": "En atención",
+    "resolved": "Resuelto",
+    "satelliteVerified": "Verificado por satélite",
+    "satelliteBody": "Datos de NASA/Copernicus confirman la situación reportada en esta zona.",
+    "seeSatellite": "Ver datos satelitales",
+    "publicSpending": "Gasto público",
+    "spendingBody": "Destinados por la alcaldía para atender esta emergencia",
+    "seeSecop": "Ver en SECOP",
+    "history": "Historial del reporte",
+    "share": "Compartir reporte",
+    "seeAid": "Ver ayudas disponibles"
+  },
+  "alerts": {
+    "title": "Alertas Activas",
+    "inYourZone_one": "{{count}} alerta en tu zona",
+    "inYourZone_other": "{{count}} alertas en tu zona",
+    "sourceCitizen": "Reporte ciudadano",
+    "sourceSatellite": "Datos satelitales",
+    "sourceSocial": "Redes sociales (IA)",
+    "sourceOfficial": "Alerta oficial",
+    "requiredAction": "Acción requerida: Si estás en la zona indicada, toma precauciones y sigue las instrucciones de las autoridades."
+  },
+  "aid": {
+    "title": "Ayudas Disponibles",
+    "subtitle": "Encuentra subsidios, trámites y servicios. Te decimos qué necesitas y a dónde ir.",
+    "noticeTitle": "No necesitas tener todos los documentos",
+    "noticeBody": "Si perdiste tus documentos en la emergencia, cada ayuda incluye alternativas. Las entidades están obligadas a atenderte incluso sin cédula en situaciones de desastre.",
+    "searchLabel": "Buscar ayuda",
+    "searchPlaceholder": "Buscar ayuda, entidad o trámite…",
+    "requirements": "Requisitos",
+    "lostDocs": "¿Perdiste tus documentos?",
+    "available": "Disponible",
+    "exhausted": "Agotado",
+    "upcoming": "Próximamente",
+    "expandAid": "Ver detalles de {{title}}",
+    "collapseAid": "Ocultar detalles de {{title}}",
+    "expandCategory": "Abrir categoría {{title}}",
+    "collapseCategory": "Cerrar categoría {{title}}",
+    "noResults": "No se encontraron ayudas para \"{{query}}\"",
+    "clearSearch": "Limpiar búsqueda"
+  },
+  "manager": {
+    "title": "Panel de Emergencias",
+    "subtitle": "Triage para gestores y autoridades",
+    "online": "En línea",
+    "statReports": "Reportes",
+    "statActive": "Activas",
+    "statResolvedToday": "Resueltos hoy",
+    "statAvgTime": "Tiempo prom.",
+    "statToVerify": "Por verificar",
+    "statResources": "Recursos",
+    "statReportsValue": "1,247",
+    "statActiveValue": "23",
+    "statResolvedValue": "8",
+    "statAvgTimeValue": "2h 14m",
+    "statToVerifyValue": "15",
+    "statResourcesValue": "47",
+    "opsMap": "Mapa operativo",
+    "mapHint": "Reportes, satélite, recursos",
+    "legendCritical": "Crítico",
+    "legendHigh": "Alto",
+    "legendMedium": "Medio",
+    "legendResolved": "Resuelto",
+    "triageBoard": "Tablero de triage",
+    "colReported": "Reportados",
+    "colVerified": "Verificados",
+    "colAssigned": "Asignados",
+    "colInCare": "En atención",
+    "colAttended": "Atendidos",
+    "colClosed": "Cerrados",
+    "emptyColumn": "Sin reportes",
+    "expandColumn": "Abrir columna {{label}}",
+    "collapseColumn": "Cerrar columna {{label}}"
   }
 }

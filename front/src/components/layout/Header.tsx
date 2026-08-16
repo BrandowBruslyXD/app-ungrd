@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Shield,
   Menu,
@@ -15,40 +16,6 @@ import {
   Flame,
 } from 'lucide-react';
 import type { DemoView } from '@/types';
-
-const citizenLinks = [
-  { to: '/', label: 'Inicio', icon: Home },
-  { to: '/mis-reportes', label: 'Mis Reportes', icon: ClipboardList },
-  { to: '/reportar', label: 'Reportar', icon: FileText },
-  { to: '/ayudas', label: 'Ayudas', icon: HandHeart },
-  { to: '/alertas', label: 'Alertas', icon: Bell },
-];
-
-const managerLinks = [
-  { to: '/gestor', label: 'Panel de Triage', icon: LayoutDashboard },
-  { to: '/alertas', label: 'Alertas', icon: Bell },
-];
-
-const rescuerLinks = [
-  { to: '/rescatista', label: 'Mi Panel', icon: LayoutDashboard },
-  { to: '/rescatista/censo', label: 'Nuevo Censo', icon: Plus },
-  { to: '/alertas', label: 'Alertas', icon: Bell },
-];
-
-const socorroLinks = [
-  { to: '/socorro', label: 'Mi Panel', icon: LayoutDashboard },
-  { to: '/socorro/incidente', label: 'Incidente', icon: Flame },
-  { to: '/socorro/evaluacion', label: 'Evaluar Vivienda', icon: Home },
-  { to: '/alertas', label: 'Alertas', icon: Bell },
-];
-
-const roleLabels: Record<DemoView, string> = {
-  Ciudadano: 'Ciudadano',
-  Gestor: 'Gestor CMGRD',
-  Admin: 'Administrador',
-  Brigadista: 'Brigadista',
-  Socorro: 'Org. Socorro',
-};
 
 interface HeaderProps {
   role: DemoView;
@@ -66,10 +33,37 @@ const roleHome: Record<DemoView, string> = {
 const demoRoles: DemoView[] = ['Ciudadano', 'Socorro', 'Brigadista', 'Gestor'];
 
 export default function Header({ role, onRoleChange }: HeaderProps) {
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const citizenLinks = [
+    { to: '/', label: t('nav.home'), icon: Home },
+    { to: '/mis-reportes', label: t('nav.myReports'), icon: ClipboardList },
+    { to: '/reportar', label: t('nav.report'), icon: FileText },
+    { to: '/ayudas', label: t('nav.aid'), icon: HandHeart },
+    { to: '/alertas', label: t('nav.alerts'), icon: Bell },
+  ];
+
+  const managerLinks = [
+    { to: '/gestor', label: t('nav.triagePanel'), icon: LayoutDashboard },
+    { to: '/alertas', label: t('nav.alerts'), icon: Bell },
+  ];
+
+  const rescuerLinks = [
+    { to: '/rescatista', label: t('nav.myPanel'), icon: LayoutDashboard },
+    { to: '/rescatista/censo', label: t('nav.newCensus'), icon: Plus },
+    { to: '/alertas', label: t('nav.alerts'), icon: Bell },
+  ];
+
+  const socorroLinks = [
+    { to: '/socorro', label: t('nav.myPanel'), icon: LayoutDashboard },
+    { to: '/socorro/incidente', label: t('nav.incident'), icon: Flame },
+    { to: '/socorro/evaluacion', label: t('nav.evaluateHousing'), icon: Home },
+    { to: '/alertas', label: t('nav.alerts'), icon: Bell },
+  ];
 
   function switchRole(r: DemoView) {
     onRoleChange(r);
@@ -93,7 +87,7 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
             <Shield className="h-5 w-5 text-ungrd-900" />
           </div>
           <span className="text-lg font-bold text-white">
-            Conecta<span className="text-gold-400">Riesgo</span>
+            {t('brand.conecta')}<span className="text-gold-400">{t('brand.riesgo')}</span>
           </span>
         </Link>
 
@@ -120,28 +114,42 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
         <div className="flex items-center gap-2">
           <div className="relative">
             <button
+              type="button"
               onClick={() => setRoleMenuOpen(!roleMenuOpen)}
               className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ungrd-100 transition-colors hover:bg-white/10 md:flex"
+              aria-expanded={roleMenuOpen}
+              aria-haspopup="menu"
+              aria-label={t('header.roleMenu')}
             >
               <div className="h-2 w-2 rounded-full bg-gold-400" />
-              {roleLabels[role]}
+              {t(`roles.${role}`)}
               <ChevronDown className="h-3.5 w-3.5" />
             </button>
             {roleMenuOpen && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setRoleMenuOpen(false)} />
-                <div className="absolute right-0 top-full z-50 mt-1 w-56 rounded-xl border border-slate-200 bg-white py-1 shadow-lg animate-scale-in">
-                  <p className="px-3 py-1.5 text-xs font-medium text-slate-400">Cambiar vista (demo)</p>
+                <button
+                  type="button"
+                  className="fixed inset-0 z-40 cursor-default bg-transparent"
+                  aria-label={t('header.closeRoleMenu')}
+                  onClick={() => setRoleMenuOpen(false)}
+                />
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full z-50 mt-1 w-56 rounded-xl border border-slate-200 bg-white py-1 shadow-lg animate-scale-in"
+                >
+                  <p className="px-3 py-1.5 text-xs font-medium text-slate-400">{t('header.changeView')}</p>
                   {demoRoles.map((r) => (
                     <button
                       key={r}
+                      type="button"
+                      role="menuitem"
                       onClick={() => { switchRole(r); setRoleMenuOpen(false); }}
                       className={`flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors ${
                         r === role ? 'bg-ungrd-50 text-ungrd-700 font-medium' : 'text-slate-600 hover:bg-slate-50'
                       }`}
                     >
                       <div className={`h-2 w-2 rounded-full ${r === role ? 'bg-ungrd-600' : 'bg-slate-300'}`} />
-                      {roleLabels[r]}
+                      {t(`roles.${r}`)}
                     </button>
                   ))}
                 </div>
@@ -150,9 +158,11 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
           </div>
 
           <button
+            type="button"
             onClick={() => setMenuOpen(!menuOpen)}
             className="rounded-lg p-2 text-ungrd-100 transition-colors hover:bg-white/10 md:hidden"
-            aria-label="Menú"
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? t('header.closeMenu') : t('header.menu')}
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -161,17 +171,18 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
 
       {menuOpen && (
         <div className="border-t border-ungrd-500/30 bg-ungrd-700 px-4 pb-4 pt-2 md:hidden animate-slide-up">
-          <p className="mb-2 text-xs font-medium text-ungrd-200">Vista: {roleLabels[role]}</p>
+          <p className="mb-2 text-xs font-medium text-ungrd-200">{t('header.view', { role: t(`roles.${role}`) })}</p>
           <div className="mb-3 flex flex-wrap gap-1">
             {demoRoles.map((r) => (
               <button
                 key={r}
+                type="button"
                 onClick={() => { switchRole(r); setMenuOpen(false); }}
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                   r === role ? 'bg-gold-500 text-ungrd-900' : 'bg-ungrd-600 text-ungrd-200'
                 }`}
               >
-                {roleLabels[r]}
+                {t(`roles.${r}`)}
               </button>
             ))}
           </div>
