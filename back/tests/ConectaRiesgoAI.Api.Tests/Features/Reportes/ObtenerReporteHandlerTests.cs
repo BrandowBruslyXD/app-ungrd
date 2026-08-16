@@ -163,4 +163,18 @@ public class ObtenerReporteHandlerTests
         Assert.Equal("RPT-2026-08-15-0006", respuesta.Codigo);
         Assert.Empty(respuesta.Transparencia);
     }
+
+    [Fact]
+    public async Task Handle_UsuarioConUnSoloNombre_NoAbrevia()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Usuarios.Add(NuevoUsuario(1, "Ana"));
+        contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0007", 1));
+        await contexto.SaveChangesAsync();
+        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso());
+
+        var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0007"), CancellationToken.None);
+
+        Assert.Equal("Ana", respuesta.ReportadoPor);
+    }
 }

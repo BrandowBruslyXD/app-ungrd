@@ -137,13 +137,64 @@ public class SecopClientTests
         Assert.Equal(1, handler.VecesLlamado);
     }
 
+    [Fact]
+    public async Task ConsultarPorMunicipioAsync_SecopResponde200ConRegistrosInvalidos_LosFiltraYUsaRespaldoSiQuedaVacio()
+    {
+        const string cuerpo = """
+            [
+              { "objeto_del_contrato": "", "valor_del_contrato": "x", "fecha_de_firma": "2024-01-01", "nombre_entidad": "Entidad" },
+              { "objeto_del_contrato": "Obra válida", "valor_del_contrato": "no-numero", "fecha_de_firma": "2024-01-01", "nombre_entidad": "Entidad" }
+            ]
+            """;
+        var cliente = Crear(
+            new HandlerDeRespuestaFija(HttpStatusCode.OK, cuerpo),
+            new SecopOptions { UsarRespaldoSiFalla = true });
+
+        var resultado = await cliente.ConsultarPorMunicipioAsync("Bogotá", CancellationToken.None);
+
+        Assert.NotEmpty(resultado);
+    }
+
+    [Fact]
+    public async Task ConsultarPorMunicipioAsync_CancelacionDelCaller_PropagaOperationCanceledException()
+    {
+        var cliente = Crear(new HandlerQueEsperaInfinito());
+        using CancellationTokenSource cts = new();
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => cliente.ConsultarPorMunicipioAsync("Bogotá", cts.Token));
+    }
+
+    [Fact]
+    public async Task ConsultarPorMunicipioAsync_ConAppToken_EnviaLaCabeceraXAppToken()
+    {
+        var handler = new HandlerDeRespuestaFija(HttpStatusCode.OK, "[]");
+        var cliente = Crear(handler, new SecopOptions { AppToken = "token-secreto" });
+
+        await cliente.ConsultarPorMunicipioAsync("Bogotá", CancellationToken.None);
+
+        Assert.Equal("token-secreto", handler.UltimaPeticion?.Headers.GetValues("X-App-Token").Single());
+    }
+
+    private class HandlerQueEsperaInfinito : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+    }
+
     private class HandlerDeRespuestaFija(HttpStatusCode codigo, string cuerpo) : HttpMessageHandler
     {
         public int VecesLlamado { get; private set; }
+        public HttpRequestMessage? UltimaPeticion { get; private set; }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             VecesLlamado++;
+            UltimaPeticion = request;
             return Task.FromResult(new HttpResponseMessage(codigo)
             {
                 Content = new StringContent(cuerpo, System.Text.Encoding.UTF8, "application/json")
