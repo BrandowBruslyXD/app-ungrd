@@ -340,6 +340,48 @@ error del servidor, es un fallo esperado de una integración externa.
 
 ---
 
+## 6. Ingesta (bot de WhatsApp)
+
+Contrato aparte de la sección 2: el bot no tiene sesión de usuario, se autentica como servicio, y
+la ubicación llega como texto libre, no como GPS. Detalle en
+[docs/INTEGRACION-BOT-BACKEND.md](INTEGRACION-BOT-BACKEND.md).
+
+### `POST /api/ingesta/reportes` 🔑 clave de servicio
+
+Autenticado con la cabecera `X-Api-Key` (no `Authorization: Bearer`). Crea el `Usuario` por
+teléfono la primera vez que ese número escribe (`Rol=Ciudadano`, sin contraseña,
+`OrigenRegistro=WhatsApp`); si ya existe, lo reutiliza.
+
+**Petición**
+```json
+{
+  "telefono": "573001234567",
+  "nombreContacto": "María R.",
+  "clase": "afectacion_propia",
+  "tipo": "Inundacion",
+  "descripcion": "Se inundó la casa por la creciente del río",
+  "ubicacionTexto": "Soacha, Villa Mercedes, frente a la cancha",
+  "nivelDano": "Averiada — NO habitable",
+  "necesidad": "AHE alimentaria",
+  "urlFoto": null
+}
+```
+
+`clase` es `afectacion_propia` \| `aviso_evento` (snake_case, tal como lo habla el bot — no se
+traduce a los valores de la sección "Valores permitidos"). `tipo` sí usa los valores de esa
+sección. `nivelDano` y `necesidad` no tienen columna propia todavía: se anexan al texto de
+`descripcion`.
+
+**Respuesta `201`**
+```json
+{ "codigo": "RPT-2026-08-16-0001", "estado": "Reportado" }
+```
+
+**Respuesta `401`** — falta `X-Api-Key` o la clave no es válida, con la forma estándar de error.
+No se crea ningún reporte.
+
+---
+
 ## Cómo trabajar con esto sin bloquearse
 
 **Frontend:** copien los ejemplos de respuesta de este documento a `src/mocks/` **tal cual están** y construyan contra ellos. Cuando el backend avise que un endpoint está listo, solo cambian el origen de datos en `src/api/`. No esperen a nadie.

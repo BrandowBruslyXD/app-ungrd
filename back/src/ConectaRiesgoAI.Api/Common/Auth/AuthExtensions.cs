@@ -1,6 +1,7 @@
 using System.Text;
 using ConectaRiesgoAI.Api.Common.Errors;
 using ConectaRiesgoAI.Api.Domain.Enums;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -16,6 +17,9 @@ public static class AuthExtensions
 
         /// <summary>Solo Admin.</summary>
         public const string Admin = nameof(Admin);
+
+        /// <summary>Bot de WhatsApp autenticado con clave de servicio (X-Api-Key), no con JWT.</summary>
+        public const string ServicioIngesta = nameof(ServicioIngesta);
     }
 
     public static IServiceCollection AgregarAutenticacion(
@@ -30,6 +34,11 @@ public static class AuthExtensions
         services.AddHttpContextAccessor();
         services.AddScoped<IUsuarioActual, UsuarioActual>();
         services.AddScoped<IGeneradorTokenJwt, GeneradorTokenJwt>();
+
+        _ = configuration.GetSection(OpcionesApiKeyIngesta.Seccion).Get<OpcionesApiKeyIngesta>()
+            ?? throw new InvalidOperationException(
+                "Falta la sección 'IngestaBot' en la configuración. Revisa appsettings.Development.json.");
+        services.Configure<OpcionesApiKeyIngesta>(configuration.GetSection(OpcionesApiKeyIngesta.Seccion));
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(o =>
@@ -65,7 +74,9 @@ public static class AuthExtensions
                             new RespuestaError("No tiene el rol necesario para esta acción"));
                     }
                 };
-            });
+            })
+            .AddScheme<AuthenticationSchemeOptions, AutenticacionApiKeyHandler>(
+                AutenticacionApiKeyHandler.Esquema, _ => { });
 
         services.AddAuthorization(o =>
         {
@@ -73,6 +84,9 @@ public static class AuthExtensions
                 p.RequireRole(nameof(Rol.Gestor), nameof(Rol.Admin)));
             o.AddPolicy(Politicas.Admin, p =>
                 p.RequireRole(nameof(Rol.Admin)));
+            o.AddPolicy(Politicas.ServicioIngesta, p => p
+                .AddAuthenticationSchemes(AutenticacionApiKeyHandler.Esquema)
+                .RequireAuthenticatedUser());
         });
 
         return services;

@@ -26,7 +26,16 @@ builder.Services.ConfigureHttpJsonOptions(o =>
 
 // --- Base de datos -------------------------------------------------------
 builder.Services.AddDbContext<AppDbContext>(o =>
-    o.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+{
+    if (builder.Environment.IsEnvironment("Testing"))
+    {
+        o.UseInMemoryDatabase("ConectaRiesgoAiTests");
+    }
+    else
+    {
+        o.UseNpgsql(builder.Configuration.GetConnectionString("Postgres"));
+    }
+});
 
 // --- MediatR y validación ------------------------------------------------
 builder.Services.AddMediatR(cfg =>
@@ -143,3 +152,6 @@ app.MapGet("/api/health", health).WithName("HealthApi").WithTags("Sistema");
 app.MapEndpointsDeSlices();
 
 app.Run();
+
+/// <summary>Expuesto para tests de integración con <c>WebApplicationFactory</c>.</summary>
+public partial class Program;
