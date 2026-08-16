@@ -1,4 +1,6 @@
 using ConectaRiesgoAI.Api.Domain.Entities;
+using ConectaRiesgoAI.Api.Domain.Enums;
+using ConectaRiesgoAI.Api.Integrations.Nasa;
 using ConectaRiesgoAI.Api.Integrations.Secop;
 using ConectaRiesgoAI.Api.Persistence;
 using MediatR;
@@ -7,9 +9,12 @@ using Microsoft.EntityFrameworkCore;
 namespace ConectaRiesgoAI.Api.Features.Reportes.ObtenerReporte;
 
 /// <summary>Detalle completo de un reporte: cronología, verificación satelital y transparencia.</summary>
-public class ObtenerReporteHandler(AppDbContext context, ISecopClient secopClient)
+public class ObtenerReporteHandler(AppDbContext context, ISecopClient secopClient, INasaFirmsClient nasaFirmsClient)
     : IRequestHandler<ObtenerReporteQuery, ObtenerReporteResponse>
 {
+    /// <summary>Radio de confirmación satelital para un reporte (issue #18); coincide con el ejemplo de CONTRATO-API.md.</summary>
+    private const double RadioConfirmacionSatelitalKm = 5;
+
     /// <exception cref="KeyNotFoundException">No existe un reporte con ese código; el manejador global lo traduce a 404.</exception>
     public async Task<ObtenerReporteResponse> Handle(ObtenerReporteQuery query, CancellationToken cancellationToken)
     {
@@ -27,6 +32,7 @@ public class ObtenerReporteHandler(AppDbContext context, ISecopClient secopClien
         VerificacionSatelital? verificacion = reporte.VerificacionesSatelitales
             .OrderByDescending(v => v.ConsultadoEn)
             .FirstOrDefault();
+        verificacion ??= await VerificarSatelitalmenteSiAplica(reporte, cancellationToken);
 
         return new ObtenerReporteResponse(
             reporte.Codigo,
@@ -53,6 +59,43 @@ public class ObtenerReporteHandler(AppDbContext context, ISecopClient secopClien
             transparencia
                 .Select(c => new TransparenciaItemResponse(c.Objeto, c.Valor, c.Anio, c.Entidad))
                 .ToList());
+    }
+
+    /// <summary>
+    /// Primera vez que se pide el detalle de un reporte de incendio con coordenadas: consulta
+    /// NASA FIRMS y guarda el resultado en <see cref="VerificacionSatelital"/> para no volver a
+    /// consultarlo (issue #18). Solo aplica a incendios (ver <c>VerificacionSatelital.cs</c>).
+    /// <see cref="INasaFirmsClient"/> nunca lanza, así que un NASA FIRMS caído o sin MAP_KEY solo
+    /// deja el bloque satelital en <c>null</c>, sin persistir nada — se reintentará en la
+    /// siguiente consulta del reporte.
+    /// </summary>
+    private async Task<VerificacionSatelital?> VerificarSatelitalmenteSiAplica(Reporte reporte, CancellationToken cancellationToken)
+    {
+        if (reporte.Tipo != TipoReporte.Incendio || reporte.Latitud is null || reporte.Longitud is null)
+        {
+            return null;
+        }
+
+        ResultadoVerificacionSatelital? resultado = await nasaFirmsClient.ConsultarFocosDeCalorAsync(
+            reporte.Latitud.Value, reporte.Longitud.Value, RadioConfirmacionSatelitalKm, cancellationToken);
+        if (resultado is null)
+        {
+            return null;
+        }
+
+        VerificacionSatelital verificacion = new()
+        {
+            ReporteId = reporte.Id,
+            Confirmado = resultado.Confirmado,
+            FocosDetectados = resultado.FocosDetectados,
+            DistanciaMasCercanaKm = resultado.DistanciaMasCercanaKm,
+            Detalle = resultado.Detalle
+        };
+
+        context.VerificacionesSatelitales.Add(verificacion);
+        await context.SaveChangesAsync(cancellationToken);
+
+        return verificacion;
     }
 
     /// <summary>

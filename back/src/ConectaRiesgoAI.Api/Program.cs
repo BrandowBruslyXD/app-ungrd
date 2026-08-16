@@ -4,6 +4,7 @@ using ConectaRiesgoAI.Api.Common.Behaviors;
 using ConectaRiesgoAI.Api.Common.Endpoints;
 using ConectaRiesgoAI.Api.Common.Errors;
 using ConectaRiesgoAI.Api.Common.Reportes;
+using ConectaRiesgoAI.Api.Integrations.Nasa;
 using ConectaRiesgoAI.Api.Integrations.Secop;
 using ConectaRiesgoAI.Api.Integrations.Storage;
 using ConectaRiesgoAI.Api.Persistence;
@@ -51,11 +52,12 @@ builder.Services.AddScoped<IResolutorUsuarioPorTelefono, ResolutorUsuarioPorTele
 builder.Services.AddScoped<IBuscadorReporteIdempotente, BuscadorReporteIdempotente>();
 
 // --- Integraciones externas -----------------------------------------------
-// Timeout corto (5s, exigido por CONTRATO-API.md): un SECOP caído o lento no puede tumbar
-// la pantalla de detalle. IMemoryCache evita repetir la consulta por el mismo municipio.
-// SizeLimit (junto con el Size=1 de cada entrada en SecopClient) topa cuántos municipios
-// distintos se cachean a la vez: el endpoint de transparencia es público y sin eso un abuso
-// con municipios inventados haría crecer la memoria del proceso sin límite.
+// Timeout corto (5s, exigido por CONTRATO-API.md) en NASA y SECOP: caídos o lentos, ninguno
+// puede tumbar la pantalla de detalle. IMemoryCache evita repetir la consulta SECOP por el mismo
+// municipio. SizeLimit (junto con el Size=1 de cada entrada en SecopClient) topa cuántos
+// municipios distintos se cachean a la vez: el endpoint de transparencia es público y sin eso un
+// abuso con municipios inventados haría crecer la memoria del proceso sin límite. NASA FIRMS no
+// necesita ese caché en memoria: su resultado se persiste por reporte en VerificacionSatelital.
 builder.Services.AddMemoryCache(o => o.SizeLimit = 500);
 builder.Services.Configure<SecopOptions>(builder.Configuration.GetSection(SecopOptions.Seccion));
 builder.Services.AddHttpClient<ISecopClient, SecopClient>(c =>
@@ -64,15 +66,31 @@ builder.Services.AddHttpClient<ISecopClient, SecopClient>(c =>
     c.Timeout = TimeSpan.FromSeconds(5);
 });
 
-// Único endpoint público que dispara una llamada saliente por petición sin autenticación:
-// sin tope de tasa, cualquiera podría usarlo para hacer flood a la API de Datos Abiertos de
-// Colombia (y agotar la cuota del AppToken) desde nuestra infraestructura.
-builder.Services.AddRateLimiter(o => o.AddFixedWindowLimiter("secop", opt =>
+builder.Services.Configure<NasaOptions>(builder.Configuration.GetSection(NasaOptions.Seccion));
+builder.Services.AddHttpClient<INasaFirmsClient, NasaFirmsClient>(c =>
 {
-    opt.PermitLimit = 30;
-    opt.Window = TimeSpan.FromMinutes(1);
-    opt.QueueLimit = 0;
-}));
+    c.BaseAddress = new Uri("https://firms.modaps.eosdis.nasa.gov/");
+    c.Timeout = TimeSpan.FromSeconds(5);
+});
+
+// Únicos endpoints públicos que disparan una llamada saliente por petición sin autenticación:
+// sin tope de tasa, cualquiera podría usarlos para hacer flood a Datos Abiertos de Colombia o a
+// NASA FIRMS (y agotar la cuota del AppToken/MAP_KEY) desde nuestra infraestructura.
+builder.Services.AddRateLimiter(o =>
+{
+    o.AddFixedWindowLimiter("secop", opt =>
+    {
+        opt.PermitLimit = 30;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+    o.AddFixedWindowLimiter("nasa", opt =>
+    {
+        opt.PermitLimit = 30;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+});
 
 // --- Autenticación -------------------------------------------------------
 builder.Services.AgregarAutenticacion(builder.Configuration);

@@ -293,7 +293,21 @@ Parámetros opcionales: `municipio`, `lat`, `lng`, `radioKm`.
 
 ### `GET /api/verificacion/satelital?lat=&lng=&radioKm=` — público
 
-Consulta directa a NASA FIRMS. Útil para probar la integración por separado.
+Consulta directa a NASA FIRMS, sin ligarla a ningún reporte. Útil para probar la integración por separado.
+
+**Respuesta `200`**
+```json
+{
+  "fuente": "NASA FIRMS",
+  "confirmado": true,
+  "focosDetectados": 3,
+  "distanciaMasCercanaKm": 2.1,
+  "detalle": "3 focos de calor detectados a menos de 5 km",
+  "consultadoEn": "2026-08-15T14:40:00Z"
+}
+```
+
+> Si NASA FIRMS falla, tarda o no hay `MAP_KEY` configurada, responde `200` con cuerpo `null` — mismo criterio que el bloque `verificacionSatelital` de `GET /api/reportes/{codigo}`.
 
 ### `GET /api/transparencia/secop?municipio=` — público
 
