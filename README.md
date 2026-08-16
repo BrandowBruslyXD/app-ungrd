@@ -40,7 +40,7 @@ Para confirmar que la API quedó arriba: `curl http://localhost:5000/health` deb
 | Ambiente | URL |
 |:---|:---|
 | Backend (producción) | https://conectariesgoai-api.delightfulsand-f3f95f4d.brazilsouth.azurecontainerapps.io |
-| Frontend (producción) | `conectariesgoai.vercel.app` — el issue #33 (front sin inicializar) está **cerrado**; el front ya tiene siete features construidas (`auth`, `reportes`, `gestor`, `rescatista`, `socorro`, `ungrd`, `publico`). Ver [docs/EXPERIENCIAS-FRONTEND.md](docs/EXPERIENCIAS-FRONTEND.md#despliegue) |
+| Frontend (producción) | **[conectariesgoai.vercel.app](https://conectariesgoai.vercel.app)** — el issue #33 (front sin inicializar) está **cerrado**; el front ya tiene siete features construidas (`auth`, `reportes`, `gestor`, `rescatista`, `socorro`, `ungrd`, `publico`). Ver [docs/EXPERIENCIAS-FRONTEND.md](docs/EXPERIENCIAS-FRONTEND.md#despliegue) |
 
 El backend corre en Azure Container Apps (`conectariesgoai-rg`, región `brazilsouth`) con
 PostgreSQL en Azure Database for PostgreSQL Flexible Server. Cada push a `main` que toque `back/`
