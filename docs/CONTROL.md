@@ -32,7 +32,7 @@ Todas gratuitas. **El repositorio es público: ninguna se escribe en el código.
 | **NASA FIRMS** | Verificación satelital | Gratis | `firms.modaps.eosdis.nasa.gov/api/area/` — llega al correo en minutos | ⬜ |
 | **PostgreSQL** | Base de datos | Burstable B1ms (bajo costo, no gratis) | Azure Database for PostgreSQL Flexible Server, suscripción de Azure del equipo | ✅ |
 | **Cloudinary** | Fotos (subida desde el frontend, `CONTRATO-API.md` sección 2) | Gratis | `cloudinary.com` | ⬜ |
-| **Azure Blob Storage** | Fotos (subida desde el backend, `POST /api/evidencias`, issue #47) | Bajo costo (Standard_LRS) | `infra/aprovisionar-storage.sh` — ya en la suscripción de Azure del equipo | ⬜ falta ejecutar el script |
+| **Azure Blob Storage** | Fotos (subida desde el backend, `POST /api/evidencias`, issue #47) | Bajo costo (Standard_LRS) | `infra/aprovisionar-storage.sh` — ya en la suscripción de Azure del equipo | ✅ |
 | **Bluesky** | Monitoreo de redes | Gratis | Cuenta normal + **contraseña de aplicación** | ⬜ |
 | **SECOP** | Contratos públicos | Gratis | No requiere clave | ✅ |
 | **X / Twitter** | Monitoreo de redes | **~USD 100+/mes** | — | ❌ Descartado |
@@ -95,7 +95,7 @@ Encontrados al revisar el plan. **Sin issue creado todavía.**
 | H3 | **`Integrations/Nasa` e `Integrations/Secop` no existen en `back/`** — la funcionalidad ya está en `servicios/ms-satelital` y `servicios/ms-transparencia`, pero nadie tiene asignado decidir si se migran o si D3 se revierte | 🟠 |
 | H4 | **El monitoreo social no tiene issue** — está construido pero invisible en el tablero | 🟠 |
 | H5 | **No hay issue de tramitar credenciales**, y bloquea a otros | 🟠 |
-| H6 | **#9 (fotos) está etiquetado backend** pero el trabajo real es del frontend | 🟡 |
+| ~~H6~~ | ~~#9 (fotos) está etiquetado backend pero el trabajo real es del frontend~~ → **resuelto**: #9 se cerró documentado como cubierto por `CrearReporte` + `POST /api/evidencias` (issue #47/PR #51); lo que queda es conectar el formulario del issue #12 a ese endpoint | — |
 
 ---
 

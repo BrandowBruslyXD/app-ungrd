@@ -137,7 +137,10 @@ Crea el reporte, genera el `codigo` y registra el primer evento de la cronologí
 ```
 
 > `urlFoto` y `direccion` son **opcionales**. El reporte se crea igual sin ellos.
-> El frontend sube la imagen a Cloudinary primero y aquí solo manda la URL resultante.
+> `urlFoto` se resuelve **antes** de este POST, con cualquiera de dos vías (sección 5): Cloudinary
+> desde el frontend, o `POST /api/evidencias` (`tipo: DanoMaterial`) ya disponible en el backend.
+> Si la subida falla por cualquiera de las dos vías, se manda este POST sin `urlFoto` — nunca se
+> pierde el reporte por culpa de la foto (issue #9).
 
 **Respuesta `201`**
 ```json
