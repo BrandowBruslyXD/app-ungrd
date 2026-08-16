@@ -19,22 +19,29 @@ import EmergencyIcon from '@/components/shared/EmergencyIcon';
 import TrustBadge from '@/components/shared/TrustBadge';
 import BandaPortada from '@/components/ui/BandaPortada';
 import { FOTOS } from '@/lib/fotos';
-import MapaUbicacion, { type PuntoMapa, type TonoMarcador } from '@/components/ui/MapaUbicacion';
+import { fechaImagenGibs } from '@/lib/capasMapa';
+import MapaObservacion, {
+  type MarcadorReporte,
+  type TonoReporte,
+} from '@/features/gestor/components/MapaObservacion';
+import FranjaSenales from '@/features/gestor/components/FranjaSenales';
+import { useObservacionExterna } from '@/features/gestor/hooks/useObservacionExterna';
+import {
+  cruzar,
+  senalDeAlerta,
+  senalDeSismo,
+  type PuntoReporte,
+  type SenalGeolocalizada,
+} from '@/features/gestor/lib/cruce';
 import { useTituloPagina } from '@/hooks/useTituloPagina';
 import type { Prioridad, Report, ReportStatus } from '@/types';
 
-/** Prioridad del contrato → color del marcador y de la leyenda. */
-const TONO_POR_PRIORIDAD: Record<Prioridad, TonoMarcador> = {
+/** Prioridad del contrato → color de la chincheta y de la leyenda. */
+const TONO_POR_PRIORIDAD: Record<Prioridad, TonoReporte> = {
   Alta: 'alta',
   Media: 'media',
   Baja: 'baja',
 };
-
-const LEYENDA: readonly { clave: Prioridad; color: string }[] = [
-  { clave: 'Alta', color: 'bg-alerta-600' },
-  { clave: 'Media', color: 'bg-espera-600' },
-  { clave: 'Baja', color: 'bg-seguro-600' },
-];
 
 function tiempoTranscurrido(iso: string, t: TFunction): string {
   const horas = Math.floor((Date.now() - new Date(iso).getTime()) / 3_600_000);
@@ -132,7 +139,19 @@ function ColumnaTriaje({
 
 export default function ManagerDashboard() {
   const { t } = useTranslation();
-  const reportes = listReportes();
+
+  /*
+   * Se leen una sola vez por visita. Antes se releían en cada render y eso, con
+   * el mapa de por medio, significaba una lista nueva cada vez: los marcadores
+   * se volvían a pintar y el encuadre saltaba al llegar la respuesta de USGS.
+   */
+  const reportes = useMemo(() => listReportes(), []);
+  const { sismos, alertas, cargando } = useObservacionExterna();
+
+  // La fecha se fija al montar: si cambiara sola, Leaflet recargaría todas las
+  // teselas mientras el gestor está mirando el mapa.
+  const fechaSatelite = useMemo(() => fechaImagenGibs(), []);
+  const [sateliteVivo, setSateliteVivo] = useState(true);
 
   useTituloPagina(t('meta.manager.title'), t('meta.manager.description'));
 
@@ -180,19 +199,55 @@ export default function ManagerDashboard() {
     },
   ];
 
-  const puntosMapa = useMemo<PuntoMapa[]>(
-    () =>
-      reportes
-        .filter((r) => r.coordinates.lat !== 0 || r.coordinates.lng !== 0)
-        .map((r) => ({
-          id: r.id,
-          lat: r.coordinates.lat,
-          lng: r.coordinates.lng,
-          titulo: r.title,
-          detalle: r.location,
-          tono: TONO_POR_PRIORIDAD[r.prioridad],
-        })),
+  /*
+   * Un reporte sin coordenadas llega con `0,0`, que es un punto en el Atlántico
+   * frente a África. Pintarlo ahí no sería un error de estilo: sería mandar a
+   * alguien a un sitio equivocado.
+   */
+  const ubicados = useMemo(
+    () => reportes.filter((r) => r.coordinates.lat !== 0 || r.coordinates.lng !== 0),
     [reportes],
+  );
+
+  /*
+   * ── El cruce ────────────────────────────────────────────────────────────
+   * Un sismo del USGS y un reporte ciudadano en el mismo punto se confirman el
+   * uno al otro; una señal sin ningún reporte cerca es una emergencia que nadie
+   * ha reportado todavía. Las dos lecturas salen del mismo cálculo.
+   */
+  const senales = useMemo<SenalGeolocalizada[]>(
+    () => [...sismos.map(senalDeSismo), ...alertas.map(senalDeAlerta)],
+    [sismos, alertas],
+  );
+
+  const cruce = useMemo(() => {
+    const puntos: PuntoReporte[] = ubicados.map((r) => ({
+      id: r.id,
+      latitud: r.coordinates.lat,
+      longitud: r.coordinates.lng,
+    }));
+
+    return cruzar(puntos, senales);
+  }, [ubicados, senales]);
+
+  const marcadores = useMemo<MarcadorReporte[]>(
+    () =>
+      ubicados.map((r) => ({
+        id: r.id,
+        latitud: r.coordinates.lat,
+        longitud: r.coordinates.lng,
+        titulo: r.title,
+        detalle: r.location,
+        tono: TONO_POR_PRIORIDAD[r.prioridad],
+        // Se listan los nombres de las fuentes, sin repetir: dos sismos del USGS
+        // cerca del mismo reporte no son dos corroboraciones distintas.
+        corroboradoPor: [
+          ...new Set(
+            (cruce.corroboracionPorReporte.get(r.id) ?? []).map((senal) => senal.fuente),
+          ),
+        ],
+      })),
+    [ubicados, cruce],
   );
 
   return (
@@ -222,63 +277,65 @@ export default function ManagerDashboard() {
         ))}
       </section>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        {/* ── Mapa operativo ─────────────────────────────────────────────
-            Antes eran cuatro puntos en posiciones fijas de CSS, dos de ellos
-            parpadeando, sobre un degradado gris. No era un mapa: era el dibujo
-            de un mapa. Ahora cada marcador está donde ocurrió el reporte, con
-            el color de su prioridad, y al tocarlo dice cuál es. */}
-        <section className="lg:col-span-1">
-          <h2 className="mb-3 text-lg">{t('manager.opsMap')}</h2>
-          <div className="ficha overflow-hidden">
-            {puntosMapa.length > 0 ? (
-              <MapaUbicacion valor={null} marcadores={puntosMapa} alto="h-64 lg:h-80" />
-            ) : (
-              <p className="flex h-64 items-center justify-center p-6 text-center text-tinta-500 lg:h-80">
-                {t('manager.mapEmpty')}
-              </p>
-            )}
-            <div className="border-t border-papel-borde bg-papel-hueco p-3">
-              <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-                {LEYENDA.map(({ clave, color }) => (
-                  <li key={clave} className="flex items-center gap-1.5">
-                    <span className={`h-3 w-3 shrink-0 rounded-full ${color}`} aria-hidden="true" />
-                    {t(`prioridad.${clave}`)}
-                  </li>
-                ))}
-              </ul>
+      {/* ── Observación del territorio ──────────────────────────────────────
+          El mapa es el protagonista de la pantalla y las tres fuentes van
+          **dentro** de él, no al lado: el valor no está en enseñar tres logos,
+          está en que un sismo del USGS y un reporte ciudadano caigan en el mismo
+          punto y se confirmen. */}
+      <section className="mt-8">
+        <h2 className="mb-3 text-lg">{t('manager.observacion.tituloMapa')}</h2>
+
+        <div className="ficha overflow-hidden">
+          <MapaObservacion
+            reportes={marcadores}
+            sismos={sismos}
+            alertas={alertas}
+            fechaSatelite={fechaSatelite}
+            onSateliteCaido={() => setSateliteVivo(false)}
+          />
+        </div>
+
+        {marcadores.length === 0 && (
+          <p className="mt-2 text-sm text-tinta-600">{t('manager.mapEmpty')}</p>
+        )}
+      </section>
+
+      <FranjaSenales
+        sismos={sismos}
+        alertas={alertas}
+        senalesSinReporte={cruce.senalesSinReporte}
+        fechaSatelite={fechaSatelite}
+        sateliteVivo={sateliteVivo}
+        cargando={cargando}
+      />
+
+      {/* ── Tablero de triaje ───────────────────────────────────────────────
+          En móvil son secciones plegables, una debajo de otra. Desde `lg` son
+          columnas con desplazamiento horizontal, cada una con ancho mínimo para
+          que la tarjeta de adentro no se estruje. */}
+      <section className="mt-8">
+        <h2 className="mb-3 text-lg">{t('manager.triageBoard')}</h2>
+
+        <div className="space-y-2 lg:flex lg:space-x-3 lg:space-y-0 lg:overflow-x-auto lg:pb-2">
+          {columnas.map(({ estado, etiqueta }, indice) => (
+            <div key={estado} className="lg:w-60 lg:shrink-0">
+              <ColumnaTriaje
+                etiqueta={etiqueta}
+                reportes={reportes.filter((r) => r.status === estado)}
+                abiertaPorDefecto={indice === 0}
+              />
             </div>
-          </div>
-        </section>
+          ))}
+        </div>
 
-        {/* ── Tablero de triaje ──────────────────────────────────────────
-            En móvil son secciones plegables, una debajo de otra. Desde `lg`
-            son columnas con desplazamiento horizontal, cada una con ancho
-            mínimo para que la tarjeta de adentro no se estruje. */}
-        <section className="lg:col-span-2">
-          <h2 className="mb-3 text-lg">{t('manager.triageBoard')}</h2>
-
-          <div className="space-y-2 lg:flex lg:space-x-3 lg:space-y-0 lg:overflow-x-auto lg:pb-2">
-            {columnas.map(({ estado, etiqueta }, indice) => (
-              <div key={estado} className="lg:w-60 lg:shrink-0">
-                <ColumnaTriaje
-                  etiqueta={etiqueta}
-                  reportes={reportes.filter((r) => r.status === estado)}
-                  abiertaPorDefecto={indice === 0}
-                />
-              </div>
-            ))}
-          </div>
-
-          <Link
-            to="/alertas"
-            className="ficha-pulsable mt-4 flex items-center gap-3 p-4 font-semibold text-azul-700"
-          >
-            {t('manager.seeAlerts')}
-            <ChevronRight className="ml-auto h-5 w-5 shrink-0" aria-hidden="true" />
-          </Link>
-        </section>
-      </div>
+        <Link
+          to="/alertas"
+          className="ficha-pulsable mt-4 flex items-center gap-3 p-4 font-semibold text-azul-700"
+        >
+          {t('manager.seeAlerts')}
+          <ChevronRight className="ml-auto h-5 w-5 shrink-0" aria-hidden="true" />
+        </Link>
+      </section>
     </div>
   );
 }

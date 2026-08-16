@@ -805,7 +805,69 @@
     "statAttended": "Atendidos o cerrados",
     "mapEmpty": "Todavía no hay reportes con ubicación marcada.",
     "satelliteOk": "Confirmado con imagen satelital",
-    "seeAlerts": "Ver las alertas activas del municipio"
+    "seeAlerts": "Ver las alertas activas del municipio",
+    "observacion": {
+      "tituloMapa": "Observación del territorio",
+      "etiquetaMapa": "Mapa del municipio con los reportes ciudadanos, los sismos del USGS y las alertas de GDACS",
+      "leyendaReportes": "Reportes ciudadanos",
+      "leyendaSenales": "Señales externas",
+      "leyendaPrioridad": {
+        "alta": "Prioridad alta",
+        "media": "Prioridad media",
+        "baja": "Prioridad baja"
+      },
+      "leyendaCorroborado": "Corroborado por una fuente externa",
+      "leyendaSismo": "Sismo, según su magnitud",
+      "leyendaAlerta": "Alerta multiamenaza",
+      "popupSismo": "Sismo de magnitud {{magnitud}}",
+      "popupProfundidad": "Profundidad {{km}} km, {{categoria}}",
+      "popupAlerta": "{{amenaza}}, alerta {{nivel}}",
+      "popupObservado": "Observado {{tiempo}}",
+      "popupCorroborado": "Corroborado por {{fuentes}}",
+      "verEnFuente": "Ver el detalle en {{fuente}}",
+      "profundidad": {
+        "superficial": "superficial",
+        "intermedia": "intermedia",
+        "profunda": "profunda"
+      },
+      "amenaza": {
+        "sismo": "Sismo",
+        "ciclon": "Ciclón tropical",
+        "inundacion": "Inundación",
+        "volcan": "Actividad volcánica",
+        "sequia": "Sequía",
+        "incendio": "Incendio forestal"
+      },
+      "nivel": {
+        "verde": "verde",
+        "naranja": "naranja",
+        "rojo": "roja"
+      },
+      "franjaTitulo": "Fuentes de observación",
+      "estadoRespondiendo": "Respondiendo",
+      "gibsFuente": "NASA GIBS",
+      "gibsQueEs": "Imagen satelital diaria del territorio",
+      "gibsHallazgo": "Última pasada del satélite: {{fecha}}",
+      "gibsCuando": "El satélite pasa dos veces al día y la imagen se publica entre una y tres horas después.",
+      "usgsQueEs": "Red sísmica mundial del servicio geológico de Estados Unidos",
+      "usgsHallazgo_one": "{{count}} sismo en Colombia y su entorno en los últimos siete días",
+      "usgsHallazgo_other": "{{count}} sismos en Colombia y su entorno en los últimos siete días",
+      "usgsCuando": "El más reciente, {{tiempo}}",
+      "gdacsQueEs": "Alertas multiamenaza de Naciones Unidas y la Comisión Europea",
+      "gdacsHallazgo_one": "{{count}} alerta activa que afecta a Colombia",
+      "gdacsHallazgo_other": "{{count}} alertas activas que afectan a Colombia",
+      "gdacsCuando": "La más reciente, {{tiempo}}",
+      "sinReporte_one": "{{count}} señal sin ningún reporte ciudadano cerca: puede haber ocurrido algo donde nadie ha avisado.",
+      "sinReporte_other": "{{count}} señales sin ningún reporte ciudadano cerca: puede haber ocurrido algo donde nadie ha avisado.",
+      "notaAusencia": "Que no haya señal externa cerca de un reporte no lo pone en duda. El satélite pasa dos veces al día, puede haber nubes o ser de noche, y estas fuentes no observan deslizamientos ni crecientes de quebrada.",
+      "haceInstantes": "hace un momento",
+      "haceMinutos_one": "hace {{count}} minuto",
+      "haceMinutos_other": "hace {{count}} minutos",
+      "haceHoras_one": "hace {{count}} hora",
+      "haceHoras_other": "hace {{count}} horas",
+      "haceDias_one": "hace {{count}} día",
+      "haceDias_other": "hace {{count}} días"
+    }
   },
   "ungrd": {
     "sectores": {
@@ -1246,7 +1308,17 @@
     "gpsFallo": "No pudimos tomar su ubicación. Toque el mapa para marcar el punto, o escriba la dirección abajo.",
     "gpsNoDisponible": "Este teléfono no permite tomar la ubicación. Toque el mapa o escriba la dirección.",
     "puntoElegido": "Punto marcado: {{lat}}, {{lng}}",
-    "tituloReporte": "Dónde ocurrió"
+    "tituloReporte": "Dónde ocurrió",
+    "capas": {
+      "grupo": "Capa del mapa",
+      "satelite": "Satélite",
+      "relieve": "Relieve",
+      "calles": "Calles",
+      "pieSatelite": "Imagen VIIRS del {{fecha}} · NASA GIBS",
+      "avisoSatelite": "El satélite pasa dos veces al día y la imagen llega entre una y tres horas después. No es tiempo real.",
+      "pieRelieve": "Relieve sombreado · OpenTopoMap, con datos de OpenStreetMap y SRTM",
+      "pieCalles": "Mapa de calles · colaboradores de OpenStreetMap"
+    }
   },
   "footer": {
     "what": "Plataforma pública para reportar emergencias en Colombia y seguir el caso hasta que alguien lo atienda.",
