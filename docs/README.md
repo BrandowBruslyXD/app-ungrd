@@ -1,6 +1,6 @@
 # Documentación — ConectaRiesgo
 
-Once documentos, cada uno responde una pregunta distinta.
+Doce documentos, cada uno responde una pregunta distinta.
 
 | Documento | Responde | Quién lo usa |
 |:---|:---|:---|
@@ -8,6 +8,7 @@ Once documentos, cada uno responde una pregunta distinta.
 | **[FASES.md](FASES.md)** | ¿Qué se construye, en qué orden, qué se corta? | Todos |
 | **[ARQUITECTURA.md](ARQUITECTURA.md)** | ¿Dónde va cada archivo y por qué? | **Backend y frontend — antes de escribir código** |
 | **[MODELO-DATOS.md](MODELO-DATOS.md)** | ¿Qué datos guarda el sistema? | Backend |
+| **[CANALES-CONVERSACIONALES.md](CANALES-CONVERSACIONALES.md)** | ¿Qué plataformas reciben WhatsApp y las llamadas, y dónde escriben? | **Quien toque el bot o el agente de voz** |
 | **[AGENTE-WHATSAPP.md](AGENTE-WHATSAPP.md)** | ¿Cómo debe comportarse el bot de WhatsApp y qué nunca hace? | Quien opere el bot |
 | **[agente-llamadas.md](agente-llamadas.md)** | El prompt del agente telefónico | Quien opere Dapta |
 | **[INTEGRACION-BOT-BACKEND.md](INTEGRACION-BOT-BACKEND.md)** | ¿Cómo se conectan los bots con el backend? | Backend |
