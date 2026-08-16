@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -18,14 +19,14 @@ public class ListarReportesHandler(AppDbContext context)
     /// </summary>
     public async Task<List<ReporteResumenResponse>> Handle(ListarReportesQuery query, CancellationToken cancellationToken)
     {
-        var reportes = await context.Reportes
+        List<Reporte> reportes = await context.Reportes
             .AsNoTracking()
             .Where(r => query.Tipo == null || r.Tipo == query.Tipo)
             .Where(r => query.Estado == null || r.Estado == query.Estado)
             .Where(r => query.Municipio == null || EF.Functions.ILike(r.Municipio, query.Municipio))
             .ToListAsync(cancellationToken);
 
-        var tieneUbicacion = query.Lat is not null && query.Lng is not null;
+        bool tieneUbicacion = query.Lat is not null && query.Lng is not null;
 
         var conDistancia = reportes.Select(r => (
             Reporte: r,
@@ -63,12 +64,12 @@ public class ListarReportesHandler(AppDbContext context)
     /// <summary>Distancia entre dos puntos GPS (fórmula de Haversine). Sin PostGIS: ver decisión D7.</summary>
     private static double CalcularDistanciaKm(double lat1, double lng1, double lat2, double lng2)
     {
-        var dLat = GradosARadianes(lat2 - lat1);
-        var dLng = GradosARadianes(lng2 - lng1);
-        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
+        double dLat = GradosARadianes(lat2 - lat1);
+        double dLng = GradosARadianes(lng2 - lng1);
+        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
                 + Math.Cos(GradosARadianes(lat1)) * Math.Cos(GradosARadianes(lat2))
                 * Math.Sin(dLng / 2) * Math.Sin(dLng / 2);
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
         return RadioTierraKm * c;
     }
 

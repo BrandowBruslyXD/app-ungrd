@@ -25,12 +25,12 @@ public class CrearReporteHandler(AppDbContext context, ILogger<CrearReporteHandl
     /// </summary>
     public async Task<CrearReporteResponse> Handle(CrearReporteCommand command, CancellationToken cancellationToken)
     {
-        var ahora = DateTime.UtcNow;
+        DateTime ahora = DateTime.UtcNow;
 
-        for (var intento = 1; intento <= MaxIntentos; intento++)
+        for (int intento = 1; intento <= MaxIntentos; intento++)
         {
-            var reportesDeHoy = await ContarReportesDeHoy(ahora, cancellationToken);
-            var reporte = ConstruirReporte(command, ahora, reportesDeHoy + intento);
+            int reportesDeHoy = await ContarReportesDeHoy(ahora, cancellationToken);
+            Reporte reporte = ConstruirReporte(command, ahora, reportesDeHoy + intento);
 
             context.Reportes.Add(reporte);
 
@@ -62,8 +62,8 @@ public class CrearReporteHandler(AppDbContext context, ILogger<CrearReporteHandl
 
     private async Task<int> ContarReportesDeHoy(DateTime ahora, CancellationToken cancellationToken)
     {
-        var inicioDelDia = ahora.Date;
-        var inicioDelDiaSiguiente = inicioDelDia.AddDays(1);
+        DateTime inicioDelDia = ahora.Date;
+        DateTime inicioDelDiaSiguiente = inicioDelDia.AddDays(1);
 
         return await context.Reportes
             .CountAsync(r => r.CreadoEn >= inicioDelDia && r.CreadoEn < inicioDelDiaSiguiente, cancellationToken);
@@ -71,7 +71,7 @@ public class CrearReporteHandler(AppDbContext context, ILogger<CrearReporteHandl
 
     private static Reporte ConstruirReporte(CrearReporteCommand command, DateTime ahora, int consecutivo)
     {
-        var reporte = new Reporte
+        Reporte reporte = new Reporte
         {
             Codigo = Reporte.GenerarCodigo(ahora, consecutivo),
             Tipo = command.Tipo,
@@ -103,7 +103,7 @@ public class CrearReporteHandler(AppDbContext context, ILogger<CrearReporteHandl
         // ToList(): desvincular un EventoCronologia dispara el fix-up de relaciones de EF Core
         // sobre la propia colección reporte.Cronologia, así que enumerarla directamente revienta
         // con "Collection was modified" a mitad de la vuelta.
-        foreach (var evento in reporte.Cronologia.ToList())
+        foreach (EventoCronologia evento in reporte.Cronologia.ToList())
         {
             context.Entry(evento).State = EntityState.Detached;
         }

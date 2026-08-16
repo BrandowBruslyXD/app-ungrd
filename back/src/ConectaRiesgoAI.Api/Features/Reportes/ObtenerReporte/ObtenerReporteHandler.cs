@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ public class ObtenerReporteHandler(AppDbContext context)
     /// <exception cref="KeyNotFoundException">No existe un reporte con ese código; el manejador global lo traduce a 404.</exception>
     public async Task<ObtenerReporteResponse> Handle(ObtenerReporteQuery query, CancellationToken cancellationToken)
     {
-        var reporte = await context.Reportes
+        Reporte reporte = await context.Reportes
             .AsNoTracking()
             .Include(r => r.Usuario)
             .Include(r => r.Cronologia)
@@ -19,7 +20,7 @@ public class ObtenerReporteHandler(AppDbContext context)
             .FirstOrDefaultAsync(r => r.Codigo == query.Codigo, cancellationToken)
             ?? throw new KeyNotFoundException($"No existe un reporte con el código '{query.Codigo}'");
 
-        var verificacion = reporte.VerificacionesSatelitales
+        VerificacionSatelital? verificacion = reporte.VerificacionesSatelitales
             .OrderByDescending(v => v.ConsultadoEn)
             .FirstOrDefault();
 
@@ -53,7 +54,7 @@ public class ObtenerReporteHandler(AppDbContext context)
     /// </summary>
     private static string AbreviarNombre(string nombreCompleto)
     {
-        var partes = nombreCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        string[] partes = nombreCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         return partes.Length switch
         {
             0 => nombreCompleto,

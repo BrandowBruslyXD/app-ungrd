@@ -11,7 +11,7 @@ public class MisReportesEndpoint : IEndpoint
     {
         app.MapGet("/api/reportes/mios", async (IUsuarioActual usuarioActual, ISender sender) =>
             {
-                var usuarioId = usuarioActual.Id
+                int usuarioId = usuarioActual.Id
                     ?? throw new InvalidOperationException("El token no trae el identificador del usuario");
                 return Results.Ok(await sender.Send(new MisReportesQuery(usuarioId)));
             })

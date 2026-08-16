@@ -11,10 +11,10 @@ public class CrearReporteEndpoint : IEndpoint
     {
         app.MapPost("/api/reportes", async (CrearReporteCommand peticion, IUsuarioActual usuarioActual, ISender sender) =>
             {
-                var usuarioId = usuarioActual.Id
+                int usuarioId = usuarioActual.Id
                     ?? throw new InvalidOperationException("El token no trae el identificador del usuario");
-                var comando = peticion with { UsuarioId = usuarioId };
-                var respuesta = await sender.Send(comando);
+                CrearReporteCommand comando = peticion with { UsuarioId = usuarioId };
+                CrearReporteResponse respuesta = await sender.Send(comando);
                 return Results.Created($"/api/reportes/{respuesta.Codigo}", respuesta);
             })
             .RequireAuthorization()
