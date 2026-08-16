@@ -14,7 +14,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "e2e:ui": "playwright test --ui"
+    "e2e:ui": "playwright test --ui",
+    "tutorial": "remotion studio remotion/index.ts",
+    "tutorial:render": "remotion render remotion/index.ts ConectaRiesgoTutorial out/conectariesgo-tutorial.mp4"
   },
   "dependencies": {
     "i18next": "^26.3.6",
@@ -28,6 +30,7 @@
   "devDependencies": {
     "@eslint/js": "^9.9.1",
     "@playwright/test": "^1.62.1",
+    "@remotion/cli": "^4.0.512",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.4",
@@ -42,6 +45,7 @@
     "globals": "^15.9.0",
     "jsdom": "^29.1.1",
     "postcss": "^8.4.35",
+    "remotion": "^4.0.512",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
