@@ -1,4 +1,5 @@
 using ConectaRiesgoAI.Api.Domain.Entities;
+using ConectaRiesgoAI.Api.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,10 +17,17 @@ public class ReporteConfiguration : IEntityTypeConfiguration<Reporte>
         builder.Property(r => r.Municipio).HasMaxLength(120).IsRequired();
         builder.Property(r => r.Direccion).HasMaxLength(300);
         builder.Property(r => r.UrlFoto).HasMaxLength(500);
+        builder.Property(r => r.UbicacionTexto).HasMaxLength(300);
 
         builder.Property(r => r.Tipo).HasConversion<string>().HasMaxLength(30).IsRequired();
         builder.Property(r => r.Estado).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(r => r.Prioridad).HasConversion<string>().HasMaxLength(10).IsRequired();
+        builder.Property(r => r.Clase).HasConversion<string>().HasMaxLength(20).IsRequired()
+            .HasDefaultValue(ClaseReporte.AfectacionPropia);
+        builder.Property(r => r.Confianza).HasConversion<string>().HasMaxLength(20).IsRequired()
+            .HasDefaultValue(ConfianzaReporte.Autorreportado);
+        builder.Property(r => r.Canal).HasConversion<string>().HasMaxLength(20).IsRequired()
+            .HasDefaultValue(CanalOrigen.Web);
 
         builder.HasIndex(r => r.Codigo).IsUnique();
 
