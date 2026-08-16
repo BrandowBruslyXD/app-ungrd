@@ -14,6 +14,7 @@ import {
   Plus,
   Flame,
   LogIn,
+  Share2,
   type LucideIcon,
 } from 'lucide-react';
 import { RUTA_POR_ROL } from '@/lib/rutasPorRol';
@@ -64,9 +65,16 @@ export default function Header({ role, onRoleChange, reducido = false }: HeaderP
     { to: '/alertas', label: t('nav.alerts'), icon: Bell },
   ];
 
+  /*
+   * El reparto sectorial cuelga de la vista de gestión y no de una vista
+   * propia: en la demo el funcionario de la UNGRD entra por el mismo sitio que
+   * el del consejo municipal, y abrir un rol nuevo solo para una pantalla
+   * obligaría a decidir qué ve ese rol en las otras seis.
+   */
   const managerLinks: Enlace[] = [
     inicioDelSitio,
     { to: '/gestor', label: t('nav.triagePanel'), icon: LayoutDashboard },
+    { to: '/gestor/reparto', label: t('nav.sectorPanel'), icon: Share2 },
     { to: '/alertas', label: t('nav.alerts'), icon: Bell },
   ];
 
