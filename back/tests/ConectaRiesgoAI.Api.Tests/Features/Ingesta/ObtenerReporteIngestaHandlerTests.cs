@@ -1,7 +1,6 @@
 using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
-using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Features.Ingesta.ObtenerReporte;
 using ConectaRiesgoAI.Api.Tests.Persistence;
 
