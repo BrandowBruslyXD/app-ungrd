@@ -2,8 +2,17 @@
 <html lang="es-CO">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      El .ico lleva 16, 32, 48 y 64 dentro; los navegadores viejos solo entienden
+      ese formato y los nuevos escogen el PNG que mejor les venga.
+    -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/marca/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/marca/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/marca/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
 
     <title>Reporta una emergencia y sigue tu caso · ConectaRiesgo</title>
     <meta
@@ -22,24 +31,29 @@
       Las rutas internas sí cambian el título desde React (`useTituloPagina`),
       que para Google es suficiente porque sí renderiza.
 
-      AL DESPLEGAR: reemplazar la ruta relativa de `og:image` por la URL absoluta
-      del dominio y descomentar `og:url` y el enlace canónico.
+      La imagen va con URL absoluta y no relativa: el robot de WhatsApp descarta
+      `og:image` si no puede resolverlo por sí solo, y entonces la vista previa
+      sale sin imagen o con la de quien haya generado el andamio del proyecto.
+      Al cambiar de dominio hay que actualizar las cuatro URL de aquí abajo.
     -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="ConectaRiesgo" />
+    <meta property="og:site_name" content="ConectaRiesgoAI" />
     <meta property="og:locale" content="es_CO" />
     <meta property="og:title" content="Reporta una emergencia y sigue tu caso" />
     <meta
       property="og:description"
       content="Cuenta qué pasó, recibe un código y mira quién atiende tu caso. Gratis, sin registro. Reportar no te inscribe en el censo de damnificados."
     />
-    <meta property="og:image" content="/imagenes/derrumbe-via-montana-1600.jpg" />
     <meta
-      property="og:image:alt"
-      content="Carretera de montaña con un derrumbe visible sobre la vía."
+      property="og:image"
+      content="https://conectariesgoai.vercel.app/marca/og-conectariesgo.png"
     />
-    <!-- <meta property="og:url" content="https://DOMINIO/" /> -->
-    <!-- <link rel="canonical" href="https://DOMINIO/" /> -->
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="ConectaRiesgoAI" />
+    <meta property="og:url" content="https://conectariesgoai.vercel.app/" />
+    <link rel="canonical" href="https://conectariesgoai.vercel.app/" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Reporta una emergencia y sigue tu caso" />
@@ -47,7 +61,11 @@
       name="twitter:description"
       content="Cuenta qué pasó, recibe un código y mira quién atiende tu caso. Gratis y sin registro."
     />
-    <meta name="twitter:image" content="/imagenes/derrumbe-via-montana-1600.jpg" />
+    <meta
+      name="twitter:image"
+      content="https://conectariesgoai.vercel.app/marca/og-conectariesgo.png"
+    />
+    <meta name="twitter:image:alt" content="ConectaRiesgoAI" />
 
     <!--
       Sin fuentes externas a propósito. Quien usa esto puede estar en 3G o sin

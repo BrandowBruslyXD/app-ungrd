@@ -1,0 +1,48 @@
+{
+  "name": "ConectaRiesgoAI · Reporta una emergencia",
+  "short_name": "ConectaRiesgo",
+  "description": "Reporta emergencias en Colombia, recibe un código y sigue tu caso hasta que sea atendido.",
+  "lang": "es-CO",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#12386b",
+  "categories": ["government", "utilities"],
+  "icons": [
+    {
+      "src": "/marca/icono-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/marca/icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/marca/icono-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Reportar una emergencia",
+      "short_name": "Reportar",
+      "url": "/reportar",
+      "icons": [{ "src": "/marca/icono-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ver mis reportes",
+      "short_name": "Mis reportes",
+      "url": "/mis-reportes",
+      "icons": [{ "src": "/marca/icono-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
