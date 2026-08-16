@@ -111,4 +111,13 @@ public class SubirEvidenciaHandlerTests
 
         Assert.Equal(Contenedor.Censo, almacenamiento.ContenedorRecibido);
     }
+
+    [Fact]
+    public async Task Handle_TipoEvidenciaInvalido_LanzaArgumentOutOfRangeException()
+    {
+        var handler = Handler(rol: Rol.Gestor);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => handler.Handle(Comando((TipoEvidencia)999), CancellationToken.None));
+    }
 }

@@ -24,8 +24,6 @@ public class AlmacenamientoDeArchivosAzureTests
     [Fact]
     public void Constructor_SinConnectionString_NoLanzaExcepcion()
     {
-        // La configuración vacía (issue #47 aún sin aprovisionar) no puede tumbar el servicio
-        // al arrancar ni al primer request: ver CLAUDE.md, "si una falla, oculta ese bloque".
         var excepcion = Record.Exception(() => Crear(connectionString: null));
 
         Assert.Null(excepcion);
@@ -50,6 +48,35 @@ public class AlmacenamientoDeArchivosAzureTests
 
         var resultado = await almacenamiento.SubirAsync(
             Contenedor.Evidencias, Stream.Null, "image/jpeg", CancellationToken.None);
+
+        Assert.False(resultado.Exitoso);
+        Assert.Null(resultado.UrlFirmada);
+    }
+
+    [Fact]
+    public async Task SubirAsync_ClienteNoConfigurado_ContenedorCensoTambienFallaControlado()
+    {
+        var almacenamiento = Crear(connectionString: null);
+
+        var resultado = await almacenamiento.SubirAsync(
+            Contenedor.Censo, new MemoryStream([0xFF, 0xD8, 0xFF]), "image/jpeg", CancellationToken.None);
+
+        Assert.False(resultado.Exitoso);
+        Assert.Null(resultado.UrlFirmada);
+    }
+
+    [Fact]
+    public async Task SubirAsync_EndpointInaccesible_DevuelveExitosoFalsoSinDependerDeAzurite()
+    {
+        const string cadenaConexion =
+            "DefaultEndpointsProtocol=https;AccountName=devstoreaccount1;" +
+            "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
+            "BlobEndpoint=http://127.0.0.1:1/devstoreaccount1;";
+
+        var almacenamiento = Crear(cadenaConexion);
+
+        var resultado = await almacenamiento.SubirAsync(
+            Contenedor.Evidencias, new MemoryStream([0x52, 0x49]), "image/webp", CancellationToken.None);
 
         Assert.False(resultado.Exitoso);
         Assert.Null(resultado.UrlFirmada);
