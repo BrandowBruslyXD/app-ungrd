@@ -1,4 +1,4 @@
-# Control del proyecto — RespondeYA
+# Control del proyecto — ConectaRiesgo
 
 > El tablero del PMO. Aquí se ve **qué bloquea**, **qué se decidió** y **qué falta**.
 > Si alguien pregunta "¿en qué vamos?", la respuesta está en este archivo.

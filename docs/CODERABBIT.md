@@ -1,4 +1,4 @@
-# CodeRabbit en RespondeYA
+# CodeRabbit en ConectaRiesgo
 
 CodeRabbit es un revisor de codigo con IA que se engancha a los Pull Requests del
 repositorio y deja comentarios automaticos. En este proyecto lo usamos como **red de

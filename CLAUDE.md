@@ -1,4 +1,4 @@
-# CLAUDE.md — RespondeYA
+# CLAUDE.md — ConectaRiesgo
 
 ## Qué es este proyecto
 
@@ -21,7 +21,7 @@ suelta.
 
 Contexto original del problema: [docs/idea-negocio/](docs/idea-negocio/). Ojo: esos documentos son
 de la exploración inicial, cuando el producto se pensaba como asistente por WhatsApp y con otro
-nombre. **El producto es una app web y se llama RespondeYA.**
+nombre. **El producto es una app web y se llama ConectaRiesgo.**
 
 Es un proyecto de **hackatón**: prioriza lo que se puede demostrar funcionando. Pragmatismo por
 encima de ceremonia, pero sin renunciar a las reglas de abajo — están para que el código siga

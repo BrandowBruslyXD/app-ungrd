@@ -1,4 +1,4 @@
-# Copilot Instructions — RespondeYA
+# Copilot Instructions — ConectaRiesgo
 
 ## El proyecto
 
