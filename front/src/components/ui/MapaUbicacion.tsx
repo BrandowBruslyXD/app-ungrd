@@ -1,8 +1,19 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LocateFixed, Loader2 } from 'lucide-react';
+import {
+  CAPA_DE_RESPALDO,
+  CAPA_INICIAL_EDICION,
+  CAPA_INICIAL_LECTURA,
+  ESPERA_MAXIMA_SATELITE_MS,
+  TESELA_TRANSPARENTE,
+  construirCapasBase,
+  fechaImagenGibs,
+  textoFechaImagen,
+  type ClaveCapaBase,
+} from '@/lib/capasMapa';
 
 export interface Coordenadas {
   lat: number;
@@ -31,7 +42,20 @@ interface MapaUbicacionProps {
   centroPorDefecto?: Coordenadas;
   zoomPorDefecto?: number;
   alto?: string;
+  /**
+   * Con qué capa base arranca el mapa. Si se omite, un mapa de solo lectura
+   * abre con la imagen del satélite y uno editable con las calles.
+   */
+  capaInicial?: ClaveCapaBase;
 }
+
+/**
+ * Teselas fallidas seguidas que se toleran antes de dar la capa por caída.
+ *
+ * No basta con una: en el borde del mundo siempre falta alguna y eso no
+ * significa que el servicio esté abajo.
+ */
+const FALLOS_PARA_DESCARTAR_SATELITE = 4;
 
 /** Bogotá. Sirve de centro cuando no hay ni punto elegido ni permiso de GPS. */
 const CENTRO_COLOMBIA: Coordenadas = { lat: 4.711, lng: -74.0721 };
@@ -77,7 +101,8 @@ const ICONO_MARCADOR = crearIcono('marca');
  * el envoltorio que hace falta cabe en este archivo.
  *
  * **La atribución a OpenStreetMap no se puede quitar.** Los datos son ODbL y
- * exigen crédito visible; Leaflet la pinta en la esquina y así se queda.
+ * exigen crédito visible; Leaflet la pinta en la esquina y así se queda. Lo
+ * mismo vale para la imagen de NASA GIBS.
  */
 export default function MapaUbicacion({
   valor,
@@ -86,6 +111,7 @@ export default function MapaUbicacion({
   centroPorDefecto = CENTRO_COLOMBIA,
   zoomPorDefecto = 6,
   alto = 'h-72',
+  capaInicial,
 }: MapaUbicacionProps) {
   const { t } = useTranslation();
   const contenedor = useRef<HTMLDivElement>(null);
@@ -97,6 +123,21 @@ export default function MapaUbicacion({
 
   const [buscandoGps, setBuscandoGps] = useState(false);
   const [errorGps, setErrorGps] = useState('');
+
+  // La fecha se calcula una sola vez por montaje: si cambiara sola, Leaflet
+  // recargaría todas las teselas mientras el gestor está mirando el mapa.
+  const fechaSatelite = useMemo(() => fechaImagenGibs(), []);
+  const capas = useMemo(() => construirCapasBase(fechaSatelite), [fechaSatelite]);
+
+  const [sateliteCaido, setSateliteCaido] = useState(false);
+  const [capaActiva, setCapaActiva] = useState<ClaveCapaBase>(
+    capaInicial ?? (onChange ? CAPA_INICIAL_EDICION : CAPA_INICIAL_LECTURA),
+  );
+
+  const capasOfrecidas = useMemo(
+    () => capas.filter((capa) => capa.clave !== 'satelite' || !sateliteCaido),
+    [capas, sateliteCaido],
+  );
 
   // Se guarda en una referencia para no recrear el mapa cada vez que el padre
   // vuelve a renderizar con una función nueva.
@@ -116,10 +157,8 @@ export default function MapaUbicacion({
       scrollWheelZoom: false,
     });
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; colaboradores de <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(instancia);
+    // La capa base la pone el efecto de abajo, que además la cambia cuando el
+    // usuario toca el conmutador.
 
     if (valor) {
       marcador.current = L.marker([valor.lat, valor.lng], { icon: ICONO_MARCADOR }).addTo(instancia);
@@ -142,6 +181,101 @@ export default function MapaUbicacion({
     // Solo al montar: el resto de cambios se sincroniza en el efecto de abajo.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /*
+   * Monta la capa base activa y la reemplaza al cambiar de capa.
+   *
+   * Va en su propio efecto —y no en el del montaje— porque la capa es lo único
+   * que se puede caer: así se recrea sola sin volver a construir el mapa, sin
+   * perder el encuadre ni los marcadores.
+   */
+  useEffect(() => {
+    const instancia = mapa.current;
+    if (!instancia) {
+      return;
+    }
+
+    const definicion =
+      capas.find((capa) => capa.clave === capaActiva) ?? capas[capas.length - 1];
+
+    const capa = L.tileLayer(definicion.plantillaUrl, {
+      attribution: definicion.atribucion,
+      maxZoom: definicion.maxZoom,
+      // Pasado este nivel el servidor no tiene teselas. Sin esto el mapa se
+      // queda gris al acercarse; con esto Leaflet reescala la última buena.
+      maxNativeZoom: definicion.maxNativeZoom,
+      subdomains: definicion.subdominios ?? 'abc',
+      // Una tesela que falta se ve como un hueco transparente, nunca como el
+      // icono de imagen rota del navegador.
+      errorTileUrl: TESELA_TRANSPARENTE,
+    }).addTo(instancia);
+
+    if (definicion.clave !== 'satelite') {
+      return () => {
+        capa.remove();
+      };
+    }
+
+    /*
+     * GIBS es un servicio ajeno y la regla del proyecto es que nada se rompe por
+     * uno: si en cinco segundos no ha llegado ni una tesela, o si fallan varias
+     * seguidas sin que llegue ninguna, la opción satelital desaparece del
+     * conmutador y el mapa se queda en calles. Sin mensaje de error y sin hueco.
+     */
+    let respondio = false;
+    let fallos = 0;
+    let reloj: number | undefined;
+
+    const descartarSatelite = (): void => {
+      setSateliteCaido(true);
+      setCapaActiva(CAPA_DE_RESPALDO);
+    };
+
+    const detenerReloj = (): void => {
+      if (reloj !== undefined) {
+        window.clearTimeout(reloj);
+        reloj = undefined;
+      }
+    };
+
+    // El reloj arranca cuando Leaflet empieza a pedir teselas, no al montar: si
+    // el mapa todavía no tiene tamaño —dentro de una pestaña oculta, por
+    // ejemplo— no hay petición que esperar y descartar la capa sería injusto.
+    const alEmpezarACargar = (): void => {
+      if (respondio || reloj !== undefined) {
+        return;
+      }
+      reloj = window.setTimeout(() => {
+        if (!respondio) {
+          descartarSatelite();
+        }
+      }, ESPERA_MAXIMA_SATELITE_MS);
+    };
+
+    const alCargarTesela = (): void => {
+      respondio = true;
+      detenerReloj();
+    };
+
+    const alFallarTesela = (): void => {
+      fallos += 1;
+      if (!respondio && fallos >= FALLOS_PARA_DESCARTAR_SATELITE) {
+        descartarSatelite();
+      }
+    };
+
+    capa.on('loading', alEmpezarACargar);
+    capa.on('tileload', alCargarTesela);
+    capa.on('tileerror', alFallarTesela);
+
+    return () => {
+      detenerReloj();
+      capa.off('loading', alEmpezarACargar);
+      capa.off('tileload', alCargarTesela);
+      capa.off('tileerror', alFallarTesela);
+      capa.remove();
+    };
+  }, [capaActiva, capas]);
 
   // Pinta los puntos de solo lectura y encuadra el mapa para que quepan todos.
   useEffect(() => {
@@ -239,13 +373,62 @@ export default function MapaUbicacion({
         </p>
       )}
 
-      <div
-        ref={contenedor}
-        className={`w-full overflow-hidden rounded-control border-2 border-tinta-200 ${alto}`}
-        role={editable ? 'application' : 'img'}
-        aria-label={editable ? t('mapa.etiquetaEditable') : t('mapa.etiquetaLectura')}
-        aria-describedby={editable ? idDescripcion : undefined}
-      />
+      <div className="relative">
+        <div
+          ref={contenedor}
+          className={`w-full overflow-hidden rounded-control border-2 border-tinta-200 ${alto}`}
+          role={editable ? 'application' : 'img'}
+          aria-label={editable ? t('mapa.etiquetaEditable') : t('mapa.etiquetaLectura')}
+          aria-describedby={editable ? idDescripcion : undefined}
+        />
+
+        {capasOfrecidas.length > 1 && (
+          /*
+           * Botones propios en vez del control de capas de Leaflet: el suyo es
+           * un menú de radios de 14px que no llega al área tocable mínima ni
+           * hereda la paleta. Van fuera del contenedor del mapa para que el clic
+           * no llegue a Leaflet y mueva el punto elegido.
+           */
+          <div
+            role="group"
+            aria-label={t('mapa.capas.grupo')}
+            className="absolute right-2 top-2 z-[500] flex gap-1 rounded-control border border-papel-borde bg-white/95 p-1 shadow-ficha"
+          >
+            {capasOfrecidas.map((capa) => {
+              const activa = capa.clave === capaActiva;
+              return (
+                <button
+                  key={capa.clave}
+                  type="button"
+                  onClick={() => setCapaActiva(capa.clave)}
+                  aria-pressed={activa}
+                  className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-[0.5rem] px-3 text-sm font-bold transition-colors duration-150 ${
+                    activa
+                      ? 'bg-azul-600 text-white'
+                      : 'text-azul-700 hover:bg-azul-50 active:bg-azul-100'
+                  }`}
+                >
+                  {t(capa.claveEtiqueta)}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/*
+       * La honestidad del dato: el satélite pasa dos veces al día, así que lo
+       * que se ve es la última pasada completa, no «tiempo real». La fecha va
+       * escrita para que nadie tenga que suponerla.
+       */}
+      {capaActiva === 'satelite' && !sateliteCaido && (
+        <p className="mt-2 text-sm text-tinta-600">
+          <span className="font-semibold text-tinta-800">
+            {t('mapa.capas.pieSatelite', { fecha: textoFechaImagen(fechaSatelite) })}
+          </span>{' '}
+          {t('mapa.capas.avisoSatelite')}
+        </p>
+      )}
 
       {editable && (
         <>

@@ -247,19 +247,144 @@ un correo de prueba a un ministerio real sería un problema de verdad.
 
 ---
 
-## Las pantallas
+## La vista, subpanel por subpanel
 
-Cuatro, todas de escritorio: un funcionario de la UNGRD trabaja en computador.
+Dos pantallas de escritorio —un funcionario de la UNGRD trabaja en computador— y en la primera,
+cuatro subpaneles. El orden **no es decorativo**: responde, de arriba abajo, a las cuatro preguntas
+que el funcionario se hace al abrir el sistema.
 
-| # | Pantalla | Qué lleva |
+| Orden | Pregunta que responde | Subpanel |
 |:---:|:---|:---|
-| A1 | **Eventos** | Lista de emergencias con su declaratoria, municipios afectados, cuántos daños entraron y cuántos paquetes están sin enviar |
-| A2 | **Consolidado del evento** | El grano fino: tabla de daños con sector, origen, nivel de confianza, municipio. Filtros por sector y por fuente. **Bandeja `Sin sector` arriba**, porque es lo que bloquea el envío |
-| A3 | **Paquete del ministerio** | Lo que va a recibir: resumen, totales por municipio, necesidades con costo, previsualización del PDF y del CSV, y el correo compuesto. Botón **Aprobar y enviar** |
-| A4 | **Bitácora de envíos** | Qué se envió, a quién, cuándo, quién lo aprobó, con los archivos descargables. Todo marcado como `Simulado` |
+| 1 | ¿Qué tan completo es lo que sé? | **A · Cobertura territorial** |
+| 2 | ¿Qué le toca a cada quién? | **B · Reparto por sector** |
+| 3 | ¿Qué me falta resolver antes de enviar? | **C · Sin clasificar** |
+| 4 | ¿Qué ya salió y quién lo firmó? | **D · Bitácora de envíos** |
 
-**La pantalla que decide el módulo es A3.** Es donde el funcionario ve, en treinta segundos, algo
-que hoy le toma días armar a mano. Ese es el momento del pitch.
+---
+
+### Pantalla A · Panel del evento — `/ungrd`
+
+**Encabezado del evento.** Nombre, tipo, declaratoria que lo ampara con su número de decreto y
+fecha, y días transcurridos desde la declaratoria. Ese contador importa: el Plan de Acción
+Específico tiene plazo, y hoy nadie ve cuánto lleva corriendo.
+
+**Cuatro indicadores**, calculados sobre los datos que hay, nunca escritos a mano:
+
+| Indicador | Por qué está |
+|:---|:---|
+| **Municipios con información / afectados** | «5 de 400» es el dolor entero en una cifra |
+| Daños consolidados | El volumen de lo que hay que repartir |
+| Personas afectadas | Lo que el país ve en las noticias |
+| Costo estimado | Lo que va a pesar en el PAE |
+
+#### Subpanel A · Cobertura territorial — *lo que todavía no sabemos*
+
+**Es el subpanel que no existe en ningún sistema actual, y el que más ayuda a entender.** Los demás
+muestran la información que llegó; este muestra **de dónde no ha llegado nada**.
+
+Cada municipio afectado aparece con su nivel de cobertura:
+
+| Estado | Qué significa | Qué hacer |
+|:---|:---|:---|
+| 🟢 **Con EDAN** | El CMGRD ya envió el formato consolidado | Nada: su información es la buena |
+| 🟡 **Solo autorreportes** | Hay reportes ciudadanos, pero nadie los verificó | Pedir verificación en terreno |
+| 🔴 **En silencio** | Municipio afectado del que no llegó ni un dato | **Aquí es donde hay que llamar** |
+
+Ordenado por silencio primero. Un municipio sin información no es un municipio sin daños: es un
+municipio del que no sabemos nada, y probablemente sea el que peor está.
+
+#### Subpanel B · Reparto por sector — *el corazón del módulo*
+
+La tabla que resume el trabajo que hoy se hace a mano. Una fila por sector, trece en total:
+
+`Sector · Entidad responsable · Daños · Municipios · Costo estimado · Confianza · Estado del paquete`
+
+- **Confianza** se muestra como proporción, no como promedio: «8 verificados · 3 censados · 26
+  autorreportados». Un promedio escondería que la mayoría del volumen no está verificado.
+- **Estado del paquete**: `Borrador` · `En revisión` · `Aprobado` · `Enviado`, con la fecha del
+  envío cuando lo hay.
+- Cada fila abre su paquete. Los sectores sin daños se muestran en cero y apagados: que un
+  ministerio no tenga nada **es información**, no un hueco que ocultar.
+
+Al pie, el total: cuántos paquetes listos, cuántos enviados, cuántos bloqueados.
+
+#### Subpanel C · Sin clasificar — *lo que bloquea el envío*
+
+Los daños que ninguna regla pudo asignar a un sector, casi siempre reportes ciudadanos en texto
+libre. Cada uno con su descripción, municipio y origen, y un selector para asignarle sector a mano.
+
+Va antes de la bitácora a propósito: **es lo único de esta pantalla que exige trabajo del
+funcionario**, y mientras haya elementos aquí, el reparto está incompleto. Cuando la bandeja queda
+vacía se muestra así, con su mensaje: es una buena noticia y hay que verla.
+
+#### Subpanel D · Bitácora de envíos
+
+Qué salió, a qué entidad, cuándo, **quién lo aprobó** y con qué archivos. Todo marcado como
+`Simulado` mientras no haya proveedor de correo.
+
+No es un adorno de auditoría: es lo que permite responder «¿ya le avisamos a Educación?» sin
+preguntarle a nadie.
+
+---
+
+### Pantalla B · Paquete del ministerio — `/ungrd/paquetes/:sector`
+
+**Es la pantalla que decide el módulo.** El funcionario ve en treinta segundos lo que hoy le toma
+días armar.
+
+1. **Encabezado**: ministerio destinatario, evento, decreto que lo ampara, estado del paquete.
+2. **Resumen**: daños, municipios, personas afectadas y costo estimado.
+3. **Totales por municipio** — así es como el ministerio pide la información.
+4. **Detalle de daños**, cada uno con su nivel de confianza visible.
+5. **Necesidades**: `Necesidad | Equipos o elementos requeridos | Costo estimado`, la tabla con la
+   que cierra cada bloque sectorial del formato oficial.
+6. **Entregables**: descarga del CSV, y el PDF anunciado como lo que sigue.
+7. **El correo compuesto**, visible tal como saldría, y el botón **Aprobar y enviar**.
+
+---
+
+### Las gráficas — cada una responde una pregunta de decisión
+
+La regla: **si una gráfica no cambia lo que el funcionario va a hacer, no va.** Cuatro, y cada una
+con su pregunta.
+
+| # | Pregunta del gestor | Forma | Por qué esa forma |
+|:---:|:---|:---|:---|
+| 1 | ¿Qué sector concentra el daño? | **Barras horizontales** ordenadas por magnitud, un solo tono | Trece sectores no caben en una torta. Ordenadas por valor, la respuesta se lee en el primer renglón, y la identidad la dan las etiquetas, no el color |
+| 2 | ¿Cuánto de lo que sé está verificado? | **Barras apiladas al 100 %** por sector | La proporción es la pregunta, no el total. Un sector con 90 % autorreportado no está listo para enviarse a un ministerio, aunque tenga muchos daños |
+| 3 | ¿De dónde no llega información? | **Barra apilada única** de cobertura + lista de municipios en silencio | Es un reparto de tres estados sobre un total conocido; una sola barra lo dice mejor que tres tarjetas |
+| 4 | ¿La información sigue entrando o ya se secó? | **Línea** de daños registrados por día desde la declaratoria | Si la curva se aplana con municipios aún en silencio, el problema no es que no haya daños: es que nadie está reportando |
+
+**Colores, validados con el verificador de contraste y daltonismo — no elegidos a ojo:**
+
+```
+Confianza del dato    Verificado  #117a50   Censado  #1f55be   Autorreportado  #8c6a00
+Cobertura territorial Con EDAN    #117a50   Parcial  #1f55be   En silencio     #ce1126
+Magnitud por sector   Un solo tono azul #1f55be — la identidad la lleva la etiqueta
+```
+
+Las dos ternas pasan las seis comprobaciones: banda de luminosidad, croma mínimo, separación bajo
+deuteranopía y tritanopía, umbral de visión normal y contraste sobre el fondo. La combinación
+obvia —verde, amarillo, rojo de semáforo— **falla**: el rojo `#ce1126` y el oro `#8c6a00` quedan a
+ΔE 1.0 en deuteranopía, es decir, indistinguibles para quien no separa rojo de verde. Por eso el
+estado intermedio es azul y no amarillo.
+
+Y en las tres: **el color nunca va solo**. Cada estado lleva su icono y su palabra.
+
+### Lo que el dashboard NO lleva
+
+Escrito para que nadie lo agregue «porque queda bien»:
+
+- **Gráficas de torta.** Trece sectores en una torta no se leen, y comparar ángulos es más difícil
+  que comparar longitudes.
+- **Dos ejes verticales en una misma gráfica.** Cruzar daños con costo en un solo gráfico de dos
+  escalas es el error más común de los tableros: se pueden hacer decir cualquier cosa. Si hacen
+  falta las dos medidas, son dos gráficas.
+- **Mapa de calor de daños.** El funcionario ya sabe qué municipios están afectados; lo que
+  necesita saber es de cuáles **no tiene datos**, y eso lo resuelve la gráfica 3.
+- **Medidores tipo velocímetro ni anillos de progreso decorativos.**
+- **Un número sobre cada punto de la línea.** Se etiquetan el primero, el último y el máximo.
+- **Notificaciones ni tareas asignadas.** No existen en el modelo.
 
 ---
 

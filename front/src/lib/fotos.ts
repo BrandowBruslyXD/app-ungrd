@@ -117,6 +117,10 @@ export const FONDOS_POR_RUTA: Record<string, readonly FuenteFoto[]> = {
   '/ayudas': [FOTOS.ganadoPastizal, FOTOS.ovejasLadera],
   '/alertas': [FOTOS.montanasNubladas, FOTOS.bosqueCocora],
   '/gestor': [FOTOS.municipioAereo, FOTOS.puebloJerico],
+  /* Las dos pantallas del reparto sectorial llevan el mismo par invertido: son
+     un solo módulo y se pasa de una a la otra sin que el fondo dé un salto. */
+  '/gestor/reparto': [FOTOS.municipioAereo, FOTOS.laderaViviendas],
+  '/gestor/reparto/detalle': [FOTOS.laderaViviendas, FOTOS.municipioAereo],
   '/rescatista': [FOTOS.cercaYEscalones, FOTOS.casaEnLadera],
   '/rescatista/censo': [FOTOS.casaBlancaMontanas, FOTOS.viaRuralVerde],
   '/socorro': [FOTOS.montanasNubladas, FOTOS.laderaNubes],

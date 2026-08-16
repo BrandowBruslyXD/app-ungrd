@@ -27,5 +27,8 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  /* `api` son las funciones serverless de Vercel: no entran al paquete del
+     navegador, pero se comprueban aquí para que un error de tipos salga en
+     `npm run typecheck` y no en el despliegue. */
+  "include": ["src", "api"]
 }
