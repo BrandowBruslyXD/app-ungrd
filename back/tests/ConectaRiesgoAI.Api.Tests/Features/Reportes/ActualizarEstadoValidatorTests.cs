@@ -52,4 +52,18 @@ public class ActualizarEstadoValidatorTests
         var error = Assert.Single(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Estado));
         Assert.Equal("El estado es obligatorio", error.ErrorMessage);
     }
+
+    [Fact]
+    public void Validate_NotaExcede500Caracteres_Falla()
+    {
+        var comando = new ActualizarEstadoCommand(
+            "RPT-2026-08-15-0047",
+            EstadoReporte.EnAtencion,
+            new string('x', 501));
+
+        var resultado = Validador.Validate(comando);
+
+        Assert.False(resultado.IsValid);
+        Assert.Contains(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Nota));
+    }
 }
