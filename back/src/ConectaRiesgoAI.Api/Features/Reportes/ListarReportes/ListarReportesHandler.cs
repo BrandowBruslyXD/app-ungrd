@@ -30,8 +30,10 @@ public class ListarReportesHandler(AppDbContext context)
 
         var conDistancia = reportes.Select(r => (
             Reporte: r,
-            DistanciaKm: tieneUbicacion
-                ? Math.Round(CalcularDistanciaKm(query.Lat!.Value, query.Lng!.Value, r.Latitud, r.Longitud), 1)
+            // Nula cuando el reporte entró por WhatsApp y no tiene GPS: no se puede calcular
+            // distancia, así que ese reporte queda fuera de cualquier filtro por radio.
+            DistanciaKm: tieneUbicacion && CalcularDistanciaKm(query.Lat!.Value, query.Lng!.Value, r.Latitud, r.Longitud) is { } distanciaKm
+                ? Math.Round(distanciaKm, 1)
                 : (double?)null));
 
         if (tieneUbicacion && query.RadioKm is { } radioKm)
@@ -61,13 +63,18 @@ public class ListarReportesHandler(AppDbContext context)
             .ToList();
     }
 
-    /// <summary>Distancia entre dos puntos GPS (fórmula de Haversine). Sin PostGIS: ver decisión D7.</summary>
-    private static double CalcularDistanciaKm(double lat1, double lng1, double lat2, double lng2)
+    /// <summary>Distancia entre dos puntos GPS (fórmula de Haversine). Sin PostGIS: ver decisión D7. <c>null</c> si el reporte no tiene coordenadas.</summary>
+    private static double? CalcularDistanciaKm(double lat1, double lng1, double? lat2, double? lng2)
     {
-        double dLat = GradosARadianes(lat2 - lat1);
-        double dLng = GradosARadianes(lng2 - lng1);
+        if (lat2 is null || lng2 is null)
+        {
+            return null;
+        }
+
+        double dLat = GradosARadianes(lat2.Value - lat1);
+        double dLng = GradosARadianes(lng2.Value - lng1);
         double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
-                + Math.Cos(GradosARadianes(lat1)) * Math.Cos(GradosARadianes(lat2))
+                + Math.Cos(GradosARadianes(lat1)) * Math.Cos(GradosARadianes(lat2.Value))
                 * Math.Sin(dLng / 2) * Math.Sin(dLng / 2);
         double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
         return RadioTierraKm * c;

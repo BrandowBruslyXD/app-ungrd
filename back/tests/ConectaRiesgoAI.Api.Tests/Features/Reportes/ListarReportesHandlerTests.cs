@@ -97,6 +97,36 @@ public class ListarReportesHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ReporteSinCoordenadas_QuedaExcluidoDelFiltroPorRadioPeroApareceSinFiltrarGeo()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        // Reporte por WhatsApp: sin GPS, solo ubicación en texto.
+        contexto.Reportes.Add(new Reporte
+        {
+            Codigo = "RPT-WHATSAPP",
+            Tipo = TipoReporte.Incendio,
+            Estado = EstadoReporte.Reportado,
+            Descripcion = "Descripción de prueba",
+            Municipio = "Bogotá",
+            Latitud = null,
+            Longitud = null,
+            UsuarioId = 1,
+            CreadoEn = DateTime.UtcNow,
+            ActualizadoEn = DateTime.UtcNow
+        });
+        await contexto.SaveChangesAsync();
+        var handler = new ListarReportesHandler(contexto);
+
+        var conRadio = await handler.Handle(
+            new ListarReportesQuery(null, null, 4.710989, -74.072092, 10, null, null), CancellationToken.None);
+        var sinFiltroGeo = await handler.Handle(QuerySinFiltros(), CancellationToken.None);
+
+        Assert.Empty(conRadio);
+        var reporte = Assert.Single(sinFiltroGeo);
+        Assert.Null(reporte.DistanciaKm);
+    }
+
+    [Fact]
     public async Task Handle_ConLimite_RecortaElResultado()
     {
         using var contexto = AppDbContextPruebas.Crear();
