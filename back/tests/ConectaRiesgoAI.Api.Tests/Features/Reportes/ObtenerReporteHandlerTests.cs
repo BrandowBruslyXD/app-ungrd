@@ -2,6 +2,8 @@ using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Features.Reportes.ObtenerReporte;
+using ConectaRiesgoAI.Api.Integrations.Secop;
+using ConectaRiesgoAI.Api.Tests.Integrations.Secop;
 using ConectaRiesgoAI.Api.Tests.Persistence;
 
 namespace ConectaRiesgoAI.Api.Tests.Features.Reportes;
@@ -52,7 +54,7 @@ public class ObtenerReporteHandlerTests
         });
         contexto.Reportes.Add(reporte);
         await contexto.SaveChangesAsync();
-        var handler = new ObtenerReporteHandler(contexto);
+        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso());
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0001"), CancellationToken.None);
 
@@ -65,7 +67,7 @@ public class ObtenerReporteHandlerTests
     public async Task Handle_CodigoInexistente_LanzaKeyNotFoundException()
     {
         using var contexto = AppDbContextPruebas.Crear();
-        var handler = new ObtenerReporteHandler(contexto);
+        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso());
 
         await Assert.ThrowsAsync<KeyNotFoundException>(
             () => handler.Handle(new ObtenerReporteQuery("RPT-NO-EXISTE"), CancellationToken.None));
@@ -78,7 +80,7 @@ public class ObtenerReporteHandlerTests
         contexto.Usuarios.Add(NuevoUsuario(1, "María Rodríguez"));
         contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0002", 1));
         await contexto.SaveChangesAsync();
-        var handler = new ObtenerReporteHandler(contexto);
+        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso());
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0002"), CancellationToken.None);
 
@@ -92,7 +94,7 @@ public class ObtenerReporteHandlerTests
         contexto.Usuarios.Add(NuevoUsuario(1, "Ana Ciudadana"));
         contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0003", 1));
         await contexto.SaveChangesAsync();
-        var handler = new ObtenerReporteHandler(contexto);
+        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso());
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0003"), CancellationToken.None);
 
@@ -122,11 +124,43 @@ public class ObtenerReporteHandlerTests
         });
         contexto.Reportes.Add(reporte);
         await contexto.SaveChangesAsync();
-        var handler = new ObtenerReporteHandler(contexto);
+        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso());
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0004"), CancellationToken.None);
 
         Assert.NotNull(respuesta.VerificacionSatelital);
         Assert.Equal("Reciente", respuesta.VerificacionSatelital!.Detalle);
+    }
+
+    [Fact]
+    public async Task Handle_SecopDevuelveContratos_LosMapeaAlBloqueDeTransparencia()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Usuarios.Add(NuevoUsuario(1, "Ana Ciudadana"));
+        contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0005", 1));
+        await contexto.SaveChangesAsync();
+        var secopClient = new SecopClientFalso([new ContratoSecop("Obra de canalización", 450_000_000m, 2024, "Alcaldía de Bogotá")]);
+        var handler = new ObtenerReporteHandler(contexto, secopClient);
+
+        var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0005"), CancellationToken.None);
+
+        var item = Assert.Single(respuesta.Transparencia);
+        Assert.Equal("Obra de canalización", item.Objeto);
+        Assert.Equal("Bogotá", secopClient.UltimoMunicipioConsultado);
+    }
+
+    [Fact]
+    public async Task Handle_SecopSinDatosParaElMunicipio_DevuelveTransparenciaVaciaSinRomperElReporte()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Usuarios.Add(NuevoUsuario(1, "Ana Ciudadana"));
+        contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0006", 1));
+        await contexto.SaveChangesAsync();
+        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso());
+
+        var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0006"), CancellationToken.None);
+
+        Assert.Equal("RPT-2026-08-15-0006", respuesta.Codigo);
+        Assert.Empty(respuesta.Transparencia);
     }
 }

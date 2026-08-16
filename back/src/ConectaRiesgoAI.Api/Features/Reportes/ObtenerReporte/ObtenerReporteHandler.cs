@@ -1,4 +1,5 @@
 using ConectaRiesgoAI.Api.Domain.Entities;
+using ConectaRiesgoAI.Api.Integrations.Secop;
 using ConectaRiesgoAI.Api.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ConectaRiesgoAI.Api.Features.Reportes.ObtenerReporte;
 
 /// <summary>Detalle completo de un reporte: cronología, verificación satelital y transparencia.</summary>
-public class ObtenerReporteHandler(AppDbContext context)
+public class ObtenerReporteHandler(AppDbContext context, ISecopClient secopClient)
     : IRequestHandler<ObtenerReporteQuery, ObtenerReporteResponse>
 {
     /// <exception cref="KeyNotFoundException">No existe un reporte con ese código; el manejador global lo traduce a 404.</exception>
@@ -19,6 +20,9 @@ public class ObtenerReporteHandler(AppDbContext context)
             .Include(r => r.VerificacionesSatelitales)
             .FirstOrDefaultAsync(r => r.Codigo == query.Codigo, cancellationToken)
             ?? throw new KeyNotFoundException($"No existe un reporte con el código '{query.Codigo}'");
+
+        // ISecopClient nunca lanza (ver su contrato): un SECOP caído no puede tumbar esta pantalla.
+        IReadOnlyList<ContratoSecop> transparencia = await secopClient.ConsultarPorMunicipioAsync(reporte.Municipio, cancellationToken);
 
         VerificacionSatelital? verificacion = reporte.VerificacionesSatelitales
             .OrderByDescending(v => v.ConsultadoEn)
@@ -46,7 +50,9 @@ public class ObtenerReporteHandler(AppDbContext context)
                 ? null
                 : new VerificacionSatelitalResponse(
                     verificacion.Fuente, verificacion.Confirmado, verificacion.Detalle, verificacion.ConsultadoEn),
-            []);
+            transparencia
+                .Select(c => new TransparenciaItemResponse(c.Objeto, c.Valor, c.Anio, c.Entidad))
+                .ToList());
     }
 
     /// <summary>

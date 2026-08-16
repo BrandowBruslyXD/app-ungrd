@@ -1,0 +1,87 @@
+using ConectaRiesgoAI.Api.Domain.Enums;
+using ConectaRiesgoAI.Api.Features.Reportes.ActualizarEstado;
+
+namespace ConectaRiesgoAI.Api.Tests.Features.Reportes;
+
+public class ActualizarEstadoValidatorTests
+{
+    private static readonly ActualizarEstadoValidator Validador = new();
+
+    [Fact]
+    public void Validate_ComandoValido_Pasa()
+    {
+        var comando = new ActualizarEstadoCommand("RPT-2026-08-15-0047", EstadoReporte.EnAtencion, "Brigada en camino");
+
+        var resultado = Validador.Validate(comando);
+
+        Assert.True(resultado.IsValid);
+    }
+
+    [Fact]
+    public void Validate_NotaVacia_Falla()
+    {
+        var comando = new ActualizarEstadoCommand("RPT-2026-08-15-0047", EstadoReporte.EnAtencion, "");
+
+        var resultado = Validador.Validate(comando);
+
+        Assert.False(resultado.IsValid);
+        var error = Assert.Single(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Nota));
+        Assert.Equal("La nota es obligatoria", error.ErrorMessage);
+    }
+
+    [Fact]
+    public void Validate_CodigoVacio_Falla()
+    {
+        var comando = new ActualizarEstadoCommand("", EstadoReporte.EnAtencion, "Brigada en camino");
+
+        var resultado = Validador.Validate(comando);
+
+        Assert.False(resultado.IsValid);
+        var error = Assert.Single(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Codigo));
+        Assert.Equal("El código del reporte es obligatorio", error.ErrorMessage);
+    }
+
+    [Fact]
+    public void Validate_EstadoAusente_FallaConMensajeExplicitoDeObligatorio()
+    {
+        // Un JSON que omite "estado" deserializa a null (no al primer valor del enum): sin este
+        // caso, "estado ausente" y "transición inválida a Reportado" darían el mismo 400 confuso.
+        var comando = new ActualizarEstadoCommand("RPT-2026-08-15-0047", null, "Brigada en camino");
+
+        var resultado = Validador.Validate(comando);
+
+        Assert.False(resultado.IsValid);
+        var error = Assert.Single(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Estado));
+        Assert.Equal("El estado es obligatorio", error.ErrorMessage);
+    }
+
+    [Fact]
+    public void Validate_NotaExcede500Caracteres_Falla()
+    {
+        var comando = new ActualizarEstadoCommand(
+            "RPT-2026-08-15-0047",
+            EstadoReporte.EnAtencion,
+            new string('x', 501));
+
+        var resultado = Validador.Validate(comando);
+
+        Assert.False(resultado.IsValid);
+        var error = Assert.Single(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Nota));
+        Assert.Equal("La nota no puede superar los 500 caracteres", error.ErrorMessage);
+    }
+
+    [Fact]
+    public void Validate_EstadoInvalido_FallaConMensajeExplicito()
+    {
+        var comando = new ActualizarEstadoCommand(
+            "RPT-2026-08-15-0047",
+            (EstadoReporte)99,
+            "Brigada en camino");
+
+        var resultado = Validador.Validate(comando);
+
+        Assert.False(resultado.IsValid);
+        var error = Assert.Single(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Estado));
+        Assert.Equal("El estado no es válido", error.ErrorMessage);
+    }
+}
