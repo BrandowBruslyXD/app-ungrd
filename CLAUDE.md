@@ -70,6 +70,10 @@ bloque** y sigue respondiendo — nunca propaga el error. Detalle en
 | [docs/MODELO-DATOS.md](docs/MODELO-DATOS.md) | Todas las entidades y campos |
 | [docs/FASES.md](docs/FASES.md) | Qué se construye, en qué orden, qué se corta |
 | [docs/CONTROL.md](docs/CONTROL.md) | Bloqueantes, decisiones, riesgos, credenciales |
+| [docs/EXPERIENCIAS-FRONTEND.md](docs/EXPERIENCIAS-FRONTEND.md) | Cómo se organiza el frontend por experiencia de usuario (Terreno / Sala de crisis) y el plan para llegar ahí |
+
+Esta tabla es un resumen. El índice completo — catorce documentos, con una fila por cada uno y a
+quién le sirve — vive en [docs/README.md](docs/README.md).
 
 ---
 

@@ -10,14 +10,17 @@
 
 ```
 Usuario ──< Reporte ──< EventoReporte          (quién reporta y cómo avanza)
-                │
-                ├──< Evidencia                  (fotos)
-                ├──── VerificacionSatelital     (NASA FIRMS)
-                │
-                └──── PersonaAfectada ──< MiembroNucleoFamiliar
-                              │
-                              └──< DanoRegistrado
+   │            │
+   │            ├──< Evidencia                  (fotos)
+   │            └──── VerificacionSatelital     (NASA FIRMS)
+   │
+   └──< OperacionCenso ──< PersonaAfectada ──< MiembroNucleoFamiliar
+        (jornada del brigadista)   │
+                                   └──< DanoRegistrado
 ```
+
+`PersonaAfectada.ReporteId` es opcional: puede colgar de un `Reporte` concreto o quedar suelta
+dentro de la `OperacionCenso` que la agrupó.
 
 Hay **dos niveles de captura** y conviene no confundirlos:
 
@@ -43,16 +46,21 @@ Quien entra al sistema.
 | `Rol` | enum | ✅ | Ver abajo |
 | `Municipio` | string(80) | ❌ | Su zona por defecto |
 | `Telefono` | string(20) | ❌ | Único. Es la identidad del usuario en WhatsApp |
-| `CodigoBrigadista` | string(20) | ❌ | Solo si `Rol = Brigadista`. Ej: `BR-2024-0156` |
-| `EntidadId` | int? | ❌ | A qué alcaldía o entidad pertenece |
-| `Activo` | bool | ✅ | Por defecto `true` |
 | `CreadoEn` | datetime | ✅ | UTC |
 | `EsAcreditadoCenso` | bool | ✅ | Si puede registrar damnificados. Por defecto `false`. **No se pregunta: se acredita** (art. 7, Res. 1110 de 2022) |
 | `OrigenRegistro` | enum | ✅ | `Web` · `WhatsApp` · `Telefono`. Por defecto `Web` |
 
-**Rol:** `Ciudadano` · `Brigadista` · `Gestor` · `Admin`
+**Rol:** `Ciudadano` · `Gestor` · `Admin`
 
-> `Brigadista` es un rol nuevo respecto al plan original. Es quien hace el registro de damnificados en terreno: puede crear registros a nombre de otras personas, cosa que un ciudadano no puede.
+> **No existe un rol `Brigadista` en el enum.** Quien censa en terreno sigue siendo un `Usuario` con
+> `Rol = Ciudadano` (o el que tenga) y `EsAcreditadoCenso = true` — la acreditación es el booleano,
+> no un rol aparte. `docs/EXPERIENCIAS-FRONTEND.md` usa "Brigadista" y "Socorro" como nombres de
+> **experiencia de UI**, no como valores de este enum; no los confundas al validar entrada en el
+> backend.
+>
+> `CodigoBrigadista`, `EntidadId` y `Activo` **no existen todavía como campos de `Usuario`** en el
+> código (`Domain/Entities/Usuario.cs`). Estaban en una versión anterior de este documento; si hacen
+> falta, hay que agregarlos con su migración antes de documentarlos como reales.
 
 ---
 
@@ -243,6 +251,13 @@ Todas las fotos, de reportes y de registros.
 **Tipo:** `DanoMaterial` · `DocumentoFrontal` · `DocumentoPosterior` · `Rostro` · `NucleoFamiliar` · `Otro`
 
 > ⚠️ `DocumentoFrontal`, `DocumentoPosterior` y `Rostro` son **datos biométricos y de identificación**. Ver privacidad abajo.
+>
+> ⚠️ **Esta tabla describe la forma del dato, pero `Evidencia` no existe como entidad persistida
+> en `back/src/ConectaRiesgoAI.Api/Domain/Entities/`.** `POST /api/evidencias` (`Integrations/Storage`)
+> solo sube el archivo a Azure Blob Storage y devuelve una URL firmada — no crea ninguna fila. Quien
+> llama guarda esa URL donde le corresponda (`Reporte.UrlFoto` vía el flujo de Cloudinary, o el campo
+> equivalente al crear una `PersonaAfectada`). Si se decide persistir metadatos de evidencia (quién
+> subió qué, cuándo), hace falta crear la entidad y su migración antes de tratarla como real.
 
 ---
 
@@ -279,6 +294,30 @@ Alcaldías y organismos que atienden.
 
 ---
 
+## 10. OperacionCenso
+
+Jornada de censo de un brigadista: agrupa las `PersonaAfectada` que registra un mismo brigadista
+en un mismo municipio. No estaba en el diseño original — se agregó con el issue #48 para completar
+la jerarquía del RUD sobre las tablas de censo que ya existían, sin duplicar ningún modelo.
+
+| Campo | Tipo | Obligatorio | Notas |
+|:---|:---|:---:|:---|
+| `Id` | int | ✅ | |
+| `Codigo` | string(30) | ✅ | `CEN-2026-08-16-0001-K7M2`. El sufijo de 4 caracteres es aleatorio, no adivinable |
+| `Municipio` | string(80) | ✅ | |
+| `BarrioVereda` | string(80) | ❌ | |
+| `BrigadistaId` | int | ✅ | Debe tener `Usuario.EsAcreditadoCenso = true` |
+| `AbiertaEn` | datetime | ✅ | UTC |
+| `CerradaEn` | datetime? | ❌ | El campo existe pero **ningún caso de uso lo asigna todavía** — el issue #48 solo cubre abrir o reutilizar la jornada, no cerrarla |
+
+> Al recibir un registro de censo por WhatsApp (`POST /api/ingesta/censo`), el backend reutiliza la
+> `OperacionCenso` abierta del brigadista en ese municipio o abre una nueva. Como `CerradaEn` nunca
+> se asigna, hoy un brigadista que vuelve a censar en el mismo municipio días después cae en la
+> misma operación — el corte "por jornada" es la intención del modelo, no algo que el código
+> garantice aún.
+
+---
+
 ## Privacidad — léase antes de tocar los datos personales
 
 Este sistema captura **cédulas por ambas caras, fotos de rostro, datos de salud y datos de menores**. En Colombia eso cae bajo la **Ley 1581 de 2012** y son datos sensibles y de menores, las dos categorías con protección más alta.
@@ -299,9 +338,10 @@ Este sistema captura **cédulas por ambas caras, fotos de rostro, datos de salud
 
 | Entidad | ¿Entra en el hackathon? |
 |:---|:---|
-| `Usuario`, `Reporte`, `EventoReporte`, `Evidencia` | ✅ Sí — es el núcleo de la demo |
+| `Usuario`, `Reporte`, `EventoReporte` | ✅ Sí — es el núcleo de la demo |
+| `Evidencia` | ⚠️ Solo como flujo de subida (`POST /api/evidencias` → URL firmada). No es una tabla propia — ver la nota en `7. Evidencia` |
 | `VerificacionSatelital` | ✅ Sí — ya está el microservicio |
-| `PersonaAfectada`, `MiembroNucleoFamiliar`, `DanoRegistrado` | ⚠️ Ver `FASES.md` — depende del tiempo que quede |
+| `PersonaAfectada`, `MiembroNucleoFamiliar`, `DanoRegistrado`, `OperacionCenso` | ✅ Ya construidas — ver `10. OperacionCenso` abajo. Lo que falta no es el modelo, es conectar `features/rescatista/` del frontend al endpoint real |
 | `Entidad` | ❌ No — se puede dejar como texto en `Municipio` |
 
 **Regla de oro para no perder la demo:** si a la hora 16 el registro de damnificado no está terminado, se corta y se presenta el reporte ciudadano funcionando de punta a punta. **Una cosa completa vale más que dos a medias.**
