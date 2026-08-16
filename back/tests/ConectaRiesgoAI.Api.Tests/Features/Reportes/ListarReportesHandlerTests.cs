@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Features.Reportes.ListarReportes;
@@ -18,6 +19,7 @@ public class ListarReportesHandlerTests
         Municipio = municipio,
         Latitud = lat,
         Longitud = lng,
+        IdentificadorCanal = IdentificadorCanalReporte.ParaWeb(1),
         UsuarioId = 1,
         CreadoEn = creadoEn,
         ActualizadoEn = creadoEn

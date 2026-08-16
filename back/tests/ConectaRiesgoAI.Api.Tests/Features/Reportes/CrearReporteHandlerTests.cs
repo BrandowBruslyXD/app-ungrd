@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Features.Reportes.CrearReporte;
@@ -61,6 +62,20 @@ public class CrearReporteHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ReporteValido_PersisteIdentidadDeCanalWeb()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        var handler = new CrearReporteHandler(contexto, NullLogger<CrearReporteHandler>.Instance);
+
+        var respuesta = await handler.Handle(NuevoComando(usuarioId: 3), CancellationToken.None);
+
+        var reporte = await contexto.Reportes.SingleAsync(r => r.Codigo == respuesta.Codigo);
+        Assert.Equal(CanalOrigen.Web, reporte.Canal);
+        Assert.Equal("usuario:3", reporte.IdentificadorCanal);
+        Assert.Null(reporte.ReferenciaExterna);
+    }
+
+    [Fact]
     public async Task Handle_DosReportesElMismoDia_IncrementaElConsecutivo()
     {
         using var contexto = AppDbContextPruebas.Crear();
@@ -96,6 +111,7 @@ public class CrearReporteHandlerTests
             Municipio = "Bogotá",
             Latitud = 4.71,
             Longitud = -74.07,
+            IdentificadorCanal = IdentificadorCanalReporte.ParaWeb(1),
             UsuarioId = 1,
             CreadoEn = hoy
         });

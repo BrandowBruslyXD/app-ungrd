@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Persistence;
@@ -82,6 +83,9 @@ public class CrearReporteHandler(AppDbContext context, ILogger<CrearReporteHandl
             Municipio = command.Municipio,
             UrlFoto = command.UrlFoto,
             UsuarioId = command.UsuarioId,
+            Canal = CanalOrigen.Web,
+            IdentificadorCanal = IdentificadorCanalReporte.ParaWeb(command.UsuarioId),
+            ReferenciaExterna = null,
             CreadoEn = ahora,
             ActualizadoEn = ahora
         };

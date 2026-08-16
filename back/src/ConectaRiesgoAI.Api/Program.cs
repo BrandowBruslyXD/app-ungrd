@@ -3,6 +3,7 @@ using ConectaRiesgoAI.Api.Common.Auth;
 using ConectaRiesgoAI.Api.Common.Behaviors;
 using ConectaRiesgoAI.Api.Common.Endpoints;
 using ConectaRiesgoAI.Api.Common.Errors;
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Persistence;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,10 @@ builder.Services.AddMediatR(cfg =>
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
+// --- Identidad de canal en reportes --------------------------------------
+builder.Services.AddScoped<IResolutorUsuarioPorTelefono, ResolutorUsuarioPorTelefono>();
+builder.Services.AddScoped<IBuscadorReporteIdempotente, BuscadorReporteIdempotente>();
 
 // --- Autenticación -------------------------------------------------------
 builder.Services.AgregarAutenticacion(builder.Configuration);

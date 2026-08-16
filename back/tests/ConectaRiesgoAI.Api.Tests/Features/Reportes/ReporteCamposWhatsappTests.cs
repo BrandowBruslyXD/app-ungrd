@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Persistence;
@@ -37,6 +38,7 @@ public class ReporteCamposWhatsappTests
             Municipio = "Soacha",
             UbicacionTexto = "Soacha, Villa Mercedes, frente a la cancha",
             Canal = CanalOrigen.WhatsApp,
+            IdentificadorCanal = IdentificadorCanalReporte.ParaTelefono("573001234567"),
             Confianza = ConfianzaReporte.Autorreportado,
             Usuario = usuario
         };
@@ -67,6 +69,7 @@ public class ReporteCamposWhatsappTests
             Municipio = "Bogotá",
             Latitud = 4.710989,
             Longitud = -74.072092,
+            IdentificadorCanal = IdentificadorCanalReporte.ParaWeb(usuario.Id),
             Usuario = usuario
         };
         db.Reportes.Add(reporte);

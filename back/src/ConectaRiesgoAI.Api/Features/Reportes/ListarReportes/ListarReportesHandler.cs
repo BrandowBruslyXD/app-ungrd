@@ -30,13 +30,15 @@ public class ListarReportesHandler(AppDbContext context)
 
         var conDistancia = reportes.Select(r => (
             Reporte: r,
-            DistanciaKm: tieneUbicacion
-                ? Math.Round(CalcularDistanciaKm(query.Lat!.Value, query.Lng!.Value, r.Latitud, r.Longitud), 1)
+            DistanciaKm: tieneUbicacion && r.Latitud is not null && r.Longitud is not null
+                ? Math.Round(
+                    CalcularDistanciaKm(query.Lat!.Value, query.Lng!.Value, r.Latitud.Value, r.Longitud.Value),
+                    1)
                 : (double?)null));
 
         if (tieneUbicacion && query.RadioKm is { } radioKm)
         {
-            conDistancia = conDistancia.Where(x => x.DistanciaKm <= radioKm);
+            conDistancia = conDistancia.Where(x => x.DistanciaKm is not null && x.DistanciaKm <= radioKm);
         }
 
         var ordenados = tieneUbicacion
