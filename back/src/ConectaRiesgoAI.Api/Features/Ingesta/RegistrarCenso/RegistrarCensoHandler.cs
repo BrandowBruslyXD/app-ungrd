@@ -105,12 +105,20 @@ public class RegistrarCensoHandler(AppDbContext db, ILogger<RegistrarCensoHandle
                 Estado = EstadoPersonaAfectada.Borrador
             };
 
-            if (!string.IsNullOrWhiteSpace(command.EstadoVivienda))
+            // Antes solo miraba EstadoVivienda: si el bot mandaba Necesidad sin EstadoVivienda, la
+            // declaración de la persona desaparecía sin error ni log, con 201 igual (hallazgo de
+            // revisión del PR #66). Con cualquiera de los dos presentes ya se guarda el daño.
+            if (!string.IsNullOrWhiteSpace(command.EstadoVivienda) || !string.IsNullOrWhiteSpace(command.Necesidad))
             {
                 persona.Danos.Add(new DanoRegistrado
                 {
                     Categoria = CategoriaDano.Vivienda,
-                    Nivel = MapeoNivelDanoVivienda.Aproximar(command.EstadoVivienda),
+                    // Sin EstadoVivienda no hay texto que aproximar: Moderado como punto neutro,
+                    // igual que MapeoNivelDanoVivienda.Aproximar cuando no reconoce ninguna palabra
+                    // clave (ver su doc). El brigadista completa el resto después.
+                    Nivel = string.IsNullOrWhiteSpace(command.EstadoVivienda)
+                        ? NivelDano.Moderado
+                        : MapeoNivelDanoVivienda.Aproximar(command.EstadoVivienda),
                     Descripcion = ArmarDescripcionDano(command)
                 });
             }
@@ -215,10 +223,18 @@ public class RegistrarCensoHandler(AppDbContext db, ILogger<RegistrarCensoHandle
             cancellationToken);
     }
 
-    /// <summary>Junta el estado de vivienda en texto libre del bot con la necesidad declarada, si viene.</summary>
+    /// <summary>
+    /// Junta el estado de vivienda en texto libre del bot con la necesidad declarada. Se llama solo
+    /// cuando al menos uno de los dos viene con contenido (ver el llamador); nunca asume cuál.
+    /// </summary>
     private static string ArmarDescripcionDano(RegistrarCensoCommand command)
     {
-        List<string> partes = [command.EstadoVivienda!.Trim()];
+        List<string> partes = [];
+        if (!string.IsNullOrWhiteSpace(command.EstadoVivienda))
+        {
+            partes.Add(command.EstadoVivienda.Trim());
+        }
+
         if (!string.IsNullOrWhiteSpace(command.Necesidad))
         {
             partes.Add($"Necesidad: {command.Necesidad.Trim()}");

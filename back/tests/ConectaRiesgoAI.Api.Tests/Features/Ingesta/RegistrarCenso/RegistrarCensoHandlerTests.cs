@@ -94,6 +94,37 @@ public class RegistrarCensoHandlerTests
     }
 
     [Fact]
+    public async Task Handle_NecesidadSinEstadoVivienda_PersisteElDano()
+    {
+        using var db = NuevoContexto();
+        await AgregarBrigadistaAcreditado(db);
+        var handler = NuevoHandler(db);
+        var comando = Comando() with { EstadoVivienda = null, Necesidad = "Agua potable urgente" };
+
+        await handler.Handle(comando, CancellationToken.None);
+
+        var persona = await db.PersonasAfectadas.Include(p => p.Danos).SingleAsync();
+        var dano = Assert.Single(persona.Danos);
+        Assert.Equal(CategoriaDano.Vivienda, dano.Categoria);
+        Assert.Equal(NivelDano.Moderado, dano.Nivel);
+        Assert.Equal("Necesidad: Agua potable urgente", dano.Descripcion);
+    }
+
+    [Fact]
+    public async Task Handle_SinEstadoViviendaNiNecesidad_NoCreaDano()
+    {
+        using var db = NuevoContexto();
+        await AgregarBrigadistaAcreditado(db);
+        var handler = NuevoHandler(db);
+        var comando = Comando() with { EstadoVivienda = null, Necesidad = null };
+
+        await handler.Handle(comando, CancellationToken.None);
+
+        var persona = await db.PersonasAfectadas.Include(p => p.Danos).SingleAsync();
+        Assert.Empty(persona.Danos);
+    }
+
+    [Fact]
     public async Task Handle_DosRegistrosMismoBrigadistaYMunicipio_ReutilizaLaMismaOperacionCenso()
     {
         using var db = NuevoContexto();
