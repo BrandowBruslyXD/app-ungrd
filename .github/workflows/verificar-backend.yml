@@ -51,21 +51,17 @@ jobs:
       - name: Correr pruebas con cobertura
         run: dotnet test back/ConectaRiesgoAI.slnx --no-build --configuration Release --verbosity minimal --settings back/tests/ConectaRiesgoAI.Api.Tests/coverlet.runsettings --collect:"XPlat Code Coverage"
 
-      - name: Instalar ReportGenerator
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
-
-      - name: Generar reporte de cobertura
-        run: |
-          reportgenerator "-reports:back/tests/ConectaRiesgoAI.Api.Tests/TestResults/**/coverage.cobertura.xml" "-targetdir:coverage-report" "-reporttypes:MarkdownSummary;Cobertura" -verbosity:Verbose
-          if [ ! -f coverage-report/coverage.cobertura.xml ]; then
-            echo "::error::No se generó coverage.cobertura.xml — reportgenerator falló o no encontró archivos de entrada"
-            exit 1
-          fi
-
       - name: Validar umbral de cobertura (90%)
         run: |
           set -e
-          LINE_RATE=$(grep -oP 'line-rate="\K[^"]+' coverage-report/coverage.cobertura.xml | head -1)
+          # Usa el XML de cobertura generado por coverlet directamente (no depende de reportgenerator).
+          COVERAGE_XML=$(find back/tests/ConectaRiesgoAI.Api.Tests/TestResults -name "coverage.cobertura.xml" | head -1)
+          if [ -z "$COVERAGE_XML" ]; then
+            echo "::error::No se encontró coverage.cobertura.xml — coverlet no generó el archivo de cobertura"
+            exit 1
+          fi
+
+          LINE_RATE=$(grep -oP 'line-rate="\K[^"]+' "$COVERAGE_XML" | head -1)
           if [ -z "$LINE_RATE" ]; then
             echo "::error::No se pudo extraer line-rate del XML de cobertura — XML corrupto o atributo ausente"
             exit 1
@@ -79,6 +75,17 @@ jobs:
 
           if awk "BEGIN {exit !($LINE_PCT < $THRESHOLD)}"; then
             echo "::error::La cobertura de línea (${LINE_PCT}%) está por debajo del umbral requerido (${THRESHOLD}%)"
+            exit 1
+          fi
+
+      - name: Instalar ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Generar reporte de cobertura
+        run: |
+          reportgenerator "-reports:back/tests/ConectaRiesgoAI.Api.Tests/TestResults/**/coverage.cobertura.xml" "-targetdir:coverage-report" "-reporttypes:MarkdownSummary" -verbosity:Verbose
+          if [ ! -f coverage-report/Summary.md ]; then
+            echo "::error::No se generó Summary.md — reportgenerator falló o no encontró archivos de entrada"
             exit 1
           fi
 
