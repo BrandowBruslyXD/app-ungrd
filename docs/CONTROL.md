@@ -31,7 +31,8 @@ Todas gratuitas. **El repositorio es público: ninguna se escribe en el código.
 |:---|:---|:---|:---|:---|
 | **NASA FIRMS** | Verificación satelital | Gratis | `firms.modaps.eosdis.nasa.gov/api/area/` — llega al correo en minutos | ⬜ |
 | **PostgreSQL** | Base de datos | Burstable B1ms (bajo costo, no gratis) | Azure Database for PostgreSQL Flexible Server, suscripción de Azure del equipo | ✅ |
-| **Cloudinary** | Fotos | Gratis | `cloudinary.com` | ⬜ |
+| **Cloudinary** | Fotos (subida desde el frontend, `CONTRATO-API.md` sección 2) | Gratis | `cloudinary.com` | ⬜ |
+| **Azure Blob Storage** | Fotos (subida desde el backend, `POST /api/evidencias`, issue #47) | Bajo costo (Standard_LRS) | `infra/aprovisionar-storage.sh` — ya en la suscripción de Azure del equipo | ⬜ falta ejecutar el script |
 | **Bluesky** | Monitoreo de redes | Gratis | Cuenta normal + **contraseña de aplicación** | ⬜ |
 | **SECOP** | Contratos públicos | Gratis | No requiere clave | ✅ |
 | **X / Twitter** | Monitoreo de redes | **~USD 100+/mes** | — | ❌ Descartado |
@@ -64,6 +65,7 @@ Se anotan para no volver a discutir lo mismo a las 3 de la mañana.
 | D7 | **Sin PostGIS** | Haversine en C# alcanza y ahorra una hora de pelear con extensiones |
 | D8 | **Una aprobación de cualquiera** para hacer merge | Un PR bloqueado es tiempo muerto. Solo no se vale autoaprobarse |
 | D9 | **Respaldo de SECOP** marcado como no real | `datos.gov.co` estuvo caído. Mostrarlo como real sería engañar al jurado |
+| D16 | **Azure Blob Storage además de Cloudinary, no en reemplazo** — `POST /api/evidencias` sube server-side a dos contenedores privados (`evidencias`, `censo`) con URL firmada. Coexiste con el flujo Cloudinary client-side de `CONTRATO-API.md` sección 2; no se tocó ese endpoint | Issue #47: Azure Container Apps no tiene disco persistente, y las fotos del censo (documentos, rostros) necesitan un contenedor con la protección más alta de la Ley 1581. Unificar ambos flujos de subida queda para cuando exista `CrearReporte` |
 
 ---
 

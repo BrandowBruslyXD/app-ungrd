@@ -51,8 +51,10 @@ back/
 │     │  │  └─ ResumenEstadisticas/
 │     │  ├─ Verificacion/
 │     │  │  └─ VerificacionSatelital/
-│     │  └─ Transparencia/
-│     │     └─ ContratosSecop/
+│     │  ├─ Transparencia/
+│     │  │  └─ ContratosSecop/
+│     │  └─ Evidencias/
+│     │     └─ SubirEvidencia/
 │     │
 │     ├─ Domain/                        ← modelo compartido entre slices
 │     │  ├─ Entities/                     Usuario, Reporte, EventoCronologia
@@ -72,7 +74,8 @@ back/
 │     │
 │     ├─ Integrations/                   ← clientes de APIs externas
 │     │  ├─ Nasa/                          NASA FIRMS
-│     │  └─ Secop/                         datos.gov.co
+│     │  ├─ Secop/                         datos.gov.co
+│     │  └─ Storage/                       Azure Blob Storage (evidencias, censo)
 │     │
 │     └─ Properties/
 │
@@ -117,8 +120,13 @@ Las consultas usan `Query` en vez de `Command`: `ListarReportesQuery`, `ListarRe
 | `GET /api/estadisticas/resumen` | `Features/Estadisticas/ResumenEstadisticas/` |
 | `GET /api/verificacion/satelital` | `Features/Verificacion/VerificacionSatelital/` |
 | `GET /api/transparencia/secop` | `Features/Transparencia/ContratosSecop/` |
+| `POST /api/evidencias` | `Features/Evidencias/SubirEvidencia/` |
 
 > `GET /api/reportes/{codigo}` compone su respuesta llamando a `Integrations/Nasa` y `Integrations/Secop`. Ambas con tiempo límite de 5 segundos y devolviendo `null` / `[]` si fallan — la pantalla de seguimiento **nunca** se cae por un servicio externo.
+>
+> `POST /api/evidencias` sube un archivo a Azure Blob Storage vía `Integrations/Storage` y
+> devuelve una URL firmada; nunca guarda nada en Postgres. Si Azure Blob Storage falla, responde
+> `subida: false` y `urlFoto: null` en vez de un 500 — mismo trato que NASA/SECOP.
 
 ---
 
