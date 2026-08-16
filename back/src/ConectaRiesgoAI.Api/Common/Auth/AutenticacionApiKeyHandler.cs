@@ -5,6 +5,7 @@ using System.Text.Encodings.Web;
 using ConectaRiesgoAI.Api.Common.Errors;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace ConectaRiesgoAI.Api.Common.Auth;
 
@@ -25,14 +26,22 @@ public class AutenticacionApiKeyHandler(
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (!Request.Headers.TryGetValue(Cabecera, out var valores))
+        if (!Request.Headers.TryGetValue(Cabecera, out StringValues valores))
         {
             // Sin el body: los logs llevan identificadores, no contenido (CLAUDE.md).
             Logger.LogWarning("Ingesta sin cabecera {Cabecera} desde {Ip}", Cabecera, IpDelCliente());
             return Task.FromResult(AuthenticateResult.Fail($"Falta la cabecera {Cabecera}"));
         }
 
-        if (!EsClaveValida(valores.ToString(), opcionesApiKey.Value.ApiKey))
+        if (!TryExtraerClaveRecibida(valores, out string? claveRecibida, out string? errorExtraccion))
+        {
+            Logger.LogWarning(
+                "Ingesta con cabecera {Cabecera} malformada ({Motivo}) desde {Ip}",
+                Cabecera, errorExtraccion, IpDelCliente());
+            return Task.FromResult(AuthenticateResult.Fail(errorExtraccion!));
+        }
+
+        if (!EsClaveValida(claveRecibida, opcionesApiKey.Value.ApiKey))
         {
             Logger.LogWarning("Ingesta con clave de servicio inválida desde {Ip}", IpDelCliente());
             return Task.FromResult(AuthenticateResult.Fail("Clave de servicio inválida"));
@@ -50,6 +59,37 @@ public class AutenticacionApiKeyHandler(
     }
 
     private string? IpDelCliente() => Context.Connection.RemoteIpAddress?.ToString();
+
+    /// <summary>
+    /// Extrae la clave de una única cabecera. Rechaza múltiples valores: <see cref="StringValues.ToString"/>
+    /// los concatena con coma y abriría bypass si la clave configurada contiene coma.
+    /// </summary>
+    public static bool TryExtraerClaveRecibida(StringValues valores, out string? clave, out string? error)
+    {
+        clave = null;
+        error = null;
+
+        if (valores.Count == 0)
+        {
+            error = "Clave de servicio vacía o malformada";
+            return false;
+        }
+
+        if (valores.Count > 1)
+        {
+            error = "Cabecera malformada";
+            return false;
+        }
+
+        clave = valores[0];
+        if (string.IsNullOrEmpty(clave))
+        {
+            error = "Clave de servicio vacía o malformada";
+            return false;
+        }
+
+        return true;
+    }
 
     /// <summary>Comparación en tiempo constante: una clave de servicio no se compara con <c>==</c>.</summary>
     public static bool EsClaveValida(string? recibida, string? configurada) =>
