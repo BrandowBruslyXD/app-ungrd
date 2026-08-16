@@ -124,6 +124,33 @@ builder.Services.AddSwaggerGen(o =>
 
 var app = builder.Build();
 
+// Aplica las migraciones pendientes al arrancar.
+//
+// Sin esto, un despliegue nuevo levanta la API contra una base sin tablas: /health
+// responde 200 porque no toca la base, pero cualquier endpoint real devuelve 500 con
+// "relation \"reportes\" does not exist". Es exactamente lo que estaba pasando en
+// Azure, y no se veía porque el health check pasaba.
+using (var scope = app.Services.CreateScope())
+{
+    var contexto = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var registro = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Migraciones");
+    try
+    {
+        IEnumerable<string> pendientes = await contexto.Database.GetPendingMigrationsAsync();
+        if (pendientes.Any())
+        {
+            registro.LogInformation("Aplicando {Cantidad} migraciones pendientes.", pendientes.Count());
+            await contexto.Database.MigrateAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        // No se aborta el arranque: si la base no está lista todavía, conviene que el
+        // contenedor siga en pie y lo reintente, en vez de entrar en bucle de reinicio.
+        registro.LogError(ex, "No se pudieron aplicar las migraciones al arrancar.");
+    }
+}
+
 app.UseExceptionHandler();
 app.UseCors(PoliticaCors);
 app.UseRateLimiter();

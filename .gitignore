@@ -20,6 +20,15 @@ npm-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# --- Repos clonados dentro del repo (no versionar) ---
+conectariesgo/
+
+# --- Credenciales sueltas (repo publico: nunca versionar) ---
+datos-meta.txt
+datos-*.txt
+*-credenciales.txt
+*.secret
+
 # --- Entorno ---
 .env
 .env.local

@@ -1,0 +1,977 @@
+{
+  "census": {
+    "requiredMark": "*",
+    "title": "Censo EDAN de Campo",
+    "subtitle": "Evaluación de Daños y Análisis de Necesidades",
+    "backToPanel": "Volver al panel",
+    "previousStep": "Paso anterior",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "submitting": "Enviando...",
+    "submit": "Registrar Censo",
+    "newCensus": "Nuevo censo",
+    "success": {
+      "title": "Censo EDAN registrado",
+      "summary": "{{families}} familia(s) y {{persons}} persona(s) en {{address}}.",
+      "couldNotSave": "El censo se cerró, pero este teléfono no pudo guardarlo. Anote el folio y avise en la alcaldía antes de salir de la zona.",
+      "pendingSyncTitle": "Guardado en este teléfono",
+      "pendingSyncBody": "Todavía no se ha enviado. Cuando tenga señal, se sincroniza desde su panel."
+    },
+    "steps": {
+      "1": {
+        "title": "Contexto",
+        "short": "Op."
+      },
+      "2": {
+        "title": "Vivienda",
+        "short": "Viv."
+      },
+      "3": {
+        "title": "Personas",
+        "short": "Pers."
+      },
+      "4": {
+        "title": "Daños",
+        "short": "Daños"
+      },
+      "5": {
+        "title": "Necesidades",
+        "short": "Nec."
+      },
+      "6": {
+        "title": "Revisión",
+        "short": "Enviar"
+      }
+    },
+    "eventTypes": {
+      "sismo": "Sismo",
+      "inundacion": "Inundación",
+      "deslizamiento": "Deslizamiento",
+      "avalancha": "Avalancha",
+      "granizada": "Granizada",
+      "tormenta_electrica": "Tormenta eléctrica",
+      "tornado": "Tornado",
+      "vendaval": "Vendaval",
+      "erupcion_volcanica": "Erupción volcánica",
+      "tsunami": "Tsunami",
+      "incendio_forestal": "Incendio forestal",
+      "incendio_urbano": "Incendio urbano",
+      "materiales_peligrosos": "Incidente con materiales peligrosos",
+      "explosion": "Explosión",
+      "voladura_poliducto": "Voladura de poliducto",
+      "atentado_terrorista": "Atentado terrorista"
+    },
+    "documentTypes": {
+      "CC": "Cédula de Ciudadanía",
+      "TI": "Tarjeta de Identidad",
+      "CE": "Cédula de Extranjería",
+      "PA": "Pasaporte",
+      "RC": "Registro Civil",
+      "PEP": "PEP",
+      "PPT": "PPT",
+      "sin_documento": "Sin documento"
+    },
+    "parentesco": {
+      "jefe_hogar": "Jefe(a) de hogar",
+      "conyuge": "Cónyuge / Compañero(a)",
+      "hijo": "Hijo(a)",
+      "padre_madre": "Padre / Madre",
+      "hermano": "Hermano(a)",
+      "nieto": "Nieto(a)",
+      "abuelo": "Abuelo(a)",
+      "otro_pariente": "Otro pariente",
+      "no_pariente": "No pariente"
+    },
+    "sexo": {
+      "M": "Masculino",
+      "F": "Femenino",
+      "otro": "Otro"
+    },
+    "grupoEtnico": {
+      "ninguno": "Ninguno",
+      "indigena": "Indígena",
+      "rom": "Rom (Gitano)",
+      "raizal": "Raizal",
+      "palenquero": "Palenquero",
+      "afrodescendiente": "Afrodescendiente"
+    },
+    "condicionSalud": {
+      "ileso": "Ileso",
+      "herido": "Herido",
+      "enfermo": "Enfermo",
+      "desaparecido": "Desaparecido",
+      "fallecido": "Fallecido"
+    },
+    "discapacidad": {
+      "ninguna": "Ninguna",
+      "fisica": "Física",
+      "visual": "Visual",
+      "auditiva": "Auditiva",
+      "cognitiva": "Cognitiva",
+      "multiple": "Múltiple"
+    },
+    "housingTypes": {
+      "casa": "Casa",
+      "apartamento": "Apartamento",
+      "habitacion": "Habitación / Pieza",
+      "improvisada": "Vivienda improvisada",
+      "otro": "Otro"
+    },
+    "ownershipTypes": {
+      "propia": "Propia",
+      "arriendo": "Arriendo",
+      "prestada": "Prestada / Cedida",
+      "invasion": "Invasión / Ocupación",
+      "otro": "Otro"
+    },
+    "damageAggregate": {
+      "sin_dano": "Sin daño",
+      "averiada": "Averiada",
+      "destruida": "Destruida"
+    },
+    "damageAggregateDesc": {
+      "sin_dano": "Sin daños visibles",
+      "averiada": "Daños recuperables",
+      "destruida": "No habitable ni recuperable"
+    },
+    "damageStructural": {
+      "leve": "Leve",
+      "moderado": "Moderado",
+      "severo": "Severo",
+      "colapso": "Colapso"
+    },
+    "damageStructuralDesc": {
+      "leve": "Fisuras finas, acabados",
+      "moderado": "Grietas en muros",
+      "severo": "Estructura comprometida",
+      "colapso": "Colapso parcial o total"
+    },
+    "affectedGoods": {
+      "enseres_domesticos": "Enseres domésticos",
+      "electrodomesticos": "Electrodomésticos",
+      "vehiculo": "Vehículo",
+      "herramientas": "Herramientas de trabajo",
+      "cultivos": "Cultivos / Cosechas",
+      "animales": "Animales (ganado, aves)",
+      "documentos": "Documentos personales",
+      "otro": "Otro"
+    },
+    "needCategories": {
+      "ahe_alimentaria": "AHE Alimentaria (alimentos, agua)",
+      "ahe_no_alimentaria": "AHE No Alimentaria (kits aseo, colchonetas)",
+      "materiales_rehabilitacion": "Materiales rehabilitación vivienda",
+      "subsidio_arriendo": "Subsidio de arrendamiento temporal"
+    },
+    "operation": {
+      "title": "Contexto de la operación",
+      "subtitle": "Evento, fecha y ubicación del censo EDAN.",
+      "eventType": "Tipo de evento",
+      "eventTypePlaceholder": "Seleccionar tipo de evento",
+      "eventDate": "Fecha del evento",
+      "departamento": "Departamento",
+      "departamentoPlaceholder": "Departamento",
+      "municipio": "Municipio",
+      "municipioPlaceholder": "Municipio",
+      "calamityActive": "Declaratoria de calamidad activa",
+      "calamityNone": "Sin declaratoria de calamidad",
+      "calamityUntil": "{{decreto}} — vigente hasta {{date}}",
+      "calamityHint": "El censo se puede realizar pero la distribución de AHE puede requerir autorización adicional.",
+      "zone": "Zona",
+      "zoneUrban": "Urbano",
+      "zoneRural": "Rural",
+      "zoneNameUrban": "Barrio",
+      "zoneNameRural": "Vereda / Corregimiento",
+      "zoneNameUrbanPlaceholder": "Ej: Barrio Los Pinos",
+      "zoneNameRuralPlaceholder": "Ej: Vereda El Carmen"
+    },
+    "housing": {
+      "title": "Visita a la vivienda",
+      "subtitle": "Dirección, tipo de vivienda y servicios afectados.",
+      "address": "Dirección / Ubicación",
+      "addressPlaceholder": "Ej: Cra 5 #12-34 / Finca La Esperanza",
+      "housingType": "Tipo de vivienda",
+      "ownership": "Tenencia",
+      "families": "Familias en esta vivienda",
+      "headsExpected": "{{count}} jefe(s) de hogar esperado(s)",
+      "services": "Servicios públicos afectados",
+      "water": "Agua potable",
+      "sewer": "Alcantarillado",
+      "electricity": "Energía eléctrica"
+    },
+    "people": {
+      "title": "Registro de personas",
+      "subtitle": "Cada familia debe tener exactamente un(a) jefe de hogar.",
+      "familyLabel": "Familia {{index}}",
+      "personCount": "{{count}} persona(s)",
+      "noHead": "Sin jefe",
+      "severalHeads": "Varios jefes",
+      "personFallback": "Persona {{index}}",
+      "headBadge": "Jefe",
+      "firstName": "Nombres",
+      "lastName": "Apellidos",
+      "documentType": "Tipo doc.",
+      "documentNumber": "No. documento",
+      "birthDate": "Fecha nacimiento",
+      "sexo": "Sexo",
+      "parentesco": "Parentesco",
+      "ethnicGroup": "Grupo étnico",
+      "health": "Salud post-evento",
+      "disability": "Discapacidad",
+      "healthNotes": "Obs. salud",
+      "healthNotesPlaceholder": "Ej: Hipertenso",
+      "pregnant": "Gestante",
+      "lactating": "Lactante",
+      "unaccompaniedMinor": "Menor no acompañado",
+      "addPerson": "Agregar persona",
+      "docRequired": "Falta el documento",
+      "docDuplicated": "Documento repetido",
+      "docRequiredHelp": "Escribe el número de documento. Si la persona perdió sus papeles, elige «Sin documento» en el tipo.",
+      "docDuplicatedHelp": "Este número ya quedó registrado en otra persona de este censo. El RUD no admite una cédula dos veces en el mismo evento."
+    },
+    "damage": {
+      "title": "Evaluación de daños",
+      "subtitle": "Categorías oficiales EDAN.",
+      "general": "Estado general",
+      "structural": "Nivel de daño estructural",
+      "notes": "Observaciones de daño",
+      "notesPlaceholder": "Describa los daños observados...",
+      "goods": "Bienes afectados"
+    },
+    "needs": {
+      "title": "Evaluación de necesidades",
+      "subtitle": "4 categorías oficiales de ayuda humanitaria por familia.",
+      "familyHeading": "Familia {{index}}: {{name}}",
+      "personCount": "({{count}} persona(s))",
+      "notes": "Observaciones",
+      "notesPlaceholder": "Ej: Requiere agua potable urgente...",
+      "emptyError": "Seleccione al menos una necesidad."
+    },
+    "consent": {
+      "title": "Consentimiento y revisión",
+      "subtitle": "Verifique la información y obtenga el consentimiento.",
+      "privacyTitle": "Protección de Datos Personales",
+      "legalText": "En cumplimiento de la Ley 1581 de 2012, los datos incluyen información sensible (salud, etnia, discapacidad). El responsable del tratamiento es la UNGRD y/o el municipio de {{municipio}}. Finalidad exclusiva: evaluación de daños, análisis de necesidades y canalización de ayuda humanitaria. El titular tiene derecho a conocer, actualizar, rectificar y solicitar la supresión de sus datos.",
+      "municipioFallback": "___",
+      "summaryTitle": "Resumen del censo",
+      "damageLabel": "Daño: {{aggregate}}",
+      "damageWithStructural": "Daño: {{aggregate}} ({{structural}})",
+      "familiesPersons": "{{families}} familia(s) — {{persons}} persona(s)",
+      "familyLine": "Familia {{index}}: {{head}} — {{count}} persona(s)",
+      "noHead": "Sin jefe",
+      "needsTitle": "Necesidades",
+      "familyNeeds": "Fam. {{index}}: {{needs}}",
+      "noNeeds": "Ninguna",
+      "checksTitle": "Verificaciones",
+      "checkHeads": "Jefes de hogar: {{heads}}/{{families}}",
+      "checkNeeds": "Necesidades registradas por familia",
+      "checkDamage": "Evaluación de daño registrada",
+      "checkPersons": "{{count}} persona(s) registrada(s)",
+      "authorizeTitle": "El/la jefe de hogar autoriza el tratamiento de datos",
+      "authorizeText": "Autorizo libre, previa, expresa e informada el tratamiento de los datos personales y sensibles aquí consignados, conforme a la Ley 1581 de 2012."
+    },
+    "a11y": {
+      "decreaseFamilies": "Disminuir número de familias",
+      "increaseFamilies": "Aumentar número de familias",
+      "removePerson": "Quitar persona",
+      "expandFamily": "Expandir familia {{index}}",
+      "collapseFamily": "Contraer familia {{index}}",
+      "expandPerson": "Expandir persona {{name}}",
+      "collapsePerson": "Contraer persona {{name}}"
+    },
+    "worksOffline": "Funciona sin señal. Lo que registre queda guardado en este teléfono."
+  },
+  "rescuer": {
+    "newCensus": "Nuevo Censo EDAN",
+    "calamityActive": "Declaratoria de calamidad activa — {{municipio}}",
+    "calamityUntil": "{{decreto}} — Vigente hasta {{date}}",
+    "stats": {
+      "visitsToday": "Visitas hoy",
+      "families": "Familias",
+      "persons": "Personas",
+      "pendingSync": "Pendientes sync"
+    },
+    "injured": "Heridos",
+    "vulnerable": "Vulnerables",
+    "activeOps": "Ops activas",
+    "operations": "Operaciones",
+    "tabActive": "Activas ({{count}})",
+    "tabClosed": "Cerradas ({{count}})",
+    "emptyActive": "No hay operaciones activas",
+    "emptyClosed": "No hay operaciones cerradas",
+    "statusInProgress": "En curso",
+    "statusClosed": "Cerrada",
+    "visitCount": "{{count}} visitas",
+    "familyPersonCount": "{{families}} fam. — {{persons}} per.",
+    "recentTitle": "Últimos registros",
+    "recentMeta": "{{families}} familia(s) — {{persons}} persona(s) — {{time}}"
+  },
+  "socorro": {
+    "entities": {
+      "bomberos": "Cuerpo de Bomberos",
+      "defensa_civil": "Defensa Civil Colombiana",
+      "cruz_roja": "Cruz Roja Colombiana"
+    },
+    "badgeLine": "Placa: {{badge}} — {{municipio}}, {{departamento}}",
+    "roleBadge": "Organismo de Socorro",
+    "stats": {
+      "incidentsToday": "Incidentes hoy",
+      "incidentsActive": "Incidentes activos",
+      "assessmentsToday": "Evaluaciones hoy",
+      "personsEvacuated": "Personas evacuadas",
+      "notHabitable": "No habitables",
+      "restricted": "Uso restringido"
+    },
+    "registerIncident": "Registrar incidente",
+    "registerIncidentHint": "Bitácora de atención",
+    "evaluateHousing": "Evaluar vivienda",
+    "evaluateHousingHint": "Habitabilidad y daño",
+    "incidentsTitle": "Incidentes atendidos",
+    "injured": "Heridos",
+    "dead": "Fallecidos",
+    "missing": "Desaparecidos",
+    "evacuated": "Evacuados",
+    "familiesCount": "{{count}} familias",
+    "linkedTo": "Vinculado a {{id}}",
+    "assessmentsTitle": "Evaluaciones de vivienda ({{count}})",
+    "evacuatedBadge": "Evacuada",
+    "status": {
+      "en_atencion": "En atención",
+      "controlado": "Controlado",
+      "cerrado": "Cerrado"
+    },
+    "a11y": {
+      "collapseIncident": "Contraer incidente {{id}}",
+      "expandIncident": "Expandir incidente {{id}}"
+    }
+  },
+  "incident": {
+    "title": "Registro de incidente atendido",
+    "subtitle": "Bitácora del organismo de socorro",
+    "successTitle": "Incidente registrado",
+    "successText": "La bitácora del incidente fue registrada. Los datos quedan marcados como verificados por tu entidad de socorro.",
+    "incidentNumber": "Número de incidente",
+    "evaluateHousings": "Evaluar viviendas",
+    "backToPanel": "Volver al panel",
+    "previous": "Anterior",
+    "cancel": "Cancelar",
+    "next": "Siguiente",
+    "submit": "Registrar incidente",
+    "steps": {
+      "1": "Evento",
+      "2": "Ubicación",
+      "3": "Afectación",
+      "4": "Confirmar"
+    },
+    "eventType": "Tipo de evento",
+    "selectPlaceholder": "Seleccionar...",
+    "eventDate": "Fecha del evento",
+    "linkedReport": "Vincular a reporte ciudadano (opcional)",
+    "linkedReportPlaceholder": "Ej: CR-2026-0847",
+    "linkedReportHint": "Si este incidente fue originado por un aviso ciudadano, ingresa su código",
+    "statusLabel": "Estado del incidente",
+    "departamento": "Departamento",
+    "municipio": "Municipio",
+    "specificLocation": "Ubicación específica",
+    "gpsOn": "GPS activado",
+    "useGps": "Usar GPS",
+    "locationPlaceholder": "Ej: Vereda El Carmen, margen derecho del río",
+    "description": "Descripción del incidente",
+    "descriptionPlaceholder": "Describe qué encontraste, las acciones realizadas y el estado actual...",
+    "injured": "Heridos",
+    "dead": "Fallecidos",
+    "missing": "Desaparecidos",
+    "evacuated": "Evacuados",
+    "familiesAffected": "Familias afectadas",
+    "summaryTitle": "Resumen del incidente",
+    "summaryEvent": "Evento",
+    "summaryDate": "Fecha",
+    "summaryLocation": "Ubicación",
+    "summaryAddress": "Dirección",
+    "summaryGps": "GPS",
+    "summaryLinked": "Vinculado a",
+    "emptyValue": "-",
+    "trustLevel": "Nivel de confianza:",
+    "trustText": "Este registro será marcado como",
+    "verifiedBadge": "Verificado por entidad",
+    "trustSuffix": "por tu organismo de socorro.",
+    "a11y": {
+      "decrease": "Disminuir {{label}}",
+      "increase": "Aumentar {{label}}"
+    }
+  },
+  "habitability": {
+    "title": "Evaluación de habitabilidad",
+    "subtitle": "Evaluación técnica rápida por organismo de socorro",
+    "successTitle": "Evaluación registrada",
+    "successText": "La evaluación de habitabilidad fue registrada.",
+    "successEvacuation": "La notificación de evacuación ha sido generada.",
+    "assessmentCode": "Código de evaluación",
+    "evaluateAnother": "Evaluar otra vivienda",
+    "backToPanel": "Volver al panel",
+    "previous": "Anterior",
+    "cancel": "Cancelar",
+    "next": "Siguiente",
+    "submit": "Registrar evaluación",
+    "steps": {
+      "1": "Vivienda",
+      "2": "Evaluación",
+      "3": "Acciones"
+    },
+    "relatedIncident": "Incidente relacionado",
+    "selectIncident": "Seleccionar incidente...",
+    "address": "Dirección de la vivienda",
+    "addressPlaceholder": "Ej: Cra 5 #12-34, Barrio Los Pinos",
+    "housingType": "Tipo de vivienda",
+    "occupants": "Ocupantes presentes",
+    "verdict": "Dictamen de habitabilidad",
+    "verdicts": {
+      "habitable": "Habitable",
+      "uso_restringido": "Uso restringido",
+      "no_habitable": "No habitable"
+    },
+    "verdictDesc": {
+      "habitable": "La vivienda puede ser ocupada sin restricciones",
+      "uso_restringido": "Se puede habitar con precauciones. Requiere monitoreo",
+      "no_habitable": "La vivienda NO puede ser ocupada. Requiere evacuación"
+    },
+    "damageCategory": "Categoría agregada de daño",
+    "structuralInspection": "Requiere inspección estructural por profesional",
+    "structuralInspectionHint": "Solo un ingeniero o arquitecto con tarjeta profesional puede hacer la inspección estructural detallada",
+    "notes": "Observaciones",
+    "notesPlaceholder": "Describe el estado de la vivienda, daños observados, condiciones de riesgo...",
+    "notHabitableTitle": "Vivienda no habitable",
+    "notHabitableText": "Según el protocolo, se debe generar una Notificación Personal de Afectación e Inminente Riesgo y activar alojamiento temporal para los ocupantes.",
+    "evacuationIssued": "Notificación de evacuación emitida",
+    "evacuationIssuedHint": "Notificación Personal de Afectación e Inminente Riesgo - Vivienda No Habitable",
+    "shelterActivated": "Alojamiento temporal activado",
+    "shelterActivatedHint": "Se gestionó albergue o alojamiento temporal para los ocupantes",
+    "summaryTitle": "Resumen de la evaluación",
+    "summaryAddress": "Dirección",
+    "summaryType": "Tipo",
+    "summaryHabitability": "Habitabilidad",
+    "summaryDamage": "Daño",
+    "summaryOccupants": "Ocupantes",
+    "summaryInspection": "Inspección estructural",
+    "inspectionRequired": "Requerida",
+    "emptyValue": "-",
+    "edanNote": "Esta evaluación alimenta el EDAN municipal y la cola de censo del CMGRD. El dato queda marcado como verificado por entidad.",
+    "housingTypes": {
+      "casa": "Casa",
+      "apartamento": "Apartamento",
+      "habitacion": "Habitación",
+      "improvisada": "Vivienda improvisada",
+      "otro": "Otro"
+    },
+    "a11y": {
+      "decreaseOccupants": "Disminuir ocupantes presentes",
+      "increaseOccupants": "Aumentar ocupantes presentes"
+    }
+  },
+  "brand": {
+    "conecta": "Conecta",
+    "riesgo": "Riesgo",
+    "full": "ConectaRiesgo"
+  },
+  "app": {
+    "loadingPage": "Cargando la pantalla…"
+  },
+  "nav": {
+    "home": "Mi panel",
+    "myReports": "Mis Reportes",
+    "report": "Reportar",
+    "aid": "Ayudas",
+    "alerts": "Alertas",
+    "triagePanel": "Panel de Triage",
+    "myPanel": "Mi panel",
+    "newCensus": "Nuevo Censo",
+    "incident": "Incidente",
+    "evaluateHousing": "Evaluar Vivienda",
+    "presentation": "Inicio"
+  },
+  "roles": {
+    "Ciudadano": "Ciudadano",
+    "Gestor": "Gestor CMGRD",
+    "Admin": "Administrador",
+    "Brigadista": "Brigadista",
+    "Socorro": "Org. Socorro"
+  },
+  "header": {
+    "menu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "closeRoleMenu": "Cerrar menú de rol",
+    "changeView": "Cambiar vista (demo)",
+    "view": "Vista: {{role}}",
+    "roleMenu": "Cambiar rol de demostración"
+  },
+  "status": {
+    "Reportado": "Reportado",
+    "Verificado": "Verificado",
+    "Asignado": "Asignado",
+    "EnAtencion": "En atención",
+    "Atendido": "Atendido",
+    "Cerrado": "Cerrado"
+  },
+  "prioridad": {
+    "Baja": "Baja",
+    "Media": "Media",
+    "Alta": "Alta"
+  },
+  "emergencyType": {
+    "Inundacion": "Inundación",
+    "Deslizamiento": "Deslizamiento",
+    "Incendio": "Incendio",
+    "ViaAfectada": "Vía afectada",
+    "ColapsoEstructural": "Colapso estructural",
+    "Otro": "Otro"
+  },
+  "trust": {
+    "autorreportado": "Autorreportado",
+    "verificado": "Verificado por entidad",
+    "censado": "Censado por brigadista",
+    "avalado": "Avalado por CMGRD"
+  },
+  "trustDesc": {
+    "autorreportado": "Lo contó una persona. Todavía nadie ha ido a comprobarlo.",
+    "verificado": "Un organismo de socorro fue al sitio y confirmó lo que pasó.",
+    "censado": "Un brigadista acreditado registró tu hogar en el formato oficial.",
+    "avalado": "El consejo municipal firmó el registro. Ya es oficial."
+  },
+  "ui": {
+    "steps": {
+      "of": "Paso {{current}} de {{total}}"
+    },
+    "stub": {
+      "label": "Tu código de seguimiento",
+      "hint": "Anótalo o tómale una foto a esta pantalla. Con ese código puedes consultar tu caso cuando quieras.",
+      "copy": "Copiar código",
+      "copied": "Código copiado",
+      "notCensus": "Este código NO te inscribe en el censo de damnificados. El censo es presencial."
+    },
+    "trustLadder": {
+      "current": "Va aquí"
+    },
+    "share": {
+      "action": "Compartir",
+      "copied": "Enlace copiado"
+    }
+  },
+  "time": {
+    "lessThanOneHour": "Hace menos de 1h",
+    "hoursAgo": "Hace {{hours}}h",
+    "days": "{{days}}d",
+    "lessThanOneHourShort": "<1h",
+    "hoursShort": "{{hours}}h"
+  },
+  "citizen": {
+    "heroTitle": "¿Qué pasó?",
+    "heroSubtitle": "Cuéntenos y un equipo va a revisar. Toma menos de dos minutos y no le cuesta nada.",
+    "reportEmergency": "Reportar una emergencia",
+    "reportEmergencyDesc": "Foto, ubicación y descripción",
+    "myReports": "Mis reportes",
+    "myReportsDesc": "Seguimiento de tus reportes",
+    "availableAid": "Ver ayudas disponibles",
+    "availableAidDesc": "Qué hay, qué piden y a dónde ir. Todo gratuito.",
+    "activeAlerts": "Alertas de mi zona",
+    "activeAlertsDesc": "Lo que está pasando cerca ahora mismo.",
+    "criticalAlert": "Hay una alerta grave activa",
+    "zoneMap": "Emergencias cerca de usted",
+    "interactiveMap": "Mapa interactivo con emergencias cercanas",
+    "nearbyEmergencies": "Emergencias cercanas",
+    "seeAll": "Ver todos",
+    "greeting": "Hola",
+    "myReportsRecent": "Mis reportes",
+    "noReportsYet": "Todavía no ha reportado nada.",
+    "quickAccess": "Más cosas que puede hacer",
+    "mapSoonTitle": "El mapa de la zona todavía no está",
+    "mapSoonBody": "Estamos construyéndolo. Por ahora las emergencias cercanas se ven en la lista de alertas.",
+    "differenceTitle": "Qué hace distinto a ConectaRiesgo",
+    "diff1": "Le damos un código y usted ve avanzar su caso, paso por paso.",
+    "diff2": "Los reportes se contrastan con imágenes de satélite de la NASA.",
+    "diff3": "Puede ver cuánto ha invertido su alcaldía en prevenir lo que le pasó."
+  },
+  "wizard": {
+    "steps": {
+      "reportType": "Tipo de reporte",
+      "whatHappened": "¿Qué pasó?",
+      "yourSituation": "Tu situación",
+      "whereAreYou": "¿Dónde estás?",
+      "importantNotice": "Aviso importante",
+      "whatDidYouSee": "¿Qué viste?",
+      "tellUsMore": "Cuéntanos más",
+      "whereItHappens": "¿Dónde ocurre?"
+    },
+    "submitted": {
+      "affectedTitle": "Reporte de afectación enviado",
+      "witnessTitle": "Aviso enviado",
+      "affectedBody": "Tu reporte fue recibido y será priorizado para una visita técnica. Un equipo de socorro evaluará tu situación.",
+      "witnessBody": "Tu aviso fue registrado con éxito. Un gestor de emergencias lo revisará pronto.",
+      "trackingNumber": "Tu número de seguimiento",
+      "saveNumber": "Guarda este número para consultar el estado de tu reporte",
+      "selfReported": "Autorreportado",
+      "remember": "Recuerda:",
+      "rememberBody": "Este reporte genera una solicitud de visita técnica. El censo oficial de damnificados es un trámite presencial, realizado por personal identificado del municipio. Nunca pagues por entrar al censo.",
+      "seeMyReports": "Ver mis reportes",
+      "backHome": "Volver al inicio",
+      "couldNotSave": "Su reporte se envió, pero este teléfono no pudo guardarlo para consultarlo después. Anote el código antes de cerrar.",
+      "shareText": "Mi reporte en ConectaRiesgo:"
+    },
+    "type": {
+      "title": "¿Cuál es tu situación?",
+      "subtitle": "Esto nos permite dirigir tu reporte al equipo correcto",
+      "witnessTitle": "Vi un evento",
+      "witnessBody": "Presencié una emergencia pero yo no soy víctima directa. Quiero avisar para que envíen ayuda.",
+      "witnessBadge": "Aviso rápido",
+      "affectedTitle": "Mi casa o familia está afectada",
+      "affectedBody": "La emergencia afectó mi vivienda o a las personas de mi hogar. Necesito que vengan a evaluar mi situación.",
+      "affectedBadge": "Solicitud de visita"
+    },
+    "emergency": {
+      "affectedTitle": "¿Qué tipo de evento afectó tu hogar?",
+      "witnessTitle": "¿Qué tipo de emergencia viste?",
+      "subtitle": "Selecciona la opción que mejor describe la situación"
+    },
+    "details": {
+      "affectedTitle": "Cuéntanos sobre tu situación",
+      "witnessTitle": "Cuéntanos qué está pasando",
+      "affectedSubtitle": "Describe los daños en tu vivienda y la situación de tu familia",
+      "witnessSubtitle": "Describe la situación con tus propias palabras",
+      "description": "Descripción",
+      "descriptionId": "report-description",
+      "placeholderAffected": "Ejemplo: El agua entró a mi casa y perdimos muebles. Somos 4 personas incluyendo 2 niños. Necesitamos un lugar donde dormir…",
+      "placeholderWitness": "Ejemplo: El río se desbordó y el agua está entrando a las casas. Hay varias familias afectadas…",
+      "minChars": "Mínimo 10 caracteres ({{count}}/10)",
+      "goodDescription": "Perfecto, describe lo mejor que puedas la situación",
+      "contactPhone": "Teléfono de contacto",
+      "phonePlaceholder": "Ej: 310 555 1234",
+      "householdSize": "¿Cuántas personas viven en tu hogar?",
+      "decreaseHousehold": "Quitar una persona",
+      "increaseHousehold": "Agregar una persona",
+      "isHabitable": "¿Tu vivienda es habitable?",
+      "habitableYes": "Sí, puedo quedarme",
+      "habitableNo": "No, está inhabitable",
+      "urgentNeed": "¿Cuál es tu necesidad más urgente?",
+      "needFood": "Alimentos y agua",
+      "needShelter": "Cobijas y aseo",
+      "needMedical": "Atención médica",
+      "needRescue": "Rescate / evacuación",
+      "howSevere": "¿Qué tan grave es la situación?",
+      "severityMild": "Leve",
+      "severityMildDesc": "Sin heridos",
+      "severityModerate": "Moderado",
+      "severityModerateDesc": "Daños materiales",
+      "severitySevere": "Grave",
+      "severitySevereDesc": "Hay heridos o riesgo",
+      "photoOptional": "Foto (opcional)",
+      "photoSelected": "Foto seleccionada",
+      "photoUpload": "Toca para tomar o subir una foto",
+      "needFoodDesc": "Mercado, agua potable",
+      "needShelterDesc": "Colchoneta, cobijas, kit de aseo",
+      "needMaterials": "Materiales para reparar",
+      "needMaterialsDesc": "Tejas, cemento, madera",
+      "needRent": "Un lugar donde dormir",
+      "needRentDesc": "Apoyo de arriendo mientras tanto",
+      "photoTooBig": "La foto pesa más de 5 MB. Tome otra con menos calidad o escoja una más liviana.",
+      "photoWrongType": "Ese archivo no es una imagen. Escoja una foto.",
+      "photoRemove": "Quitar la foto",
+      "photoChosen": "Foto lista: {{name}}",
+      "photoHelp": "Ayuda mucho, pero no es obligatoria. Puede seguir sin ella."
+    },
+    "location": {
+      "affectedTitle": "¿Dónde queda tu vivienda?",
+      "witnessTitle": "¿Dónde está ocurriendo?",
+      "affectedSubtitle": "Necesitamos la dirección exacta para programar la visita técnica",
+      "witnessSubtitle": "Necesitamos saber la ubicación para enviar ayuda",
+      "useGps": "Usar mi ubicación actual",
+      "gpsDetected": "Ubicación detectada correctamente",
+      "gpsHint": "La forma más rápida y precisa",
+      "orAddress": "O escribe la dirección",
+      "addressLabel": "Dirección",
+      "placeholderAffected": "Ej: Cra 5 #12-34, Barrio Los Pinos, Mocoa",
+      "placeholderWitness": "Ej: Vereda El Carmen, municipio de Mocoa",
+      "hintAffected": "Escribe tu dirección completa con barrio o vereda",
+      "hintWitness": "Escribe el nombre de la vereda, barrio o lugar más cercano",
+      "damagePhoto": "Foto de los daños (opcional pero muy útil)",
+      "damagePhotoUpload": "Toca para tomar o subir fotos de los daños"
+    },
+    "disclaimer": {
+      "title": "Aviso importante antes de enviar",
+      "notCensusTitle": "Este reporte NO te inscribe como damnificado",
+      "body1": "Tu reporte genera una <strong>solicitud de visita técnica</strong> para que un equipo de socorro evalúe tu situación. Es el primer paso, pero no es el censo oficial.",
+      "body2": "El <strong>censo de damnificados es un trámite presencial</strong>, realizado casa por casa por personal identificado y uniformado del municipio, con formatos oficiales.",
+      "body3": "<strong>Nunca pagues para entrar al censo.</strong> El trámite es completamente gratuito. Si alguien te pide dinero o datos bancarios a cambio de inscribirte, es una estafa. Denuncia al 123.",
+      "whatNext": "¿Qué pasa después de enviar?",
+      "step1": "Tu reporte entra a la cola de visitas del CMGRD y organismos de socorro",
+      "step2": "Un equipo de bomberos, Defensa Civil o Cruz Roja evaluará tu vivienda",
+      "step3": "Si procede, un brigadista acreditado realizará el censo oficial en tu hogar",
+      "step4": "Podrás consultar el avance con tu número de seguimiento",
+      "accept": "Entiendo que este reporte <strong>no me inscribe como damnificado</strong> y que el censo oficial es presencial. Confirmo que la información que proporcioné es verídica."
+    },
+    "nav": {
+      "back": "Anterior",
+      "cancel": "Cancelar",
+      "next": "Siguiente",
+      "submitVisit": "Enviar solicitud de visita",
+      "submitNotice": "Enviar aviso"
+    }
+  },
+  "myReports": {
+    "title": "Mis Reportes",
+    "subtitle": "Seguimiento de todas tus emergencias reportadas",
+    "newReport": "Nuevo reporte",
+    "total": "Total",
+    "active": "Activos",
+    "verified": "Verificados",
+    "witness": "Testigo",
+    "affected": "Afectado",
+    "updates": "{{count}} actualizaciones",
+    "emptyTitle": "Todavía no ha reportado nada",
+    "emptyBody": "Cuando reporte una emergencia aparecerá aquí, con su código para consultarla."
+  },
+  "reportDetail": {
+    "notFound": "Reporte no encontrado",
+    "notFoundBody": "El reporte {{id}} no existe o fue eliminado.",
+    "seeMyReports": "Ver mis reportes",
+    "backToMyReports": "Mis reportes",
+    "copyId": "Copiar número de seguimiento",
+    "copied": "Número copiado",
+    "reportedOn": "Reportado el {{date}}",
+    "cycleProgress": "Progreso del ciclo",
+    "received": "Recibido",
+    "verified": "Verificado",
+    "inCare": "En atención",
+    "resolved": "Resuelto",
+    "satelliteVerified": "Verificado por satélite",
+    "satelliteBody": "Datos de NASA/Copernicus confirman la situación reportada en esta zona.",
+    "seeSatellite": "Ver datos satelitales",
+    "publicSpending": "Gasto público",
+    "spendingBody": "Destinados por la alcaldía para atender esta emergencia",
+    "seeSecop": "Ver en SECOP",
+    "history": "Historial del reporte",
+    "share": "Compartir reporte",
+    "seeAid": "Ver ayudas disponibles"
+  },
+  "alerts": {
+    "title": "Alertas Activas",
+    "inYourZone_one": "{{count}} alerta en tu zona",
+    "inYourZone_other": "{{count}} alertas en tu zona",
+    "sourceCitizen": "Reporte ciudadano",
+    "sourceSatellite": "Datos satelitales",
+    "sourceSocial": "Redes sociales (IA)",
+    "sourceOfficial": "Alerta oficial",
+    "requiredAction": "Acción requerida: Si estás en la zona indicada, toma precauciones y sigue las instrucciones de las autoridades.",
+    "emptyTitle": "No hay alertas activas",
+    "emptyBody": "Cuando haya una emergencia en su zona aparecerá aquí.",
+    "inYourZone": "{{count}} alerta(s) activa(s) en su zona."
+  },
+  "aid": {
+    "title": "Ayudas Disponibles",
+    "subtitle": "Encuentra subsidios, trámites y servicios. Te decimos qué necesitas y a dónde ir.",
+    "noticeTitle": "No necesitas tener todos los documentos",
+    "noticeBody": "Si perdiste tus documentos en la emergencia, cada ayuda incluye alternativas. Las entidades están obligadas a atenderte incluso sin cédula en situaciones de desastre.",
+    "searchLabel": "Buscar ayuda",
+    "searchPlaceholder": "Buscar ayuda, entidad o trámite…",
+    "requirements": "Requisitos",
+    "lostDocs": "¿Perdiste tus documentos?",
+    "available": "Disponible",
+    "exhausted": "Agotado",
+    "upcoming": "Próximamente",
+    "expandAid": "Ver detalles de {{title}}",
+    "collapseAid": "Ocultar detalles de {{title}}",
+    "expandCategory": "Abrir categoría {{title}}",
+    "collapseCategory": "Cerrar categoría {{title}}",
+    "noResults": "No se encontraron ayudas para \"{{query}}\"",
+    "clearSearch": "Limpiar búsqueda"
+  },
+  "manager": {
+    "title": "Panel del consejo municipal",
+    "subtitle": "Lo que entra en su municipio, dónde ocurrió y en qué va cada caso.",
+    "online": "En línea",
+    "statReports": "Reportes",
+    "statActive": "Activas",
+    "statToVerify": "Por verificar",
+    "opsMap": "Mapa operativo",
+    "triageBoard": "Tablero de triage",
+    "colReported": "Reportados",
+    "colVerified": "Verificados",
+    "colAssigned": "Asignados",
+    "colInCare": "En atención",
+    "colAttended": "Atendidos",
+    "colClosed": "Cerrados",
+    "emptyColumn": "Sin reportes",
+    "statAttended": "Atendidos o cerrados",
+    "mapEmpty": "Todavía no hay reportes con ubicación marcada.",
+    "satelliteOk": "Confirmado con imagen satelital",
+    "seeAlerts": "Ver las alertas activas del municipio"
+  },
+  "landing": {
+    "eyebrow": "Sistema público de reporte de emergencias",
+    "title": "Cuente qué pasó. Reciba un código. Siga su caso.",
+    "subtitle": "Si se inundó su casa, se cayó la vía o hay un incendio cerca, repórtelo aquí. No necesita cuenta ni contraseña.",
+    "reportNow": "Reportar una emergencia",
+    "checkCode": "Consultar con mi código",
+    "noAccount": "Reportar es gratis y no pide registro.",
+    "emergencyTitle": "¿Hay alguien herido o en peligro ahora mismo?",
+    "emergencyBody": "No use esta página. Llame al 123. Es más rápido y llega ayuda de inmediato.",
+    "emergencyCall": "Llamar al 123",
+    "distinctionTitle": "Reportar no es lo mismo que quedar en el censo",
+    "distinctionBody": "Su reporte hace que un equipo vaya a revisar. El censo de damnificados es otra cosa: se hace en persona, casa por casa, con un funcionario identificado y con formatos en papel.",
+    "distinctionFree": "Ningún trámite tiene costo. Si alguien le cobra por entrar al censo, es una estafa.",
+    "howTitle": "Cómo funciona",
+    "howLead": "Tres pasos, y usted ve avanzar cada uno.",
+    "how1Title": "Usted cuenta qué pasó",
+    "how1Body": "Escoge el tipo de emergencia, dice dónde fue y, si puede, manda una foto.",
+    "how2Title": "Le damos un código",
+    "how2Body": "Anótelo. Con ese código consulta su caso cuando quiera, sin cuenta ni clave.",
+    "how3Title": "Usted ve quién lo atiende",
+    "how3Body": "Cada vez que alguien revisa o actúa sobre su caso, queda anotado y usted lo ve.",
+    "trustTitle": "Qué tan comprobado está un reporte",
+    "trustLead": "Todo reporte empieza siendo la palabra de una persona. Aquí se ve con claridad hasta dónde ha llegado.",
+    "staffTitle": "¿Usted trabaja en la respuesta?",
+    "staffLead": "Bomberos, Defensa Civil, Cruz Roja, brigadistas del censo y funcionarios del consejo municipal tienen su propia vista. Toca una para verla por dentro.",
+    "staffEnter": "Ver esta vista",
+    "roleSocorroTitle": "Organismo de socorro",
+    "roleSocorroBody": "Registre la atención de un incidente y evalúe si una vivienda se puede habitar.",
+    "roleBrigadistaTitle": "Brigadista del censo",
+    "roleBrigadistaBody": "Levante el censo EDAN casa por casa, con el formato oficial y sin depender de la señal.",
+    "roleGestorTitle": "Consejo municipal",
+    "roleGestorBody": "Vea todo lo que entra en su municipio, priorice y consolide para el CDGRD.",
+    "footerNote": "ConectaRiesgo es una herramienta de apoyo. No reemplaza a la línea 123 ni al censo oficial de la alcaldía.",
+    "tldrTitle": "En resumen",
+    "tldr1": "Reportar es gratis, no pide cuenta y toma menos de dos minutos.",
+    "tldr2": "Recibe un código con el que consulta su caso cuando quiera.",
+    "tldr3": "Reportar no la inscribe en el censo de damnificados: eso es presencial.",
+    "tldr4": "Si hay vida en riesgo, llame al 123. Esta página no es para eso.",
+    "stickyCta": "Reportar emergencia",
+    "faqMore": "¿Le quedó otra duda? Escríbanos por el canal de su alcaldía."
+  },
+  "login": {
+    "title": "Elige con qué vista quieres entrar",
+    "subtitle": "Cada rol ve la aplicación distinta, porque hace un trabajo distinto. Toca uno para verlo por dentro.",
+    "demoNote": "Esto es una demostración: no pide usuario ni contraseña. Puedes cambiar de vista cuando quieras desde el menú de arriba.",
+    "enterAs": "Entrar como {{role}}",
+    "backHome": "Volver al inicio",
+    "panelQuote": "La información sube por la cadena, pero nunca baja al que reportó. Eso es lo que venimos a cambiar.",
+    "roleCitizenTitle": "Ciudadano",
+    "roleCitizenBody": "Reporta lo que pasó, recibe un código y sigue su caso. Es la vista de quien vive la emergencia.",
+    "roleSocorroTitle": "Organismo de socorro",
+    "roleSocorroBody": "Bomberos, Defensa Civil o Cruz Roja: registra la atención de un incidente y evalúa si una vivienda se puede habitar.",
+    "roleBrigadistaTitle": "Brigadista del censo",
+    "roleBrigadistaBody": "Levanta el censo EDAN casa por casa con el formato oficial, y funciona sin señal.",
+    "roleGestorTitle": "Consejo municipal",
+    "roleGestorBody": "Ve todo lo que entra en el municipio, prioriza y consolida para el CDGRD."
+  },
+  "meta": {
+    "landing": {
+      "title": "Reporta una emergencia y sigue tu caso",
+      "description": "Reporta inundaciones, deslizamientos, incendios o vías afectadas en Colombia. Recibe un código y sigue tu caso. Gratis y sin registro."
+    },
+    "login": {
+      "title": "Elegir vista",
+      "description": "Entra como ciudadano, organismo de socorro, brigadista del censo o consejo municipal."
+    },
+    "citizenHome": {
+      "title": "Mi inicio",
+      "description": "Tus reportes, las alertas de tu zona y las ayudas disponibles."
+    },
+    "report": {
+      "title": "Reportar una emergencia",
+      "description": "Cuenta qué pasó, dónde fue y recibe un código de seguimiento."
+    },
+    "myReports": {
+      "title": "Mis reportes",
+      "description": "Consulta el estado de los reportes que has hecho."
+    },
+    "reportDetail": {
+      "title": "Seguimiento del reporte",
+      "description": "Mira quién ha revisado tu caso y en qué va."
+    },
+    "aid": {
+      "title": "Ayudas disponibles",
+      "description": "Qué ayudas hay, qué piden y a dónde ir. Ningún trámite tiene costo."
+    },
+    "alerts": {
+      "title": "Alertas activas",
+      "description": "Alertas vigentes en tu zona."
+    },
+    "manager": {
+      "title": "Panel del consejo municipal",
+      "description": "Reportes entrantes, priorización y consolidado para el CDGRD."
+    },
+    "rescuer": {
+      "title": "Panel del brigadista",
+      "description": "Censo EDAN de campo y registros pendientes de sincronizar."
+    },
+    "census": {
+      "title": "Censo EDAN de campo",
+      "description": "Registro casa por casa con el formato oficial FR-1703-SMD-08."
+    },
+    "socorro": {
+      "title": "Panel del organismo de socorro",
+      "description": "Incidentes atendidos y evaluaciones de habitabilidad."
+    },
+    "incident": {
+      "title": "Registrar incidente",
+      "description": "Bitácora de atención de un incidente."
+    },
+    "habitability": {
+      "title": "Evaluar habitabilidad",
+      "description": "Concepto de habitabilidad de una vivienda afectada."
+    }
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "lead": "Lo que más nos preguntan, respondido sin rodeos.",
+    "items": [
+      {
+        "q": "¿Reportar aquí me inscribe en el censo de damnificados?",
+        "a": "No. Son dos cosas distintas. Su reporte hace que un equipo vaya a revisar lo que pasó. El censo de damnificados lo levanta la alcaldía en persona, casa por casa, con un funcionario identificado y en formatos de papel. Reportar aquí no la deja inscrita, pero sí deja constancia de su caso."
+      },
+      {
+        "q": "¿Me cobran algo por reportar o por entrar al censo?",
+        "a": "No. Ningún trámite de gestión del riesgo tiene costo, ni el reporte ni el censo ni las ayudas. Si alguien le pide dinero o datos de su cuenta bancaria para inscribirla, es una estafa. No pague y denúncielo al 123."
+      },
+      {
+        "q": "¿Necesito una cuenta o una contraseña?",
+        "a": "No para reportar. Escribe lo que pasó, recibe un código y con ese código consulta su caso cuando quiera. Solo el personal de socorro, los brigadistas y los funcionarios del consejo municipal entran con usuario."
+      },
+      {
+        "q": "Perdí mis documentos en la emergencia. ¿Igual puedo reportar?",
+        "a": "Sí. Para reportar no se necesita documento. Y cuando llegue el censo, el formato oficial contempla la opción «sin documento»: la falta de papeles no la puede dejar por fuera."
+      },
+      {
+        "q": "¿Cómo sé si quien toca mi puerta es un censista de verdad?",
+        "a": "El personal del censo va identificado y uniformado, y la alcaldía anuncia las jornadas por zona antes de hacerlas. El censo nunca se hace por WhatsApp, ni por códigos QR, ni por llamada. Si tiene dudas, no entregue datos y confirme con la alcaldía."
+      },
+      {
+        "q": "¿Cuánto se demoran en atender mi reporte?",
+        "a": "Depende del municipio y de cuántos casos haya. Lo que sí está definido por norma es que la evaluación de daños y el censo por familia se hacen dentro de las primeras 72 horas de la emergencia. Usted puede ver el avance con su código."
+      },
+      {
+        "q": "Vi algo pero no me afectó a mí. ¿Sirve que lo reporte?",
+        "a": "Sí, y ayuda mucho. Un deslizamiento en una vía o un incendio a lo lejos que nadie más ha avisado le puede ahorrar horas a los organismos de socorro. Al reportar solo marque que usted es testigo, no afectado."
+      },
+      {
+        "q": "¿Hay alguien herido o atrapado en este momento?",
+        "a": "No use esta página. Llame al 123 de inmediato. Esta herramienta sirve para dejar constancia y hacer seguimiento, no para pedir auxilio urgente."
+      }
+    ]
+  },
+  "mapa": {
+    "instruccion": "Toque el mapa donde ocurrió, o use el botón para tomar su ubicación actual.",
+    "etiquetaEditable": "Mapa para escoger el punto de la emergencia",
+    "etiquetaLectura": "Mapa con la ubicación del reporte",
+    "usarMiUbicacion": "Usar mi ubicación",
+    "buscando": "Buscando su ubicación...",
+    "gpsFallo": "No pudimos tomar su ubicación. Toque el mapa para marcar el punto, o escriba la dirección abajo.",
+    "gpsNoDisponible": "Este teléfono no permite tomar la ubicación. Toque el mapa o escriba la dirección.",
+    "puntoElegido": "Punto marcado: {{lat}}, {{lng}}",
+    "tituloReporte": "Dónde ocurrió"
+  },
+  "footer": {
+    "what": "Plataforma pública para reportar emergencias en Colombia y seguir el caso hasta que alguien lo atienda.",
+    "linksTitle": "Ir a",
+    "emergencyLine": "Llamar al 123",
+    "disclaimer": "ConectaRiesgo es una herramienta de apoyo. No reemplaza a la línea 123 ni al censo oficial de damnificados de la alcaldía, que es presencial y lo realiza personal identificado.",
+    "copyright": "{{year}} · ConectaRiesgo · Datos de mapa de colaboradores de OpenStreetMap"
+  }
+}

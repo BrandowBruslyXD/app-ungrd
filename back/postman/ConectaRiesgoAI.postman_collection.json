@@ -1,0 +1,1183 @@
+{
+  "info": {
+    "name": "ConectaRiesgoAI — API",
+    "description": "Colección de pruebas del backend .NET.\n\n**Ejecutar con el Runner en orden**: las carpetas están numeradas y encadenadas — el registro guarda el token, el reporte guarda el código, y el resto los reutiliza.\n\nVariables necesarias: `baseUrl` y `claveServicio`.\n\nLa carpeta *90 · Seguridad* comprueba que los endpoints protegidos rechazan a quien no debe entrar. Si alguna de esas pruebas pasa a 200, hay un agujero.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "description": "Sin barra final"
+    },
+    {
+      "key": "claveServicio",
+      "value": "",
+      "description": "X-Api-Key de ingesta. NO se versiona."
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "tokenGestor",
+      "value": ""
+    },
+    {
+      "key": "codigoReporte",
+      "value": ""
+    },
+    {
+      "key": "emailCiudadano",
+      "value": ""
+    },
+    {
+      "key": "telefonoBot",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "00 · Salud",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Lo primero que se ejecuta: si esto falla, no sigas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"responde en menos de 3 s\", () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "pm.test(\"el servicio se identifica\", () => pm.expect(pm.response.json()).to.have.property(\"servicio\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10 · Autenticación",
+      "item": [
+        {
+          "name": "Registro de ciudadano",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/registro",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "registro"
+              ]
+            },
+            "description": "Crea el ciudadano y guarda su token para el resto de la corrida.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"María Rodríguez\",\n  \"email\": \"maria+{{sufijo}}@ejemplo.test\",\n  \"password\": \"unaClaveSegura123\",\n  \"municipio\": \"Soacha\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"devuelve token y usuario\", () => { pm.expect(d).to.have.property(\"token\"); pm.expect(d.usuario).to.have.property(\"id\"); });",
+                  "pm.test(\"el rol por defecto es Ciudadano\", () => pm.expect(d.usuario.rol).to.eql(\"Ciudadano\"));",
+                  "pm.test(\"NUNCA devuelve la contraseña\", () => pm.expect(pm.response.text()).to.not.match(/password|hash/i));",
+                  "pm.environment.set(\"token\", d.token);",
+                  "pm.environment.set(\"emailCiudadano\", d.usuario.email);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailCiudadano}}\",\n  \"password\": \"unaClaveSegura123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.environment.set(\"token\", pm.response.json().token);",
+                  "pm.test(\"devuelve token\", () => pm.expect(pm.response.json().token).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login con contraseña incorrecta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "El mensaje no debe revelar si el correo está registrado: eso permite enumerar usuarios.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailCiudadano}}\",\n  \"password\": \"estaNoEs\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rechaza con 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"no dice si el correo existe\", () => pm.expect(pm.response.text()).to.not.match(/no existe|not found|usuario no/i));",
+                  "pm.test(\"el error no filtra detalles internos\", () => {\n  const t = pm.response.text();\n  [\"StackTrace\",\"at ConectaRiesgoAI\",\"Npgsql\",\"System.\",\"Exception:\"].forEach(p =>\n    pm.expect(t, `filtra \"${p}\"`).to.not.include(p));\n});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mi perfil",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/yo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "yo"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"es el usuario del token\", () => pm.expect(pm.response.json()).to.have.property(\"id\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "20 · Reportes (web)",
+      "item": [
+        {
+          "name": "Crear reporte",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"Inundacion\",\n  \"descripcion\": \"Se está inundando la vía principal, el agua llega a las casas\",\n  \"latitud\": 4.5789,\n  \"longitud\": -74.2168,\n  \"direccion\": \"Calle 12 #4-56\",\n  \"municipio\": \"Soacha\",\n  \"urlFoto\": null\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"devuelve código\", () => pm.expect(d.codigo).to.match(/^RPT-/));",
+                  "pm.test(\"arranca en Reportado\", () => pm.expect(d.estado).to.eql(\"Reportado\"));",
+                  "pm.environment.set(\"codigoReporte\", d.codigo);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear reporte sin token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"Incendio\",\n  \"descripcion\": \"x\",\n  \"latitud\": 4.5,\n  \"longitud\": -74.2,\n  \"municipio\": \"Soacha\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rechaza con 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear reporte con datos inválidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ]
+            },
+            "description": "Tipo fuera del enum, descripción vacía y latitud fuera de rango.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"NoExiste\",\n  \"descripcion\": \"\",\n  \"latitud\": 999,\n  \"longitud\": -74.2,\n  \"municipio\": \"\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rechaza con 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"dice qué campo falló\", () => pm.expect(pm.response.json()).to.have.property(\"detalles\"));",
+                  "pm.test(\"el error no filtra detalles internos\", () => {\n  const t = pm.response.text();\n  [\"StackTrace\",\"at ConectaRiesgoAI\",\"Npgsql\",\"System.\",\"Exception:\"].forEach(p =>\n    pm.expect(t, `filtra \"${p}\"`).to.not.include(p));\n});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar reportes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes?municipio=Soacha&limite=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ],
+              "query": [
+                {
+                  "key": "municipio",
+                  "value": "Soacha"
+                },
+                {
+                  "key": "limite",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"responde en menos de 3 s\", () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "pm.test(\"devuelve una lista\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{codigoReporte}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{codigoReporte}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"trae cronología\", () => pm.expect(d.cronologia).to.be.an(\"array\").that.is.not.empty);",
+                  "pm.test(\"satelital puede ser null sin romper\", () => pm.expect(d).to.have.property(\"verificacionSatelital\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver detalle inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/RPT-9999-99-99-9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "RPT-9999-99-99-9999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"el error no filtra detalles internos\", () => {\n  const t = pm.response.text();\n  [\"StackTrace\",\"at ConectaRiesgoAI\",\"Npgsql\",\"System.\",\"Exception:\"].forEach(p =>\n    pm.expect(t, `filtra \"${p}\"`).to.not.include(p));\n});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mis reportes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/mios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "mios"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"es una lista\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "30 · Ingesta (bot y llamadas)",
+      "item": [
+        {
+          "name": "Reporte desde WhatsApp",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{claveServicio}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ingesta/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ingesta",
+                "reportes"
+              ]
+            },
+            "description": "El bot no tiene JWT: se autentica como servicio y la identidad sale del teléfono.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefono\": \"57300{{sufijo}}\",\n  \"nombreContacto\": \"María R.\",\n  \"clase\": \"afectacion_propia\",\n  \"tipo\": \"Inundacion\",\n  \"descripcion\": \"Se me metió el agua y ya está a media pared\",\n  \"ubicacionTexto\": \"Soacha, Villa Mercedes, frente a la cancha\",\n  \"nivelDano\": \"Averiada — NO habitable\",\n  \"necesidad\": \"AHE alimentaria\",\n  \"urlFoto\": null\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"devuelve código\", () => pm.expect(d.codigo).to.match(/^RPT-/));",
+                  "pm.environment.set(\"codigoBot\", d.codigo);",
+                  "pm.environment.set(\"telefonoBot\", JSON.parse(pm.request.body.raw).telefono);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "El mismo teléfono reporta otra vez",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{claveServicio}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ingesta/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ingesta",
+                "reportes"
+              ]
+            },
+            "description": "Comprueba que reutiliza el usuario existente en vez de crear otro.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefono\": \"{{telefonoBot}}\",\n  \"clase\": \"aviso_evento\",\n  \"tipo\": \"ViaAfectada\",\n  \"descripcion\": \"Vía cerrada por derrumbe\",\n  \"ubicacionTexto\": \"Soacha, km 3\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"no falla por usuario duplicado\", () => pm.expect(pm.response.json().codigo).to.match(/^RPT-/));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ingesta sin clave de servicio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ingesta/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ingesta",
+                "reportes"
+              ]
+            },
+            "description": "Sin esto, cualquiera crea reportes falsos a nombre de cualquier teléfono.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefono\": \"573001234567\",\n  \"clase\": \"aviso_evento\",\n  \"tipo\": \"Incendio\",\n  \"descripcion\": \"x\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rechaza con 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulta del bot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/ingesta/reportes/{{codigoBot}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ingesta",
+                "reportes",
+                "{{codigoBot}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"trae texto ya formateado\", () => pm.expect(d).to.have.property(\"detalle\"));",
+                  "pm.test(\"trae estado\", () => pm.expect(d.estado).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulta de código inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/ingesta/reportes/RPT-9999-99-99-9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ingesta",
+                "reportes",
+                "RPT-9999-99-99-9999"
+              ]
+            },
+            "description": "El nodo HTTP de wabots solo va a la rama de error si falla la red. Un 404 saldría por la rama de éxito y el ciudadano vería 'Estado:' en blanco."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"NO devuelve 404 — el bot mostraría campos vacíos\", () => pm.expect(pm.response.code).to.not.eql(404));",
+                  "pm.test(\"responde 200 con mensaje legible\", () => { pm.response.to.have.status(200); pm.expect(pm.response.json().detalle).to.be.a(\"string\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "40 · Censo del brigadista",
+      "item": [
+        {
+          "name": "Registrar censo con consentimiento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{claveServicio}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ingesta/censo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ingesta",
+                "censo"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefono\": \"573173575657\",\n  \"municipio\": \"Soacha\",\n  \"barrioVereda\": \"Villa Mercedes\",\n  \"consentimiento\": true,\n  \"declaracionVeracidad\": true,\n  \"nombres\": \"María\",\n  \"apellidos\": \"Rodríguez\",\n  \"tipoDocumento\": \"CC\",\n  \"numeroDocumento\": \"1234567890\",\n  \"edad\": 45,\n  \"genero\": \"Femenino\",\n  \"telefonoContacto\": \"573001112233\",\n  \"departamento\": \"Cundinamarca\",\n  \"ciudad\": \"Soacha\",\n  \"direccionResidencia\": \"Calle 12 #4-56\",\n  \"latitud\": 4.5789,\n  \"longitud\": -74.2168,\n  \"esCabezaDeHogar\": true,\n  \"tieneDiscapacidad\": false,\n  \"esAdultoMayor\": false,\n  \"estaEmbarazada\": false,\n  \"perteneceGrupoEtnico\": \"Ninguno\",\n  \"esVictimaConflicto\": false,\n  \"requiereAtencionMedica\": false,\n  \"estadoVivienda\": \"Averiada — NO habitable\",\n  \"necesidad\": \"AHE alimentaria\",\n  \"miembrosNucleo\": [\n    {\n      \"nombres\": \"Juan\",\n      \"apellidos\": \"Rodríguez\",\n      \"parentesco\": \"Hijo\",\n      \"edad\": 12,\n      \"tieneDiscapacidad\": false\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"devuelve código de censo\", () => pm.expect(pm.response.json().codigo).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "SIN consentimiento — no debe guardar nada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{claveServicio}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ingesta/censo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ingesta",
+                "censo"
+              ]
+            },
+            "description": "Ley 1581 de 2012: sin autorización no se persisten datos personales. La validación se repite en el servidor a propósito — no puede depender de que el flujo esté bien armado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefono\": \"573173575657\",\n  \"municipio\": \"Soacha\",\n  \"barrioVereda\": \"Villa Mercedes\",\n  \"consentimiento\": false,\n  \"declaracionVeracidad\": true,\n  \"nombres\": \"Pedro\",\n  \"apellidos\": \"Gómez\",\n  \"tipoDocumento\": \"CC\",\n  \"numeroDocumento\": \"7654321\",\n  \"edad\": 45,\n  \"genero\": \"Femenino\",\n  \"telefonoContacto\": \"573001112233\",\n  \"departamento\": \"Cundinamarca\",\n  \"ciudad\": \"Soacha\",\n  \"direccionResidencia\": \"Calle 12 #4-56\",\n  \"latitud\": 4.5789,\n  \"longitud\": -74.2168,\n  \"esCabezaDeHogar\": true,\n  \"tieneDiscapacidad\": false,\n  \"esAdultoMayor\": false,\n  \"estaEmbarazada\": false,\n  \"perteneceGrupoEtnico\": \"Ninguno\",\n  \"esVictimaConflicto\": false,\n  \"requiereAtencionMedica\": false,\n  \"estadoVivienda\": \"Averiada — NO habitable\",\n  \"necesidad\": \"AHE alimentaria\",\n  \"miembrosNucleo\": [\n    {\n      \"nombres\": \"Juan\",\n      \"apellidos\": \"Rodríguez\",\n      \"parentesco\": \"Hijo\",\n      \"edad\": 12,\n      \"tieneDiscapacidad\": false\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rechaza con 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"el mensaje no repite los datos personales\", () => { const t = pm.response.text(); pm.expect(t).to.not.include(\"Pedro\"); pm.expect(t).to.not.include(\"7654321\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Censo sin clave de servicio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ingesta/censo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ingesta",
+                "censo"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefono\": \"573173575657\",\n  \"municipio\": \"Soacha\",\n  \"barrioVereda\": \"Villa Mercedes\",\n  \"consentimiento\": true,\n  \"declaracionVeracidad\": true,\n  \"nombres\": \"María\",\n  \"apellidos\": \"Rodríguez\",\n  \"tipoDocumento\": \"CC\",\n  \"numeroDocumento\": \"1234567890\",\n  \"edad\": 45,\n  \"genero\": \"Femenino\",\n  \"telefonoContacto\": \"573001112233\",\n  \"departamento\": \"Cundinamarca\",\n  \"ciudad\": \"Soacha\",\n  \"direccionResidencia\": \"Calle 12 #4-56\",\n  \"latitud\": 4.5789,\n  \"longitud\": -74.2168,\n  \"esCabezaDeHogar\": true,\n  \"tieneDiscapacidad\": false,\n  \"esAdultoMayor\": false,\n  \"estaEmbarazada\": false,\n  \"perteneceGrupoEtnico\": \"Ninguno\",\n  \"esVictimaConflicto\": false,\n  \"requiereAtencionMedica\": false,\n  \"estadoVivienda\": \"Averiada — NO habitable\",\n  \"necesidad\": \"AHE alimentaria\",\n  \"miembrosNucleo\": [\n    {\n      \"nombres\": \"Juan\",\n      \"apellidos\": \"Rodríguez\",\n      \"parentesco\": \"Hijo\",\n      \"edad\": 12,\n      \"tieneDiscapacidad\": false\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rechaza con 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "50 · Gestión (autoridad)",
+      "item": [
+        {
+          "name": "Cambiar estado SIN ser gestor",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{codigoReporte}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{codigoReporte}}",
+                "estado"
+              ]
+            },
+            "description": "Un ciudadano no puede mover el estado de ningún reporte.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"Verificado\",\n  \"nota\": \"intento indebido\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"un ciudadano recibe 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cambiar estado como gestor",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenGestor}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{codigoReporte}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{codigoReporte}}",
+                "estado"
+              ]
+            },
+            "description": "Requiere `tokenGestor`. Crea un usuario con rol Gestor y pega su token en la variable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"Asignado\",\n  \"nota\": \"Asignado a la Alcaldía de Soacha\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"refleja el estado nuevo\", () => pm.expect(pm.response.json().estado).to.eql(\"Asignado\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verificar que la cronología creció",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{codigoReporte}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{codigoReporte}}"
+              ]
+            },
+            "description": "De aquí sale lo que el ciudadano ve por WhatsApp. Es el momento del pitch."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200));",
+                  "const c = pm.response.json().cronologia;",
+                  "pm.test(\"tiene más de un evento\", () => pm.expect(c.length).to.be.above(1));",
+                  "pm.test(\"el último es el nuevo estado\", () => pm.expect(c[c.length-1].estado).to.eql(\"Asignado\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "60 · Consultas públicas",
+      "item": [
+        {
+          "name": "Estadísticas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/estadisticas/resumen?municipio=Soacha",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "estadisticas",
+                "resumen"
+              ],
+              "query": [
+                {
+                  "key": "municipio",
+                  "value": "Soacha"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"responde en menos de 3 s\", () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "pm.test(\"responde con conteos, no con error, aunque no haya datos\", () => pm.expect(pm.response.json()).to.be.an(\"object\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Transparencia SECOP",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transparencia/secop?municipio=Soacha",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transparencia",
+                "secop"
+              ],
+              "query": [
+                {
+                  "key": "municipio",
+                  "value": "Soacha"
+                }
+              ]
+            },
+            "description": "datos.gov.co ha estado intermitente. Si falla, el backend debe devolver vacío, no romper."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"nunca rompe: SECOP puede estar caído\", () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));",
+                  "pm.test(\"responde en menos de 10 s\", () => pm.expect(pm.response.responseTime).to.be.below(10000));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "90 · Seguridad",
+      "item": [
+        {
+          "name": "Token inventado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/yo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "yo"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rechaza con 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inyección SQL en el filtro",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes?municipio=Soacha'%20OR%20'1'='1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ],
+              "query": [
+                {
+                  "key": "municipio",
+                  "value": "Soacha'%20OR%20'1'='1"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"no rompe ni filtra la consulta\", () => pm.expect(pm.response.code).to.be.oneOf([200, 400]));",
+                  "pm.test(\"el error no filtra detalles internos\", () => {\n  const t = pm.response.text();\n  [\"StackTrace\",\"at ConectaRiesgoAI\",\"Npgsql\",\"System.\",\"Exception:\"].forEach(p =>\n    pm.expect(t, `filtra \"${p}\"`).to.not.include(p));\n});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Descripción desmedida",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"Otro\",\n  \"descripcion\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n  \"latitud\": 4.5,\n  \"longitud\": -74.2,\n  \"municipio\": \"Soacha\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rechaza con 400, no con 500\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"el error no filtra detalles internos\", () => {\n  const t = pm.response.text();\n  [\"StackTrace\",\"at ConectaRiesgoAI\",\"Npgsql\",\"System.\",\"Exception:\"].forEach(p =>\n    pm.expect(t, `filtra \"${p}\"`).to.not.include(p));\n});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.environment.get('sufijo')) { pm.environment.set('sufijo', Date.now()); }"
+        ]
+      }
+    }
+  ]
+}

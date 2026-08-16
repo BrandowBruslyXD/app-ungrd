@@ -10,5 +10,15 @@ public enum TipoReporte
     Deslizamiento,
     ViaAfectada,
     ColapsoEstructural,
+
+    /// <summary>Movimiento telúrico. Hay una declaratoria de desastre nacional vigente por este motivo.</summary>
+    Sismo,
+
+    /// <summary>Vientos fuertes: techos volados, árboles caídos, redes eléctricas abajo.</summary>
+    Vendaval,
+
+    /// <summary>Creciente súbita que arrastra lodo y material. Distinta de una inundación lenta.</summary>
+    AvenidaTorrencial,
+
     Otro
 }
