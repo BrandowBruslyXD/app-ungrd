@@ -31,6 +31,14 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                 columns: new[] { "Canal", "ReferenciaExterna" },
                 unique: true,
                 filter: "\"ReferenciaExterna\" IS NOT NULL");
+
+            // Reportes previos a esta migración heredan usuario:{id} como identificador web.
+            migrationBuilder.Sql(
+                """
+                UPDATE reportes
+                SET "IdentificadorCanal" = 'usuario:' || "UsuarioId"::text
+                WHERE "IdentificadorCanal" = '';
+                """);
         }
 
         /// <inheritdoc />

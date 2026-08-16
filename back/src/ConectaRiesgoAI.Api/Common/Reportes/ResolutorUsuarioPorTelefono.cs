@@ -61,5 +61,9 @@ public class ResolutorUsuarioPorTelefono(AppDbContext db, ILogger<ResolutorUsuar
     }
 
     private static bool ViolaElIndiceUnicoDeTelefono(DbUpdateException ex) =>
-        ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
+        ex.InnerException is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation,
+            ConstraintName: IndicesPostgres.UsuariosTelefono
+        };
 }

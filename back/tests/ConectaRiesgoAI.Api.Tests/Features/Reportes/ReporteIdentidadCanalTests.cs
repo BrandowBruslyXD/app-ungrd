@@ -199,6 +199,7 @@ public class ReporteIdentidadCanalTests
 
         Assert.True(indice.IsUnique);
         Assert.Equal("\"ReferenciaExterna\" IS NOT NULL", indice.GetFilter());
+        Assert.Equal(IndicesPostgres.ReportesCanalReferenciaExterna, indice.GetDatabaseName());
     }
 
     [Fact]

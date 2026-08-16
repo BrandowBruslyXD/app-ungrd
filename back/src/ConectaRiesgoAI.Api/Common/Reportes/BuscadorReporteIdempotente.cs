@@ -30,10 +30,11 @@ public class BuscadorReporteIdempotente(AppDbContext db) : IBuscadorReporteIdemp
     }
 
     /// <inheritdoc />
+    /// <remarks>El nombre del índice debe coincidir con <see cref="IndicesPostgres.ReportesCanalReferenciaExterna"/>.</remarks>
     public bool EsDuplicadoDeReferenciaExterna(DbUpdateException excepcion) =>
         excepcion.InnerException is PostgresException
         {
             SqlState: PostgresErrorCodes.UniqueViolation,
-            ConstraintName: "IX_reportes_Canal_ReferenciaExterna"
+            ConstraintName: IndicesPostgres.ReportesCanalReferenciaExterna
         };
 }

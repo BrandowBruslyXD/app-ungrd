@@ -13,6 +13,7 @@ public record ObtenerReporteResponse(
     string? UrlFoto,
     EstadoReporte Estado,
     Prioridad Prioridad,
+    CanalOrigen Canal,
     DateTime CreadoEn,
     string ReportadoPor,
     List<EventoCronologiaResponse> Cronologia,

@@ -1,5 +1,6 @@
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
+using ConectaRiesgoAI.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -36,7 +37,8 @@ public class ReporteConfiguration : IEntityTypeConfiguration<Reporte>
         // Idempotencia de webhooks: solo aplica cuando hay referencia externa (web queda fuera).
         builder.HasIndex(r => new { r.Canal, r.ReferenciaExterna })
             .IsUnique()
-            .HasFilter("\"ReferenciaExterna\" IS NOT NULL");
+            .HasFilter("\"ReferenciaExterna\" IS NOT NULL")
+            .HasDatabaseName(IndicesPostgres.ReportesCanalReferenciaExterna);
 
         // El mapa y el dashboard filtran por estas tres todo el tiempo.
         builder.HasIndex(r => r.Estado);

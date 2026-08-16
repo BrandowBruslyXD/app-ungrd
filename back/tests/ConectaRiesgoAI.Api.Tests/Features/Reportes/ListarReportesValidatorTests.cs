@@ -9,7 +9,7 @@ public class ListarReportesValidatorTests
     [Fact]
     public void Validate_RadioKmNegativo_FallaEnElCampoRadioKm()
     {
-        var query = new ListarReportesQuery(null, null, 4.71, -74.07, -5, null, null);
+        var query = new ListarReportesQuery(null, null, null, 4.71, -74.07, -5, null, null);
 
         var resultado = _validador.Validate(query);
 
@@ -19,7 +19,7 @@ public class ListarReportesValidatorTests
     [Fact]
     public void Validate_LimiteFueraDeRango_FallaEnElCampoLimite()
     {
-        var query = new ListarReportesQuery(null, null, null, null, null, null, 501);
+        var query = new ListarReportesQuery(null, null, null, null, null, null, null, 501);
 
         var resultado = _validador.Validate(query);
 
@@ -29,7 +29,7 @@ public class ListarReportesValidatorTests
     [Fact]
     public void Validate_RadioKmSinLatNiLng_FallaEnVezDeIgnorarElRadioEnSilencio()
     {
-        var query = new ListarReportesQuery(null, null, null, null, 10, null, null);
+        var query = new ListarReportesQuery(null, null, null, null, null, 10, null, null);
 
         var resultado = _validador.Validate(query);
 
@@ -39,7 +39,7 @@ public class ListarReportesValidatorTests
     [Fact]
     public void Validate_RadioKmConLatYLng_NoFalla()
     {
-        var query = new ListarReportesQuery(null, null, 4.71, -74.07, 10, null, null);
+        var query = new ListarReportesQuery(null, null, null, 4.71, -74.07, 10, null, null);
 
         var resultado = _validador.Validate(query);
 
@@ -49,7 +49,7 @@ public class ListarReportesValidatorTests
     [Fact]
     public void Validate_SinFiltros_NoTieneErrores()
     {
-        var resultado = _validador.Validate(new ListarReportesQuery(null, null, null, null, null, null, null));
+        var resultado = _validador.Validate(new ListarReportesQuery(null, null, null, null, null, null, null, null));
 
         Assert.True(resultado.IsValid);
     }

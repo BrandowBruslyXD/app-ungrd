@@ -35,6 +35,7 @@ public class ObtenerReporteHandler(AppDbContext context)
             reporte.UrlFoto,
             reporte.Estado,
             reporte.Prioridad,
+            reporte.Canal,
             reporte.CreadoEn,
             AbreviarNombre(reporte.Usuario.Nombre),
             reporte.Cronologia

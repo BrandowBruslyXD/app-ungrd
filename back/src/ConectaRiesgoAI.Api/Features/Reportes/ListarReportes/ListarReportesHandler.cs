@@ -23,6 +23,7 @@ public class ListarReportesHandler(AppDbContext context)
             .AsNoTracking()
             .Where(r => query.Tipo == null || r.Tipo == query.Tipo)
             .Where(r => query.Estado == null || r.Estado == query.Estado)
+            .Where(r => query.Canal == null || r.Canal == query.Canal)
             .Where(r => query.Municipio == null || EF.Functions.ILike(r.Municipio, query.Municipio))
             .ToListAsync(cancellationToken);
 
@@ -58,6 +59,7 @@ public class ListarReportesHandler(AppDbContext context)
                 x.Reporte.UrlFoto,
                 x.Reporte.Estado,
                 x.Reporte.Prioridad,
+                x.Reporte.Canal,
                 x.DistanciaKm,
                 x.Reporte.CreadoEn))
             .ToList();

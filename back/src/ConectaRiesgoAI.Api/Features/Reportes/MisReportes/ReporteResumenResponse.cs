@@ -13,5 +13,6 @@ public record ReporteResumenResponse(
     string? UrlFoto,
     EstadoReporte Estado,
     Prioridad Prioridad,
+    CanalOrigen Canal,
     double? DistanciaKm,
     DateTime CreadoEn);

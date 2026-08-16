@@ -160,6 +160,7 @@ Alimenta el mapa y el dashboard.
 |:---|:---|:---|
 | `tipo` | `Incendio` | Filtra por tipo |
 | `estado` | `EnAtencion` | Filtra por estado |
+| `canal` | `WhatsApp` | Filtra por canal de origen (`Web` · `WhatsApp` · `Telefono`) |
 | `lat` `lng` `radioKm` | `4.71` `-74.07` `10` | Solo reportes dentro del radio |
 | `municipio` | `Bogotá` | Filtra por municipio |
 | `limite` | `50` | Máximo de resultados (por defecto 100) |
@@ -178,6 +179,7 @@ Alimenta el mapa y el dashboard.
     "urlFoto": "https://res.cloudinary.com/.../foto.jpg",
     "estado": "EnAtencion",
     "prioridad": "Alta",
+    "canal": "Web",
     "distanciaKm": 2.3,
     "creadoEn": "2026-08-15T14:30:00Z"
   }
@@ -205,6 +207,7 @@ El detalle completo. **Alimenta la pantalla de seguimiento, que es el corazón d
   "urlFoto": "https://res.cloudinary.com/.../foto.jpg",
   "estado": "EnAtencion",
   "prioridad": "Alta",
+  "canal": "Web",
   "creadoEn": "2026-08-15T14:30:00Z",
   "reportadoPor": "María R.",
 
