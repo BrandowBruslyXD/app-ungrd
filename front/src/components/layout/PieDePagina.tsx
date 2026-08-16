@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Phone, Shield } from 'lucide-react';
+import { Phone } from 'lucide-react';
 import FondoDeSeccion from '@/components/ui/FondoDeSeccion';
+import Logotipo from '@/components/shared/Logotipo';
 import { FOTOS } from '@/lib/fotos';
 
 const ENLACES = [
@@ -67,7 +68,7 @@ export default function PieDePagina({ completo = false }: PieDePaginaProps) {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-md">
             <p className="flex items-center gap-2.5 text-lg font-bold">
-              <Shield className="h-6 w-6 shrink-0 text-oro-400" aria-hidden="true" />
+              <Logotipo tamano="sm" />
               {t('brand.conecta')}
               {t('brand.riesgo')}
             </p>
