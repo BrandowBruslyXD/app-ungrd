@@ -294,6 +294,49 @@ Contratos de prevención del municipio. Máximo 5, ordenados por valor.
 
 ---
 
+## 5. Evidencias
+
+### `POST /api/evidencias` 🔒
+
+Sube un archivo a Azure Blob Storage y devuelve su URL firmada (temporal). **No crea ni asocia
+nada en la base de datos** — el llamador guarda la URL donde le corresponda (p. ej. como
+`urlFoto` al crear un reporte), igual que hoy se hace con la URL que devuelve Cloudinary. Es un
+endpoint independiente del flujo descrito en la sección 2: mientras `POST /api/reportes` sigue
+esperando `urlFoto` ya resuelta, este endpoint es la forma de resolverla desde el propio backend
+en vez de subir directo a un proveedor de terceros desde el navegador.
+
+**Petición** — `multipart/form-data`
+
+| Campo | Tipo | Notas |
+|:---|:---|:---|
+| `archivo` | file | JPEG, PNG o WEBP. Máximo 5 MB |
+| `tipo` | string | `DanoMaterial` \| `DocumentoFrontal` \| `DocumentoPosterior` \| `Rostro` \| `NucleoFamiliar` \| `Otro` — decide el contenedor: los dos primeros van a `evidencias`, el resto a `censo` |
+
+**Respuesta `201`**
+```json
+{
+  "urlFoto": "https://conectariesgoaist.blob.core.windows.net/evidencias/ab12....jpg?sv=...&sig=...",
+  "subida": true
+}
+```
+
+**Respuesta `200`** — el blob no se pudo guardar (Azure no respondió). Nunca un 500: no es un
+error del servidor, es un fallo esperado de una integración externa.
+```json
+{
+  "urlFoto": null,
+  "subida": false
+}
+```
+
+> `201` solo cuando de verdad se creó el blob; `200` cuando la petición se procesó bien pero no
+> hubo nada que crear. Quien llama decide qué hacer (p. ej. crear el reporte sin
+> foto).
+
+**Respuesta `400`** — archivo mayor a 5 MB o tipo no permitido, con la forma estándar de error.
+
+---
+
 ## Cómo trabajar con esto sin bloquearse
 
 **Frontend:** copien los ejemplos de respuesta de este documento a `src/mocks/` **tal cual están** y construyan contra ellos. Cuando el backend avise que un endpoint está listo, solo cambian el origen de datos en `src/api/`. No esperen a nadie.
