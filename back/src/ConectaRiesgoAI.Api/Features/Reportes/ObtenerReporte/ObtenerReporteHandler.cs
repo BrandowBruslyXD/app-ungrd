@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConectaRiesgoAI.Api.Features.Reportes.ObtenerReporte;
 
+/// <summary>Detalle completo de un reporte: cronología, verificación satelital y transparencia.</summary>
 public class ObtenerReporteHandler(AppDbContext context)
     : IRequestHandler<ObtenerReporteQuery, ObtenerReporteResponse>
 {
+    /// <exception cref="KeyNotFoundException">No existe un reporte con ese código; el manejador global lo traduce a 404.</exception>
     public async Task<ObtenerReporteResponse> Handle(ObtenerReporteQuery query, CancellationToken cancellationToken)
     {
         var reporte = await context.Reportes

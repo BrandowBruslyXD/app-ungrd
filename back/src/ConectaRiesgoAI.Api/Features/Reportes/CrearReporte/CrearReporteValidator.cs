@@ -2,6 +2,7 @@ using FluentValidation;
 
 namespace ConectaRiesgoAI.Api.Features.Reportes.CrearReporte;
 
+/// <summary>Valida los criterios de aceptación del issue: descripción, coordenadas y tipo.</summary>
 public class CrearReporteValidator : AbstractValidator<CrearReporteCommand>
 {
     public CrearReporteValidator()

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConectaRiesgoAI.Api.Features.Reportes.MisReportes;
 
+/// <summary>Los reportes del usuario autenticado, más recientes primero.</summary>
 public class MisReportesHandler(AppDbContext context)
     : IRequestHandler<MisReportesQuery, List<ReporteResumenResponse>>
 {

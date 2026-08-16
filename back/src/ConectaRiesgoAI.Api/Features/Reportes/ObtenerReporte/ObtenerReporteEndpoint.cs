@@ -3,6 +3,10 @@ using MediatR;
 
 namespace ConectaRiesgoAI.Api.Features.Reportes.ObtenerReporte;
 
+/// <summary>
+/// Expone <c>GET /api/reportes/{codigo}</c>. Público a propósito: alimenta la pantalla de
+/// seguimiento antes de que nadie inicie sesión — cualquiera con el código puede ver el estado.
+/// </summary>
 public class ObtenerReporteEndpoint : IEndpoint
 {
     public void Map(IEndpointRouteBuilder app)

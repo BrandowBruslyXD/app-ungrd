@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Features.Reportes.CrearReporte;
 using ConectaRiesgoAI.Api.Tests.Persistence;
@@ -69,5 +70,39 @@ public class CrearReporteHandlerTests
 
         var hoy = DateTime.UtcNow.ToString("yyyy-MM-dd");
         Assert.Equal($"RPT-{hoy}-0002", segunda.Codigo);
+    }
+
+    /// <summary>
+    /// Reproduce, sin concurrencia real, el estado en el que dos peticiones casi simultáneas
+    /// dejan la base: ya existe un reporte ocupando el consecutivo que el próximo COUNT+1 volvería
+    /// a calcular. El proveedor InMemory no aplica índices únicos (por eso no atrapaba este caso);
+    /// aquí se usa SQLite, que sí lo hace, para verificar que el handler reintenta con otro
+    /// consecutivo en vez de devolver 500 y perder el reporte de la emergencia.
+    /// </summary>
+    [Fact]
+    public async Task Handle_ConElConsecutivoNaturalYaOcupado_ReintentaConOtroCodigoEnVezDeFallar()
+    {
+        var (contexto, conexion) = AppDbContextSqlitePruebas.Crear();
+        using var contextoDesechable = contexto;
+        using var conexionDesechable = conexion;
+
+        var hoy = DateTime.UtcNow;
+        contexto.Reportes.Add(new Reporte
+        {
+            Codigo = Reporte.GenerarCodigo(hoy, 2),
+            Tipo = TipoReporte.Incendio,
+            Descripcion = "Reporte que ya ocupa el consecutivo 2",
+            Municipio = "Bogotá",
+            Latitud = 4.71,
+            Longitud = -74.07,
+            UsuarioId = 1,
+            CreadoEn = hoy
+        });
+        await contexto.SaveChangesAsync();
+
+        var handler = new CrearReporteHandler(contexto);
+        var respuesta = await handler.Handle(NuevoComando(), CancellationToken.None);
+
+        Assert.Equal($"RPT-{hoy:yyyy-MM-dd}-0003", respuesta.Codigo);
     }
 }

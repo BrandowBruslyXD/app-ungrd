@@ -2,6 +2,7 @@ using FluentValidation;
 
 namespace ConectaRiesgoAI.Api.Features.Reportes.ListarReportes;
 
+/// <summary>Valida los parámetros de consulta opcionales de <c>GET /api/reportes</c>.</summary>
 public class ListarReportesValidator : AbstractValidator<ListarReportesQuery>
 {
     public ListarReportesValidator()

@@ -4,12 +4,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConectaRiesgoAI.Api.Features.Reportes.ListarReportes;
 
+/// <summary>Lista reportes con filtros de tipo, estado, municipio y radio (Haversine, sin PostGIS).</summary>
 public class ListarReportesHandler(AppDbContext context)
     : IRequestHandler<ListarReportesQuery, List<ReporteResumenResponse>>
 {
     private const int LimiteDefecto = 100;
     private const double RadioTierraKm = 6371;
 
+    /// <summary>
+    /// Filtra tipo/estado/municipio en SQL; el radio se calcula en memoria porque Haversine no
+    /// se traduce a SQL sin PostGIS. Con el volumen de un hackatón no hace falta empujarlo a la
+    /// base de datos.
+    /// </summary>
     public async Task<List<ReporteResumenResponse>> Handle(ListarReportesQuery query, CancellationToken cancellationToken)
     {
         var reportes = await context.Reportes
