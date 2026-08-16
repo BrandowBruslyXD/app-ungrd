@@ -10,6 +10,7 @@ import { fondoDeRuta } from '@/lib/fotos';
 import type { DemoView } from '@/types';
 
 const Landing = lazy(() => import('@/features/publico/pages/Landing'));
+const Tutorial = lazy(() => import('@/features/publico/pages/Tutorial'));
 const Login = lazy(() => import('@/features/auth/pages/Login'));
 const CitizenDashboard = lazy(() => import('@/features/reportes/pages/CitizenDashboard'));
 const ReportWizard = lazy(() => import('@/features/reportes/pages/ReportWizard'));
@@ -28,7 +29,7 @@ const IncidentLogWizard = lazy(() => import('@/features/socorro/pages/IncidentLo
 const HabitabilityWizard = lazy(() => import('@/features/socorro/pages/HabitabilityWizard'));
 
 /** Rutas públicas: se ven sin haber entrado y llevan el encabezado reducido. */
-const RUTAS_PUBLICAS: readonly string[] = ['/', '/entrar'];
+const RUTAS_PUBLICAS: readonly string[] = ['/', '/entrar', '/tutorial'];
 
 function PageFallback() {
   const { t } = useTranslation();
@@ -95,6 +96,7 @@ function Estructura({ role, onRoleChange }: EstructuraProps) {
           <Routes>
             <Route path="/" element={<Landing onRoleChange={onRoleChange} />} />
             <Route path="/entrar" element={<Login onRoleChange={onRoleChange} />} />
+            <Route path="/tutorial" element={<Tutorial />} />
 
             {/* El inicio del ciudadano dejó de ser «/» cuando apareció la
                 landing. Los roles operativos entran directo a su panel. */}

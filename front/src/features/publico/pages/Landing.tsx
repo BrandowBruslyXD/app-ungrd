@@ -10,6 +10,7 @@ import {
   ClipboardList,
   Building2,
   ArrowRight,
+  PlayCircle,
   type LucideIcon,
 } from 'lucide-react';
 import Foto from '@/components/ui/Foto';
@@ -132,6 +133,13 @@ export default function Landing({ onRoleChange }: LandingProps) {
               >
                 <Search className="h-6 w-6" aria-hidden="true" />
                 {t('landing.checkCode')}
+              </Link>
+              <Link
+                to="/tutorial"
+                className="btn btn-grande border-2 border-white/40 bg-white/10 text-white hover:bg-white/20 sm:w-auto sm:px-8"
+              >
+                <PlayCircle className="h-6 w-6" aria-hidden="true" />
+                Ver tutorial
               </Link>
             </div>
 

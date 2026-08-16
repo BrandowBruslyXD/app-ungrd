@@ -19,6 +19,7 @@
     "tutorial:render": "remotion render remotion/index.ts ConectaRiesgoTutorial out/conectariesgo-tutorial.mp4"
   },
   "dependencies": {
+    "@remotion/player": "^4.0.512",
     "i18next": "^26.3.6",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.446.0",

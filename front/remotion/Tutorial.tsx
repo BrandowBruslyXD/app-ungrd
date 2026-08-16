@@ -45,7 +45,7 @@ const enter = (frame: number, fps: number, delay = 0) =>
 const Brand = ({ light = false }: { light?: boolean }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
     <Img src={staticFile('marca/escudo-96.png')} style={{ width: 62, height: 62 }} />
-    <div style={{ color: light ? C.white : C.blueDark, fontWeight: 850, fontSize: 32 }}>
+    <div style={{ color: light ? C.white : C.blueDark, fontWeight: 900, fontSize: 32 }}>
       Conecta<span style={{ color: C.red }}>Riesgo</span>
     </div>
   </div>
@@ -171,7 +171,7 @@ const StepLabel = ({ number, children }: { number: string; children: ReactNode }
     >
       {number}
     </div>
-    <div style={{ fontSize: 33, fontWeight: 820 }}>{children}</div>
+    <div style={{ fontSize: 33, fontWeight: 800 }}>{children}</div>
   </div>
 );
 
@@ -240,16 +240,16 @@ const ReportScene = () => {
               {[
                 ['Inundación', '💧'], ['Deslizamiento', '⛰️'], ['Incendio', '🔥'], ['Vía afectada', '🚧'],
               ].map(([label, icon], index) => (
-                <div key={label} style={{ border: `${index === 1 ? 4 : 2}px solid ${index === 1 ? C.blue : C.border}`, background: index === 1 ? C.blueLight : C.white, borderRadius: 14, padding: '21px 24px', fontSize: 24, fontWeight: 750 }}>
+                <div key={label} style={{ border: `${index === 1 ? 4 : 2}px solid ${index === 1 ? C.blue : C.border}`, background: index === 1 ? C.blueLight : C.white, borderRadius: 14, padding: '21px 24px', fontSize: 24, fontWeight: 700 }}>
                   <span style={{ marginRight: 16 }}>{icon}</span>{label}
                 </div>
               ))}
             </div>
             <div style={{ marginTop: 26, display: 'flex', gap: 16 }}>
-              <div style={{ flex: 1, border: `2px dashed ${C.border}`, borderRadius: 14, padding: 22, color: C.muted, fontSize: 22 }}><Camera size={28} style={{ verticalAlign: 'middle', marginRight: 12 }} />Agregar foto</div>
-              <div style={{ flex: 1, border: `2px solid ${C.border}`, borderRadius: 14, padding: 22, color: C.muted, fontSize: 22 }}><MapPin size={28} style={{ verticalAlign: 'middle', marginRight: 12 }} />Usar mi ubicación</div>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12, border: `2px dashed ${C.border}`, borderRadius: 14, padding: 22, color: C.muted, fontSize: 22 }}><Camera size={28} />Agregar foto</div>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12, border: `2px solid ${C.border}`, borderRadius: 14, padding: 22, color: C.muted, fontSize: 22 }}><MapPin size={28} />Usar mi ubicación</div>
             </div>
-            <div style={{ marginTop: 26, marginLeft: 'auto', width: 290, background: C.gold, borderRadius: 13, padding: 19, textAlign: 'center', fontSize: 24, fontWeight: 850 }}>Continuar <ArrowRight size={25} style={{ verticalAlign: 'middle' }} /></div>
+            <div style={{ marginTop: 26, marginLeft: 'auto', width: 290, background: C.gold, borderRadius: 13, padding: 19, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 24, fontWeight: 900 }}>Continuar <ArrowRight size={25} /></div>
           </div>
           <Cursor x={cursorX - 700} y={cursorY - 100} click={frame > 95} />
         </Browser>
@@ -277,10 +277,10 @@ const TrackingScene = () => {
       <div style={{ position: 'absolute', right: 105, top: 150, width: 980, background: C.white, color: C.ink, borderRadius: 24, padding: 52, boxShadow: '0 35px 90px #020f2677' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
           <div><div style={{ color: C.muted, fontSize: 20 }}>CÓDIGO DE SEGUIMIENTO</div><div style={{ color: C.blue, fontFamily: 'monospace', fontWeight: 900, fontSize: 40, marginTop: 8 }}>RPT-2026-0816-3GG4</div></div>
-          <div style={{ background: '#ecfaf3', color: C.green, padding: '12px 18px', borderRadius: 99, fontSize: 20, fontWeight: 800 }}><ShieldCheck size={22} style={{ verticalAlign: 'middle', marginRight: 8 }} />Datos recibidos</div>
+          <div style={{ background: '#ecfaf3', color: C.green, padding: '12px 18px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 8, fontSize: 20, fontWeight: 800 }}><ShieldCheck size={22} />Datos recibidos</div>
         </div>
         <div style={{ height: 2, background: C.border, margin: '34px 0' }} />
-        <div style={{ fontSize: 26, fontWeight: 820, marginBottom: 28 }}>Avance de la atención</div>
+        <div style={{ fontSize: 26, fontWeight: 800, marginBottom: 28 }}>Avance de la atención</div>
         {stages.map((stage, index) => {
           const done = index < progress;
           return (
@@ -322,7 +322,7 @@ const VerifyScene = () => {
         <div style={{ position: 'absolute', left: 34, right: 34, bottom: 32, display: 'flex', gap: 18 }}>
           {cards.map(({ icon: Icon, title, text, color }, index) => (
             <div key={title} style={{ flex: 1, background: '#fffffff2', borderRadius: 16, padding: 24, opacity: enter(frame, fps, 35 + index * 12), transform: `translateY(${interpolate(enter(frame, fps, 35 + index * 12), [0, 1], [40, 0])}px)` }}>
-              <Icon size={30} color={color} /><div style={{ fontWeight: 850, fontSize: 22, marginTop: 12 }}>{title}</div><div style={{ color: C.muted, fontSize: 18, marginTop: 4 }}>{text}</div>
+              <Icon size={30} color={color} /><div style={{ fontWeight: 900, fontSize: 22, marginTop: 12 }}>{title}</div><div style={{ color: C.muted, fontSize: 18, marginTop: 4 }}>{text}</div>
             </div>
           ))}
         </div>
@@ -345,12 +345,12 @@ const ConsolidateScene = () => {
         <p style={{ fontSize: 27, lineHeight: 1.5, color: C.muted }}>Cobertura, daños, necesidades y paquetes para cada ministerio, sin perder la fuente del dato.</p>
       </div>
       <div style={{ position: 'absolute', right: 90, top: 105, width: 1190, height: 840, background: C.white, borderRadius: 24, boxShadow: '0 28px 80px rgba(4,25,60,.18)', overflow: 'hidden' }}>
-        <div style={{ background: C.blueDark, padding: '32px 40px', color: C.white }}><div style={{ color: C.gold, fontSize: 18, fontWeight: 800 }}>EVENTO COL-ANT-2026-014</div><div style={{ fontSize: 34, fontWeight: 850, marginTop: 7 }}>Inundaciones · Suroeste antioqueño</div></div>
+        <div style={{ background: C.blueDark, padding: '32px 40px', color: C.white }}><div style={{ color: C.gold, fontSize: 18, fontWeight: 800 }}>EVENTO COL-ANT-2026-014</div><div style={{ fontSize: 34, fontWeight: 900, marginTop: 7 }}>Inundaciones · Suroeste antioqueño</div></div>
         <div style={{ padding: 34 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
             {stats.map(([value, label], index) => <div key={label} style={{ background: index === 0 ? '#fdf2f3' : C.blueLight, borderRadius: 14, padding: 24 }}><div style={{ color: index === 0 ? C.red : C.blue, fontSize: 34, fontWeight: 900 }}>{value}</div><div style={{ marginTop: 7, fontSize: 18, color: C.muted }}>{label}</div></div>)}
           </div>
-          <div style={{ marginTop: 28, fontSize: 25, fontWeight: 850 }}>Reparto por sector</div>
+          <div style={{ marginTop: 28, fontSize: 25, fontWeight: 900 }}>Reparto por sector</div>
           {[
             ['Vivienda', 86, 'Listo para revisar'], ['Salud', 64, 'Faltan 3 municipios'], ['Transporte', 42, 'Requiere clasificación'],
           ].map(([label, percent, status], index) => (
@@ -360,7 +360,7 @@ const ConsolidateScene = () => {
               <div style={{ color: C.muted, fontSize: 18 }}>{status}</div>
             </div>
           ))}
-          <div style={{ marginTop: 38, display: 'flex', justifyContent: 'flex-end' }}><div style={{ background: C.blue, color: C.white, borderRadius: 13, padding: '18px 25px', fontSize: 21, fontWeight: 850 }}><Send size={23} style={{ verticalAlign: 'middle', marginRight: 10 }} />Preparar paquete ministerial</div></div>
+          <div style={{ marginTop: 38, display: 'flex', justifyContent: 'flex-end' }}><div style={{ background: C.blue, color: C.white, borderRadius: 13, padding: '18px 25px', display: 'flex', alignItems: 'center', gap: 10, fontSize: 21, fontWeight: 900 }}><Send size={23} />Preparar paquete ministerial</div></div>
         </div>
       </div>
     </Scene>
@@ -384,7 +384,7 @@ const Outro = () => {
         <div style={{ margin: '80px auto 0', display: 'flex', justifyContent: 'center', gap: 26 }}>
           {items.map(([Icon, label], index) => (
             <div key={label} style={{ width: 245, padding: '30px 24px', borderRadius: 18, background: '#ffffff12', border: '1px solid #ffffff26', opacity: enter(frame, fps, 18 + index * 8) }}>
-              <Icon size={40} color={C.gold} /><div style={{ marginTop: 16, fontSize: 25, fontWeight: 850 }}>{label}</div>
+              <Icon size={40} color={C.gold} /><div style={{ marginTop: 16, fontSize: 25, fontWeight: 900 }}>{label}</div>
             </div>
           ))}
         </div>
