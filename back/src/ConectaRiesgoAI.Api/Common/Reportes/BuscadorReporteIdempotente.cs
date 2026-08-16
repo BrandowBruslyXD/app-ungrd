@@ -39,7 +39,11 @@ public class BuscadorReporteIdempotente(AppDbContext db) : IBuscadorReporteIdemp
                 && pg.ConstraintName == IndicesPostgres.ReportesCanalReferenciaExterna;
         }
 
+        // Respaldo cuando el proveedor no expone ConstraintName (p. ej. SQLite en pruebas):
+        // solo cuenta inserts rechazados de Reporte con referencia externa.
         return excepcion.Entries.Any(entry =>
-            entry.Entity is Reporte reporte && !string.IsNullOrWhiteSpace(reporte.ReferenciaExterna));
+            entry.State == EntityState.Added
+            && entry.Entity is Reporte reporte
+            && !string.IsNullOrWhiteSpace(reporte.ReferenciaExterna));
     }
 }

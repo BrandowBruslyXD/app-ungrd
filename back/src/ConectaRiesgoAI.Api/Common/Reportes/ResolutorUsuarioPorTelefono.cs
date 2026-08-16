@@ -81,8 +81,10 @@ public class ResolutorUsuarioPorTelefono(AppDbContext db, ILogger<ResolutorUsuar
         }
 
         // Respaldo cuando el proveedor no expone ConstraintName (p. ej. SQLite en pruebas):
-        // el insert rechazado es un Usuario con teléfono duplicado.
+        // solo cuenta inserts rechazados de Usuario con teléfono, no otros errores de SaveChanges.
         return ex.Entries.Any(entry =>
-            entry.Entity is Usuario usuario && !string.IsNullOrEmpty(usuario.Telefono));
+            entry.State == EntityState.Added
+            && entry.Entity is Usuario usuario
+            && !string.IsNullOrEmpty(usuario.Telefono));
     }
 }

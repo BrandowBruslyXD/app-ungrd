@@ -203,4 +203,19 @@ public class ResumenEstadisticasHandlerTests
         Assert.Equal(2, resultado.PorCanal[CanalOrigen.WhatsApp.ToString()]);
         Assert.Equal(1, resultado.PorCanal[CanalOrigen.Telefono.ToString()]);
     }
+
+    [Fact]
+    public async Task Handle_ReporteSinGps_CuentaEnPorCanalSinFiltroGeografico()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Reportes.Add(NuevoReporte(
+            "RPT-WA-SIN-GPS", TipoReporte.Incendio, EstadoReporte.Reportado, "Bogotá",
+            null, null, DateTime.UtcNow, CanalOrigen.WhatsApp));
+        await contexto.SaveChangesAsync();
+        var handler = new ResumenEstadisticasHandler(contexto);
+
+        var resultado = await handler.Handle(QuerySinFiltros(), CancellationToken.None);
+
+        Assert.Equal(1, resultado.PorCanal[CanalOrigen.WhatsApp.ToString()]);
+    }
 }
