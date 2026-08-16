@@ -131,8 +131,9 @@ La pregunta de revisión no es "¿respeta las capas?" sino **"¿esta rebanada se
 ### C#
 
 - Un tipo público por archivo (helpers y tipos privados anidados, permitidos).
-- Tipos explícitos; nada de `var` salvo proyecciones anónimas de LINQ. Los proyectos `.Tests` están
-  exentos: ahí `var` es la convención.
+- Se permite `var` cuando el tipo es evidente por el lado derecho de la asignación (p. ej.
+  `new`, un literal o un cast explícito). Si no es evidente a simple vista, usa el tipo explícito.
+  Los proyectos `.Tests` están exentos de esta restricción: ahí `var` es la convención.
 - Campos privados `_camelCase`; clases, métodos y propiedades `PascalCase`.
 - DTOs como `record` inmutables. Nunca expongas la entidad persistida en el contrato HTTP.
 - Timestamps ISO-8601 en UTC.
