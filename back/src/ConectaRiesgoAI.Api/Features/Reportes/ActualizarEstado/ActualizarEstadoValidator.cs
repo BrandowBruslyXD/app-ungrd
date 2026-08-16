@@ -8,7 +8,9 @@ public class ActualizarEstadoValidator : AbstractValidator<ActualizarEstadoComma
     public ActualizarEstadoValidator()
     {
         RuleFor(c => c.Codigo).NotEmpty();
-        RuleFor(c => c.Estado).IsInEnum();
+        RuleFor(c => c.Estado).Cascade(CascadeMode.Stop)
+            .NotNull().WithMessage("El estado es obligatorio")
+            .IsInEnum();
         RuleFor(c => c.Nota).NotEmpty().MaximumLength(500);
     }
 }

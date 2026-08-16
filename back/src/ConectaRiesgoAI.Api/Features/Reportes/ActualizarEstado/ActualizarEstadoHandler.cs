@@ -19,7 +19,17 @@ public class ActualizarEstadoHandler(AppDbContext db, IUsuarioActual usuarioActu
             ?? throw new KeyNotFoundException($"No existe un reporte con código '{command.Codigo}'");
 
         string responsable = usuarioActual.Nombre ?? "Sistema";
-        reporte.CambiarEstado(command.Estado, command.Nota, responsable);
+        if (usuarioActual.Nombre is null)
+        {
+            // No debería pasar: GeneradorTokenJwt siempre pone el nombre en el token de quien
+            // se loguea. Si llega a faltar, mejor dejar rastro que atribuir el cambio en
+            // silencio a un "Sistema" que no fue quien realmente lo hizo.
+            logger.LogWarning(
+                "Token sin claim de nombre al cambiar el estado de {Codigo}; se registra como Sistema", command.Codigo);
+        }
+
+        // La validación ya garantizó que Estado no es null.
+        reporte.CambiarEstado(command.Estado!.Value, command.Nota, responsable);
 
         await db.SaveChangesAsync(cancellationToken);
 
