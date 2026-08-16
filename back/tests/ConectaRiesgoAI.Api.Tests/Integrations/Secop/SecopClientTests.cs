@@ -138,7 +138,25 @@ public class SecopClientTests
     }
 
     [Fact]
-    public async Task ConsultarPorMunicipioAsync_SecopResponde200ConRegistrosInvalidos_LosFiltraYUsaRespaldoSiQuedaVacio()
+    public async Task ConsultarPorMunicipioAsync_SecopResponde200ConRegistrosInvalidos_DevuelveListaVaciaSinRespaldo()
+    {
+        const string cuerpo = """
+            [
+              { "objeto_del_contrato": "", "valor_del_contrato": "x", "fecha_de_firma": "2024-01-01", "nombre_entidad": "Entidad" },
+              { "objeto_del_contrato": "Obra válida", "valor_del_contrato": "no-numero", "fecha_de_firma": "2024-01-01", "nombre_entidad": "Entidad" }
+            ]
+            """;
+        var cliente = Crear(
+            new HandlerDeRespuestaFija(HttpStatusCode.OK, cuerpo),
+            new SecopOptions { UsarRespaldoSiFalla = false });
+
+        var resultado = await cliente.ConsultarPorMunicipioAsync("Bogotá", CancellationToken.None);
+
+        Assert.Empty(resultado);
+    }
+
+    [Fact]
+    public async Task ConsultarPorMunicipioAsync_SecopResponde200ConRegistrosInvalidos_UsaElRespaldoDelMunicipio()
     {
         const string cuerpo = """
             [
@@ -152,7 +170,9 @@ public class SecopClientTests
 
         var resultado = await cliente.ConsultarPorMunicipioAsync("Bogotá", CancellationToken.None);
 
-        Assert.NotEmpty(resultado);
+        Assert.Equal(3, resultado.Count);
+        Assert.All(resultado, c => Assert.Equal("Alcaldía de Bogotá", c.Entidad));
+        Assert.All(resultado, c => Assert.False(string.IsNullOrWhiteSpace(c.Objeto)));
     }
 
     [Fact]
@@ -174,7 +194,7 @@ public class SecopClientTests
 
         await cliente.ConsultarPorMunicipioAsync("Bogotá", CancellationToken.None);
 
-        Assert.Equal("token-secreto", handler.UltimaPeticion?.Headers.GetValues("X-App-Token").Single());
+        Assert.Equal("token-secreto", handler.XAppTokenCapturado);
     }
 
     private class HandlerQueEsperaInfinito : HttpMessageHandler
@@ -190,11 +210,15 @@ public class SecopClientTests
     {
         public int VecesLlamado { get; private set; }
         public HttpRequestMessage? UltimaPeticion { get; private set; }
+        public string? XAppTokenCapturado { get; private set; }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             VecesLlamado++;
             UltimaPeticion = request;
+            XAppTokenCapturado = request.Headers.TryGetValues("X-App-Token", out IEnumerable<string>? valores)
+                ? valores.FirstOrDefault()
+                : null;
             return Task.FromResult(new HttpResponseMessage(codigo)
             {
                 Content = new StringContent(cuerpo, System.Text.Encoding.UTF8, "application/json")

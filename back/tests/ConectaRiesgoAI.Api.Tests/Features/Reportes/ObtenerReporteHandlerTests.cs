@@ -177,4 +177,18 @@ public class ObtenerReporteHandlerTests
 
         Assert.Equal("Ana", respuesta.ReportadoPor);
     }
+
+    [Fact]
+    public async Task Handle_UsuarioConNombreSoloEspacios_NoIntentaAbreviar()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Usuarios.Add(NuevoUsuario(1, "   "));
+        contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0008", 1));
+        await contexto.SaveChangesAsync();
+        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso());
+
+        var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0008"), CancellationToken.None);
+
+        Assert.Equal("   ", respuesta.ReportadoPor);
+    }
 }
