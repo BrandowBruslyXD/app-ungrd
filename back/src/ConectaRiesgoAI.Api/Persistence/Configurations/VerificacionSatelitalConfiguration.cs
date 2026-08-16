@@ -14,7 +14,9 @@ public class VerificacionSatelitalConfiguration : IEntityTypeConfiguration<Verif
         builder.Property(v => v.Fuente).HasMaxLength(60).IsRequired();
         builder.Property(v => v.Detalle).HasMaxLength(300).IsRequired();
 
-        builder.HasIndex(v => v.ReporteId);
+        // Un reporte solo tiene una verificación vigente: evita que dos consultas simultáneas del
+        // detalle (la primera verificación) inserten dos filas y gasten doble cuota del MAP_KEY.
+        builder.HasIndex(v => v.ReporteId).IsUnique();
 
         builder.HasOne(v => v.Reporte)
             .WithMany(r => r.VerificacionesSatelitales)

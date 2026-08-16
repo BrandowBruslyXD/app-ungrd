@@ -104,9 +104,10 @@ public class ObtenerReporteHandler(
         }
         catch (DbUpdateException ex)
         {
-            // Un error transitorio de base de datos no puede tumbar la pantalla de seguimiento
+            // Un error transitorio de base de datos — o la carrera de dos consultas simultáneas
+            // contra el índice único de ReporteId — no puede tumbar la pantalla de seguimiento
             // (CONTRATO-API.md, regla 3): se devuelve el resultado sin persistir y la próxima
-            // consulta del reporte lo reintentará.
+            // consulta del reporte lo reintentará (o leerá la fila que ganó la carrera).
             logger.LogWarning(ex, "No se pudo persistir la verificación satelital del reporte {ReporteId}; se devuelve sin guardar", reporte.Id);
             context.VerificacionesSatelitales.Remove(verificacion);
         }

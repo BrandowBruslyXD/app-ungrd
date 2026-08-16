@@ -1,4 +1,5 @@
 using System.Globalization;
+using ConectaRiesgoAI.Api.Common.Geo;
 using Microsoft.Extensions.Options;
 
 namespace ConectaRiesgoAI.Api.Integrations.Nasa;
@@ -19,7 +20,6 @@ public class NasaFirmsClient(HttpClient httpClient, IOptions<NasaOptions> opcion
     private const string Fuente = "VIIRS_SNPP_NRT";
 
     private const double KmPorGradoLatitud = 111.0;
-    private const double RadioTierraKm = 6371;
 
     private readonly NasaOptions _opciones = opciones.Value;
 
@@ -110,7 +110,7 @@ public class NasaFirmsClient(HttpClient httpClient, IOptions<NasaOptions> opcion
                 continue;
             }
 
-            double distanciaKm = CalcularDistanciaKm(lat, lng, focoLat, focoLng);
+            double distanciaKm = GeoCalculos.DistanciaKm(lat, lng, focoLat, focoLng);
             if (distanciaKm <= radioKm)
             {
                 distanciasDentroDelRadio.Add(distanciaKm);
@@ -130,18 +130,6 @@ public class NasaFirmsClient(HttpClient httpClient, IOptions<NasaOptions> opcion
             FocosDetectados: distanciasDentroDelRadio.Count,
             DistanciaMasCercanaKm: Math.Round(distanciasDentroDelRadio.Min(), 1),
             Detalle: $"{distanciasDentroDelRadio.Count} {sustantivo} a menos de {radioKm:0} km");
-    }
-
-    /// <summary>Distancia entre dos puntos GPS (fórmula de Haversine), igual que en <c>ListarReportesHandler</c>.</summary>
-    private static double CalcularDistanciaKm(double lat1, double lng1, double lat2, double lng2)
-    {
-        double dLat = GradosARadianes(lat2 - lat1);
-        double dLng = GradosARadianes(lng2 - lng1);
-        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
-                + Math.Cos(GradosARadianes(lat1)) * Math.Cos(GradosARadianes(lat2))
-                * Math.Sin(dLng / 2) * Math.Sin(dLng / 2);
-        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        return RadioTierraKm * c;
     }
 
     private static double GradosARadianes(double grados) => grados * Math.PI / 180;
