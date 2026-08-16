@@ -55,18 +55,29 @@ jobs:
         run: dotnet tool install -g dotnet-reportgenerator-globaltool
 
       - name: Generar reporte de cobertura
-        run: reportgenerator "-reports:back/tests/ConectaRiesgoAI.Api.Tests/TestResults/**/coverage.cobertura.xml" "-targetdir:coverage-report" "-reporttypes:MarkdownSummary;Cobertura" -verbosity:Verbose
+        run: |
+          reportgenerator "-reports:back/tests/ConectaRiesgoAI.Api.Tests/TestResults/**/coverage.cobertura.xml" "-targetdir:coverage-report" "-reporttypes:MarkdownSummary;Cobertura" -verbosity:Verbose
+          if [ ! -f coverage-report/coverage.cobertura.xml ]; then
+            echo "::error::No se generó coverage.cobertura.xml — reportgenerator falló o no encontró archivos de entrada"
+            exit 1
+          fi
 
       - name: Validar umbral de cobertura (90%)
         run: |
+          set -e
           LINE_RATE=$(grep -oP 'line-rate="\K[^"]+' coverage-report/coverage.cobertura.xml | head -1)
+          if [ -z "$LINE_RATE" ]; then
+            echo "::error::No se pudo extraer line-rate del XML de cobertura — XML corrupto o atributo ausente"
+            exit 1
+          fi
+
           LINE_PCT=$(echo "$LINE_RATE * 100" | bc)
           THRESHOLD=90
 
           echo "Cobertura de línea: ${LINE_PCT}%"
           echo "Umbral requerido: ${THRESHOLD}%"
 
-          if (( $(echo "$LINE_PCT < $THRESHOLD" | bc -l) )); then
+          if awk "BEGIN {exit !($LINE_PCT < $THRESHOLD)}"; then
             echo "::error::La cobertura de línea (${LINE_PCT}%) está por debajo del umbral requerido (${THRESHOLD}%)"
             exit 1
           fi
