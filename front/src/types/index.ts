@@ -18,14 +18,32 @@ export const TRUST_LEVEL_LABELS: Record<TrustLevel, string> = {
   avalado: 'Avalado por CMGRD',
 };
 
+/**
+ * Los tipos de emergencia del contrato, como lista recorrible.
+ *
+ * Existe además del tipo porque un `type` no se puede recorrer en tiempo de
+ * ejecución, y sin recorrerlo no hay forma de comprobar que cada tipo tenga su
+ * icono y su etiqueta. Agregar uno aquí rompe la compilación en todos los
+ * `Record<EmergencyType, …>` hasta completarlos, que es justo lo que se busca.
+ *
+ * Tiene que coincidir exactamente con `TipoReporte` del backend: el valor viaja
+ * como cadena y el servidor responde 400 ante cualquier variante. Ojo con
+ * `AvenidaTorrencial`, que va sin espacio aunque se lea como dos palabras.
+ */
+export const TIPOS_EMERGENCIA = [
+  'Incendio',
+  'Inundacion',
+  'Deslizamiento',
+  'ViaAfectada',
+  'ColapsoEstructural',
+  'Sismo',
+  'Vendaval',
+  'AvenidaTorrencial',
+  'Otro',
+] as const;
+
 /** Valores de enum del contrato API para tipo de emergencia. */
-export type EmergencyType =
-  | 'Incendio'
-  | 'Inundacion'
-  | 'Deslizamiento'
-  | 'ViaAfectada'
-  | 'ColapsoEstructural'
-  | 'Otro';
+export type EmergencyType = (typeof TIPOS_EMERGENCIA)[number];
 
 /** Flujo de estados del contrato API. */
 export type ReportStatus =

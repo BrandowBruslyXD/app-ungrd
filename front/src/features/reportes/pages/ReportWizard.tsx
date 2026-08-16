@@ -20,9 +20,12 @@ import {
   Hammer,
   Building,
   Route,
+  Activity,
+  Wind,
+  Waves,
   type LucideIcon,
 } from 'lucide-react';
-import type { EmergencyType } from '@/types';
+import { TIPOS_EMERGENCIA, type EmergencyType } from '@/types';
 import {
   useReportWizard,
   type NecesidadUrgente,
@@ -44,17 +47,43 @@ const ICONO_EMERGENCIA: Record<EmergencyType, LucideIcon> = {
   Incendio: Flame,
   ViaAfectada: Route,
   ColapsoEstructural: Building,
+  Sismo: Activity,
+  Vendaval: Wind,
+  AvenidaTorrencial: Waves,
   Otro: AlertTriangle,
 };
 
-const TIPOS_EMERGENCIA: readonly EmergencyType[] = [
+/**
+ * Orden en que se le ofrecen al ciudadano.
+ *
+ * No es alfabético ni el del contrato: va de lo más frecuente en Colombia a lo
+ * más raro, porque quien reporta está en emergencia y lo primero que ve debe ser
+ * lo que probablemente le pasó. `Otro` cierra siempre la lista.
+ *
+ * Se ordena la lista canónica en vez de copiarla, para que un tipo nuevo aparezca
+ * solo —al final, antes de `Otro`— y nunca quede fuera del formulario por
+ * olvido.
+ */
+const PRIORIDAD: readonly EmergencyType[] = [
   'Inundacion',
   'Deslizamiento',
+  'Vendaval',
+  'AvenidaTorrencial',
   'Incendio',
   'ViaAfectada',
   'ColapsoEstructural',
-  'Otro',
+  'Sismo',
 ];
+
+const posicion = (tipo: EmergencyType): number => {
+  if (tipo === 'Otro') return Number.MAX_SAFE_INTEGER;
+  const indice = PRIORIDAD.indexOf(tipo);
+  return indice === -1 ? PRIORIDAD.length : indice;
+};
+
+const TIPOS_ORDENADOS: readonly EmergencyType[] = [...TIPOS_EMERGENCIA].sort(
+  (a, b) => posicion(a) - posicion(b)
+);
 
 const ICONO_NECESIDAD: Record<NecesidadUrgente, LucideIcon> = {
   ahe_alimentaria: Utensils,
@@ -231,7 +260,7 @@ export default function ReportWizard() {
             columnas={2}
             valor={form.type}
             onChange={(type) => updateForm({ type })}
-            opciones={TIPOS_EMERGENCIA.map<Opcion<EmergencyType>>((type) => ({
+            opciones={TIPOS_ORDENADOS.map<Opcion<EmergencyType>>((type) => ({
               valor: type,
               etiqueta: t(`emergencyType.${type}`),
               icono: ICONO_EMERGENCIA[type],

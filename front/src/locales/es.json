@@ -522,6 +522,9 @@
     "Incendio": "Incendio",
     "ViaAfectada": "Vía afectada",
     "ColapsoEstructural": "Colapso estructural",
+    "Sismo": "Sismo",
+    "Vendaval": "Vendaval",
+    "AvenidaTorrencial": "Avenida torrencial",
     "Otro": "Otro"
   },
   "trust": {

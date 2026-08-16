@@ -1,5 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import { Droplets, Mountain, Flame, AlertTriangle, Construction, Route } from 'lucide-react';
+import {
+  Droplets,
+  Mountain,
+  Flame,
+  AlertTriangle,
+  Construction,
+  Route,
+  Activity,
+  Wind,
+  Waves,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { EmergencyType } from '@/types';
 
@@ -9,6 +19,9 @@ const iconos: Record<EmergencyType, LucideIcon> = {
   Incendio: Flame,
   ViaAfectada: Route,
   ColapsoEstructural: Construction,
+  Sismo: Activity,
+  Vendaval: Wind,
+  AvenidaTorrencial: Waves,
   Otro: AlertTriangle,
 };
 
@@ -18,6 +31,9 @@ const colores: Record<EmergencyType, string> = {
   Incendio: 'text-alerta-600 bg-alerta-50',
   ViaAfectada: 'text-tinta-700 bg-tinta-100',
   ColapsoEstructural: 'text-espera-600 bg-espera-100',
+  Sismo: 'text-alerta-700 bg-alerta-100',
+  Vendaval: 'text-azul-700 bg-azul-100',
+  AvenidaTorrencial: 'text-azul-800 bg-azul-100',
   Otro: 'text-tinta-600 bg-tinta-50',
 };
 

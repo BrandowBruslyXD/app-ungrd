@@ -2,17 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithI18n } from '@/test/render';
 import EmergencyIcon from './EmergencyIcon';
-import type { EmergencyType } from '@/types';
+import { TIPOS_EMERGENCIA, type EmergencyType } from '@/types';
+import es from '@/locales/es.json';
 
 describe('EmergencyIcon', () => {
-  const casos: { type: EmergencyType; etiqueta: string }[] = [
-    { type: 'Inundacion', etiqueta: 'Inundación' },
-    { type: 'Deslizamiento', etiqueta: 'Deslizamiento' },
-    { type: 'Incendio', etiqueta: 'Incendio' },
-    { type: 'ViaAfectada', etiqueta: 'Vía afectada' },
-    { type: 'ColapsoEstructural', etiqueta: 'Colapso estructural' },
-    { type: 'Otro', etiqueta: 'Otro' },
-  ];
+  /*
+   * Se derivan de la lista real y no se escriben a mano: cuando el contrato sumó
+   * tres tipos nuevos, una lista fija aquí siguió pasando en verde mientras el
+   * componente ya no sabía dibujarlos.
+   */
+  const casos: { type: EmergencyType; etiqueta: string }[] = TIPOS_EMERGENCIA.map((type) => ({
+    type,
+    etiqueta: (es.emergencyType as Record<string, string>)[type],
+  }));
 
   it.each(casos)(
     'muestra la etiqueta "$etiqueta" con showLabel cuando el tipo es $type',
