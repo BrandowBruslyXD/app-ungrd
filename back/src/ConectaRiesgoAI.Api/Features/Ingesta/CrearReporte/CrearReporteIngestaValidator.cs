@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Domain.Enums;
 using FluentValidation;
 
 namespace ConectaRiesgoAI.Api.Features.Ingesta.CrearReporte;
@@ -20,5 +21,11 @@ public class CrearReporteIngestaValidator : AbstractValidator<CrearReporteIngest
         RuleFor(c => c.NivelDano).MaximumLength(80);
         RuleFor(c => c.Necesidad).MaximumLength(80);
         RuleFor(c => c.UrlFoto).MaximumLength(500);
+        // Web queda fuera a propósito: este endpoint es el de los canales conversacionales.
+        // Un reporte hecho desde la aplicación entra por POST /api/reportes con su sesión, y
+        // aceptarlo aquí permitiría atribuirle a un tercero un reporte que no hizo.
+        RuleFor(c => c.Canal)
+            .Must(c => c is null or CanalOrigen.WhatsApp or CanalOrigen.Telefono)
+            .WithMessage("Canal debe ser 'WhatsApp' o 'Telefono'");
     }
 }

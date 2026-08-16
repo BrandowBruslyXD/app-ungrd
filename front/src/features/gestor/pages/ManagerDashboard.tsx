@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { TFunction } from 'i18next';
-import { listReportes } from '@/api/reportes';
 import { SeverityBadge } from '@/components/shared/StatusBadge';
 import EmergencyIcon from '@/components/shared/EmergencyIcon';
 import TrustBadge from '@/components/shared/TrustBadge';
@@ -21,6 +20,8 @@ import BandaPortada from '@/components/ui/BandaPortada';
 import { FOTOS } from '@/lib/fotos';
 import MapaUbicacion, { type PuntoMapa, type TonoMarcador } from '@/components/ui/MapaUbicacion';
 import { useTituloPagina } from '@/hooks/useTituloPagina';
+import { useReportes } from '@/hooks/useReportesApi';
+import { Cargando, ErrorAlCargar, AvisoSinConexion } from '@/components/ui/EstadoDeCarga';
 import type { Prioridad, Report, ReportStatus } from '@/types';
 
 /** Prioridad del contrato → color del marcador y de la leyenda. */
@@ -132,7 +133,7 @@ function ColumnaTriaje({
 
 export default function ManagerDashboard() {
   const { t } = useTranslation();
-  const reportes = listReportes();
+  const { reportes, cargando, error, sinConexion, reintentar } = useReportes();
 
   useTituloPagina(t('meta.manager.title'), t('meta.manager.description'));
 
@@ -207,6 +208,18 @@ export default function ManagerDashboard() {
         />
       </div>
 
+      {sinConexion && <AvisoSinConexion />}
+
+      {error && !reportes.length && (
+        <div className="mb-6">
+          <ErrorAlCargar mensaje={error} onReintentar={reintentar} />
+        </div>
+      )}
+
+      {cargando && !reportes.length ? (
+        <Cargando filas={4} etiqueta="Cargando el tablero de reportes" />
+      ) : (
+      <>
       {/* ── Indicadores ──────────────────────────────────────────────────── */}
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {indicadores.map(({ etiqueta, valor, icono: Icono, clases }) => (
@@ -279,6 +292,8 @@ export default function ManagerDashboard() {
           </Link>
         </section>
       </div>
+        </>
+      )}
     </div>
   );
 }

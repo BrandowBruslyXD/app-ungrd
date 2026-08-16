@@ -1,0 +1,74 @@
+# Verifica el frontend en cada Pull Request.
+#
+# Por qué existe: hasta ahora nada corría las pruebas al abrir un PR. Siete
+# pruebas de persistencia vivieron rotas en `main` sin que nadie lo notara, y dos
+# PR seguidos entraron con el frontend desalineado del contrato de la API. Todo
+# eso lo para este archivo antes del merge.
+#
+# Solo se dispara cuando cambia el frontend: un PR que toca únicamente el backend
+# o la documentación no tiene por qué esperar a que compile React.
+name: Verificar frontend
+
+on:
+  pull_request:
+    paths:
+      - "front/**"
+      - ".github/workflows/verificar-frontend.yml"
+  push:
+    branches: [main]
+    paths:
+      - "front/**"
+      - ".github/workflows/verificar-frontend.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+# Si se sube otro commit al mismo PR, la corrida anterior se cancela: solo
+# interesa el resultado del último.
+concurrency:
+  group: verificar-frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: front
+
+jobs:
+  verificar:
+    name: Tipos, estilo, pruebas y compilación
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Los cuatro pasos van con `if: always()` a propósito: si fallan los tipos
+      # se quiere ver igual qué pruebas caen, en vez de arreglar de a un error
+      # por corrida.
+      - name: Comprobar tipos
+        if: always()
+        run: npm run typecheck
+
+      - name: Revisar estilo
+        if: always()
+        run: npm run lint
+
+      - name: Correr pruebas
+        if: always()
+        run: npm test
+
+      - name: Compilar para producción
+        if: always()
+        run: npm run build
