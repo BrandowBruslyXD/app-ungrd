@@ -25,7 +25,8 @@ public class ActualizarEstadoValidatorTests
         var resultado = Validador.Validate(comando);
 
         Assert.False(resultado.IsValid);
-        Assert.Contains(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Nota));
+        var error = Assert.Single(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Nota));
+        Assert.Equal("La nota es obligatoria", error.ErrorMessage);
     }
 
     [Fact]
@@ -36,7 +37,8 @@ public class ActualizarEstadoValidatorTests
         var resultado = Validador.Validate(comando);
 
         Assert.False(resultado.IsValid);
-        Assert.Contains(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Codigo));
+        var error = Assert.Single(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Codigo));
+        Assert.Equal("El código del reporte es obligatorio", error.ErrorMessage);
     }
 
     [Fact]
@@ -64,6 +66,22 @@ public class ActualizarEstadoValidatorTests
         var resultado = Validador.Validate(comando);
 
         Assert.False(resultado.IsValid);
-        Assert.Contains(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Nota));
+        var error = Assert.Single(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Nota));
+        Assert.Equal("La nota no puede superar los 500 caracteres", error.ErrorMessage);
+    }
+
+    [Fact]
+    public void Validate_EstadoInvalido_FallaConMensajeExplicito()
+    {
+        var comando = new ActualizarEstadoCommand(
+            "RPT-2026-08-15-0047",
+            (EstadoReporte)99,
+            "Brigada en camino");
+
+        var resultado = Validador.Validate(comando);
+
+        Assert.False(resultado.IsValid);
+        var error = Assert.Single(resultado.Errors, e => e.PropertyName == nameof(ActualizarEstadoCommand.Estado));
+        Assert.Equal("El estado no es válido", error.ErrorMessage);
     }
 }
