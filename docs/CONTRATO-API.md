@@ -4,7 +4,7 @@
 > Si algo aquí cambia, se avisa en el grupo **antes** de cambiarlo. Un campo renombrado en silencio rompe la demo y nadie sabe por qué.
 
 **Base URL (desarrollo):** `http://localhost:5000/api`
-**Base URL (producción):** _pendiente — se llena al cerrar el issue de despliegue_
+**Base URL (producción):** `https://conectariesgoai-api.delightfulsand-f3f95f4d.brazilsouth.azurecontainerapps.io/api`
 
 ---
 

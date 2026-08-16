@@ -1,7 +1,7 @@
 ---
 name: audit-backend
 description: >
-  Auditoría de arquitectura, seguridad y calidad del backend .NET de RespondeYA,
+  Auditoría de arquitectura, seguridad y calidad del backend .NET de ConectaRiesgoAI,
   organizado en Vertical Slice (`Features/<Feature>/<CasoDeUso>/`): autocontención de la
   rebanada, invariantes, caminos de fallo, superficie HTTP, tests que blindan las reglas y
   build en verde, con hallazgos priorizados y evidencia `archivo:línea`. Úsalo cuando pidan
@@ -13,7 +13,7 @@ model: sonnet
 
 # audit-backend — Auditoría del backend (Vertical Slice)
 
-Runbook repetible para auditar **una rebanada, una feature o todo `backend`**, sin concesiones.
+Runbook repetible para auditar **una rebanada, una feature o todo `back`**, sin concesiones.
 
 **Persona:** Arquitecto de Software Senior + Application Security Engineer.
 **Idioma:** español neutro (Colombia). **Evidencia:** rutas clickeables `archivo:línea`.
@@ -22,11 +22,12 @@ proyectos. El motor de datos **no está decidido**: audita la persistencia de fo
 necesitas un ejemplo, usa uno neutro (`IQueryable`/EF Core) sin afirmar que el proyecto ya lo usa.
 
 ```
-backend/src/
-  Features/<Feature>/<CasoDeUso>/   Endpoint · Request · Response · Handler · Validator
-  Features/<Feature>/<Feature>Entity.cs
-  Shared/           transversal real: auth, errores, paginación, resultados, logging
-  Infrastructure/   acceso a datos, clientes externos, wiring
+back/src/ConectaRiesgoAI.Api/
+  Features/<Feature>/<CasoDeUso>/   Endpoint · Command/Query · Response · Handler · Validator
+  Domain/           modelo compartido: Entities, Enums, ValueObjects
+  Persistence/       EF Core: Configurations, Migrations
+  Common/           transversal real: auth, errores, paginación, resultados, logging
+  Integrations/     clientes HTTP de APIs externas (NASA FIRMS, SECOP)
 ```
 
 ## Principios (no negociables)
@@ -37,7 +38,7 @@ backend/src/
    fallo concreto (entradas/estado → salida incorrecta).
 4. **Calibra contra rebanadas hermanas.** Un patrón que repiten todas es deuda transversal o
    convención de facto, no defecto de la rebanada auditada.
-5. **No cambies la arquitectura en silencio.** Lo estructural (subir algo a `Shared/`, introducir
+5. **No cambies la arquitectura en silencio.** Lo estructural (subir algo a `Common/`, introducir
    una abstracción, romper el contrato) se propone como issue `tech-debt`; no se parchea callando.
 6. **Corrige en la raíz:** en el handler o la entidad dueña de la regla, no en el llamador.
 7. **No dupliques deuda** ([Regla anti-duplicados](#regla-anti-duplicados)).
@@ -58,8 +59,8 @@ backend/src/
 
 ```bash
 git status --porcelain
-find backend/src/Features -maxdepth 2 -type d | sort
-find backend -name "*.cs" -not -path "*/bin/*" -not -path "*/obj/*" | sort
+find back/src/ConectaRiesgoAI.Api/Features -maxdepth 2 -type d | sort
+find back -name "*.cs" -not -path "*/bin/*" -not -path "*/obj/*" | sort
 ```
 
 Por rebanada anota: piezas ausentes (sin validador, respuesta que reusa la entidad) y lógica suya
@@ -134,18 +135,18 @@ que viva fuera de su carpeta. Las rebanadas nuevas o modificadas se auditan a fo
 - [ ] **Códigos HTTP correctos** (200/201/204/400/401/403/404/409/500) y coherentes con los errores
       de la Fase 3; sin stack traces ni detalles internos en la respuesta.
 - [ ] **Compatibilidad de contrato:** los cambios aditivos no rompen; renombrar o quitar campos,
-      cambiar tipos o endurecer validaciones sí, y se reporta con el impacto en `frontend/src`.
+      cambiar tipos o endurecer validaciones sí, y se reporta con el impacto en `front/src`.
 
-## Fase 6 — `Shared/` (¿es transversal de verdad?)
+## Fase 6 — `Common/` (¿es transversal de verdad?)
 
-- [ ] **Cada tipo de `Shared/` lo usan varias rebanadas.** Compruébalo:
-      `grep -rn "NombreDelTipo" backend/src/Features --include=*.cs`. Si lo usa una sola, bájalo.
+- [ ] **Cada tipo de `Common/` lo usan varias rebanadas.** Compruébalo:
+      `grep -rn "NombreDelTipo" back/src/ConectaRiesgoAI.Api/Features --include=*.cs`. Si lo usa una sola, bájalo.
 - [ ] **No es un cajón de sastre:** ahí caben auth, errores HTTP, paginación, resultados y logging.
       Reglas de negocio de una feature disfrazadas de "helper compartido" son hallazgo.
 - [ ] **Lo que debería estar arriba y no está:** la misma constante, formato de error o paginación
       reescritos en tres rebanadas ya justifica subirlos.
 - [ ] **Claves de frontera:** todo valor que deba **coincidir** con otro sitio —frontend,
-      almacenamiento, otra rebanada— es `public const` en `Shared/`, no un literal repetido. Este
+      almacenamiento, otra rebanada— es `public const` en `Common/`, no un literal repetido. Este
       defecto vive *entre* dos archivos; se escapa si solo miras uno.
 
 ## Fase 7 — Seguridad
@@ -210,8 +211,8 @@ que viva fuera de su carpeta. Las rebanadas nuevas o modificadas se auditan a fo
 ## Fase 10 — Build + tests en verde
 
 ```bash
-dotnet build backend --nologo
-dotnet test  backend --nologo
+dotnet build back --nologo
+dotnet test  back --nologo
 ```
 
 Reporta resultado y conteo de tests, y **corre ambos tras cualquier fix** hasta dejarlos verdes: una
@@ -267,7 +268,7 @@ propuesta redactada en el informe y adviértelo explícitamente.
 
 ## Hallazgos
 ### 🔴 Crítica — <título>
-[Archivo.cs:42](backend/src/Features/<Feature>/<CasoDeUso>/Archivo.cs#L42): <defecto> →
+[Archivo.cs:42](back/src/ConectaRiesgoAI.Api/Features/<Feature>/<CasoDeUso>/Archivo.cs#L42): <defecto> →
 <escenario de fallo> → <recomendación>.
 ### 🟠 Media — <título>
 …
@@ -282,8 +283,8 @@ propuesta redactada en el informe y adviértelo explícitamente.
 ## Trampas de una app slice nueva (checklist de "gotchas")
 
 1. **Rebanada que importa tipos de otra** (el `Response` de `ListarReportes` reusado en
-   `ListarAyudas`): las acopla para siempre. Duplica el record o súbelo a `Shared/`.
-2. **`Shared/` como cajón de sastre:** helpers de una sola rebanada o reglas de negocio escondidas
+   `ListarAyudas`): las acopla para siempre. Duplica el record o súbelo a `Common/`.
+2. **`Common/` como cajón de sastre:** helpers de una sola rebanada o reglas de negocio escondidas
    ahí "para no repetirse".
 3. **Validar después de mutar:** el `throw` deja la entidad a medio transicionar y el siguiente
    `await` la persiste corrupta.

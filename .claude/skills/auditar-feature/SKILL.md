@@ -83,12 +83,12 @@ La tabla es de **arranque, no de cierre**: recoge lo que más se escapa, no todo
 
 Un cambio puede deformar la arquitectura sin que nadie lo note: pasa el build y hasta una revisión
 centrada en el issue, porque el disparador no está en la descripción — está en la **forma** del diff
-(`git diff --name-status main...HEAD -- 'backend/src/**'`).
+(`git diff --name-status main...HEAD -- 'back/src/**'`).
 
 - **¿La rebanada es autocontenida y se entiende sola?** ¿O referencia tipos de otra, o inventa capas
   fantasma dentro de su carpeta (`Application`/`Domain` por caso de uso, repositorios genéricos, un
   mediator que no aporta)?
-- **¿Lo que subió a `Shared/` lo usan de verdad varias rebanadas?** Si solo lo usa esta, no pertenece
+- **¿Lo que subió a `Common/` lo usan de verdad varias rebanadas?** Si solo lo usa esta, no pertenece
   ahí. Duplicar es barato y explícito: la tercera repetición justifica extraer, no la segunda.
 
 Un acierto aquí es un **hallazgo estructural**: se reporta con `archivo:línea`; no se arregla desde
@@ -110,8 +110,8 @@ este skill (regla dura 1).
    comentarios. **Si el issue no trae escenarios Gherkin, ese es el primer hallazgo**: audita el
    *Incluye* que haya, pero dilo. Los criterios en prosa valen si nombran algo observable. **No los
    redactes tú**: escritos *después* de ver el código se ajustan a lo construido y no reprueban nada.
-4. **Verifica contra el código** — backend en `backend/src/Features/<Feature>/<CasoDeUso>/`,
-   frontend en `frontend/src/` (o el diff del PR): endpoints, handlers, validadores, pantallas y
+4. **Verifica contra el código** — backend en `back/src/ConectaRiesgoAI.Api/Features/<Feature>/<CasoDeUso>/`,
+   frontend en `front/src/` (o el diff del PR): endpoints, handlers, validadores, pantallas y
    rutas por nombre y variantes; tests del área (`[Método]_[Condición]_[ResultadoEsperado]`). Ejecuta
    tests puntuales solo si un veredicto depende de ello.
 5. **Verifica las seis exigencias.** Buscar por nombre encuentra lo que existe, no lo que falla: en

@@ -6,7 +6,9 @@ Cuatro documentos, cada uno responde una pregunta distinta.
 |:---|:---|:---|
 | **[CONTROL.md](CONTROL.md)** | ¿En qué vamos? ¿Qué está trabado? | **PMO — se mira primero** |
 | **[FASES.md](FASES.md)** | ¿Qué se construye, en qué orden, qué se corta? | Todos |
+| **[ARQUITECTURA.md](ARQUITECTURA.md)** | ¿Dónde va cada archivo y por qué? | **Backend y frontend — antes de escribir código** |
 | **[MODELO-DATOS.md](MODELO-DATOS.md)** | ¿Qué datos guarda el sistema? | Backend |
+| **[AGENTE-WHATSAPP.md](AGENTE-WHATSAPP.md)** | ¿Cómo debe comportarse el agente de IA y qué nunca hace? | Quien construya el bot |
 | **[CONTRATO-API.md](CONTRATO-API.md)** | ¿Qué endpoints hay y qué devuelven? | Backend y frontend |
 
 Y sobre cómo trabajamos, todo está en **[`CLAUDE.md`](../CLAUDE.md)** en la raíz: convenciones de
@@ -18,7 +20,7 @@ PR: hay que **dispararlo a mano** escribiendo `@coderabbitai review` en el PR.
 También hay **skills y agentes** en [`.claude/`](../.claude/) para auditar código, crear épicas y
 consultar issues.
 
-Y en [`idea-negocio/`](idea-negocio/) queda la exploración inicial del problema. **Ojo:** esos
+Y en [`investigacion/`](investigacion/) queda la exploración inicial del problema. **Ojo:** esos
 documentos son de cuando el producto se pensaba como asistente por WhatsApp y con otro nombre.
 Sirven como contexto, no como especificación.
 

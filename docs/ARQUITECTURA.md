@@ -170,15 +170,33 @@ Ahí van los ejemplos de respuesta del contrato, copiados tal cual. El frontend 
 Requisitos: **.NET 10 SDK**, **Node 20+**, **Docker** (para PostgreSQL).
 
 ```bash
-# 1. Base de datos
+# 1. Configuración local (solo la primera vez)
+cp back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json \
+   back/src/ConectaRiesgoAI.Api/appsettings.Development.json
+
+# 2. Base de datos
 docker compose up -d
 
-# 2. Backend  → http://localhost:5000
+# 3. Aplicar las migraciones (solo la primera vez y cuando alguien agregue una)
+dotnet ef database update --project back/src/ConectaRiesgoAI.Api
+
+# 4. Backend  → http://localhost:5000, Swagger en /swagger
 dotnet run --project back/src/ConectaRiesgoAI.Api
 
-# 3. Frontend → http://localhost:5173
+# 5. Frontend → http://localhost:5173
 npm install --prefix front
 npm run dev --prefix front
+```
+
+Para comprobar que la API está viva sin depender de la base de datos: `GET http://localhost:5000/health`
+(también responde en `/api/health`, para quien prefiera mantener todo bajo el prefijo del contrato).
+
+Si cambias una entidad, genera la migración:
+
+```bash
+dotnet ef migrations add NombreDelCambio \
+  --project back/src/ConectaRiesgoAI.Api \
+  --output-dir Persistence/Migrations
 ```
 
 ## Variables de entorno
@@ -191,12 +209,39 @@ npm run dev --prefix front
 | `Secop__AppToken` | backend | datos.gov.co (opcional, sube el límite de consultas) |
 | `VITE_API_BASE_URL` | frontend | `http://localhost:5000/api` |
 
-Ninguna de estas se commitea. Cada carpeta lleva su `.env.example` con las llaves vacías.
+En el backend estas llaves viven en `appsettings.json` (vacías, es la plantilla) y se llenan en
+`appsettings.Development.json` para local — copiado de
+[`appsettings.Development.example.json`](../back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json),
+que ya es JSON estrictamente válido (sin comentarios: ASP.NET Core sí tolera `//`/`/* */` vía
+`JsonCommentHandling.Skip`, verificado en vivo — se quitaron por portabilidad con herramientas que
+sí son estrictas, como `jq`, linters y editores) y trae valores de desarrollo que sirven tal cual:
+la cadena de conexión que corresponde al `docker-compose.yml` y un secreto JWT de juguete.
+
+En el frontend, `VITE_API_BASE_URL` va en `.env.local` (no se commitea), copiado de
+[`front/.env.example`](../front/.env.example).
+
+**Nada de eso sirve fuera de local.** En despliegue se pasan como variables de entorno con doble guion
+bajo (`ConnectionStrings__Postgres`, `Jwt__Secret`), que sobrescriben lo del archivo.
+
+### PostgreSQL: Docker local para desarrollar, Azure en producción (issue #4 y #19)
+
+**Decisión (D15 en `CONTROL.md`):** el backend desplegado usa **Azure Database for PostgreSQL
+Flexible Server** (región `brazilsouth`), no Neon/Supabase/Railway como se barajó antes. Docker
+local (`docker-compose.yml`) sigue siendo el arranque de un solo comando para desarrollar: ambos
+usan la misma clave `ConnectionStrings:Postgres`, así que apuntar el entorno local a la base
+compartida de Azure en vez de a Docker es solo reemplazar ese valor en tu
+`appsettings.Development.json` — la cadena real se comparte por el grupo privado, **nunca en un
+commit**. Ver [`README.md`](../README.md#ambientes) para la URL del backend en producción.
 
 ---
 
 ## Pendientes de este documento
 
 - **Nombre del producto (cerrado):** la app se llama **ConectaRiesgo** (UI y documentación). Los namespaces del backend usan `ConectaRiesgoAI`. `RespondeYA` quedó solo en documentos históricos de exploración (`docs/idea-negocio/`).
-- Los enums de este documento siguen `CONTRATO-API.md` (`Incendio`, `Inundacion`, …), que difiere de las categorías de `investigacion/investigacion-uno.md` (`vivienda_albergue`, …). **Manda el contrato**, porque es lo que frontend y backend ya acordaron.
+- **`servicios/` vs `Integrations/`:** ya existen tres microservicios reales y verificados en
+  `servicios/` (`ms-satelital`, `ms-transparencia`, `ms-social`) que cubren NASA FIRMS, SECOP y
+  redes sociales, pero este documento describe esas integraciones como clientes HTTP dentro de
+  `back/src/ConectaRiesgoAI.Api/Integrations/`, que todavía no tiene código. Falta que el equipo
+  decida cuál es la arquitectura real y ajuste este documento en consecuencia.
+- Los enums de este documento siguen `CONTRATO-API.md` (`Incendio`, `Inundacion`, …), que difiere de las categorías de `idea-negocio/investigacion-uno.md` (`vivienda_albergue`, …). **Manda el contrato**, porque es lo que frontend y backend ya acordaron.
 - Falta definir el despliegue (`docker-compose.yml` solo cubre la base de datos local).

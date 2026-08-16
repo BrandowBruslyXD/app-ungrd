@@ -2,9 +2,10 @@
 
 ## Qué es este proyecto
 
-**Aplicación web mobile-first** de gestión de desastres. El ciudadano reporta una emergencia con
-foto, ubicación y descripción; recibe un código único y puede seguir su caso; la autoridad lo
-atiende y **el ciudadano ve avanzar la cronología en tiempo real**:
+**Aplicación web mobile-first** de gestión de desastres, con **WhatsApp como canal adicional desde
+la fase inicial**. El ciudadano reporta una emergencia —por la web o por WhatsApp— con foto,
+ubicación y descripción; recibe un código único y puede seguir su caso; la autoridad lo atiende y
+**el ciudadano ve avanzar la cronología en tiempo real**:
 
 ```
 Reportado → Verificado → Asignado → En atención → Atendido → Cerrado
@@ -20,8 +21,9 @@ trabado**, en [docs/CONTROL.md](docs/CONTROL.md). Esos dos documentos mandan sob
 suelta.
 
 Contexto original del problema: [docs/idea-negocio/](docs/idea-negocio/). Ojo: esos documentos son
-de la exploración inicial, cuando el producto se pensaba como asistente por WhatsApp y con otro
-nombre. **El producto es una app web y se llama ConectaRiesgo.**
+de la exploración inicial, cuando el producto se pensaba **solo** como asistente por WhatsApp y con
+otro nombre. **El producto es una app web y se llama ConectaRiesgo.** WhatsApp es un canal más
+para reportar y consultar, no el único.
 
 Es un proyecto de **hackatón**: prioriza lo que se puede demostrar funcionando. Pragmatismo por
 encima de ceremonia, pero sin renunciar a las reglas de abajo — están para que el código siga
@@ -39,19 +41,26 @@ se presenta lo que sí funciona de punta a punta.
 
 | Parte | Stack | Ubicación |
 |---|---|---|
-| Backend | .NET 8, **arquitectura Vertical Slice** | `backend/` |
-| Frontend | React + TypeScript + Vite + Tailwind, **mobile-first** | `frontend/` |
-| Microservicios de integración | .NET 8, minimal API | `servicios/` |
+| Backend | .NET 10, **arquitectura Vertical Slice** | `back/src/ConectaRiesgoAI.Api/` |
+| Frontend | React + TypeScript + Vite + Tailwind, **mobile-first** | `front/` |
+| Integraciones externas | Clientes HTTP internos (NASA FIRMS, SECOP) | `back/src/ConectaRiesgoAI.Api/Integrations/` |
 | Base de datos | PostgreSQL | — |
 | Mapas | Leaflet + OpenStreetMap | — |
 
 Idioma de todo: **español neutro** — documentación, comentarios, mensajes de commit, textos de
 issues y de PR.
 
-**Por qué hay microservicios aparte:** las integraciones externas (NASA FIRMS, SECOP, redes
-sociales) viven en `servicios/` y no dentro de `backend/`, para que quien las construye no dependa
-de que la estructura del backend esté lista. El backend las consume por HTTP. Si uno se cae, el
-backend **oculta ese bloque** y sigue respondiendo — nunca propaga el error.
+**Por qué las integraciones viven en `Integrations/`:** NASA FIRMS y SECOP son clientes HTTP
+internos dentro del backend (`Integrations/Nasa`, `Integrations/Secop`), no microservicios aparte.
+El endpoint que compone la respuesta las llama con timeout corto; si una falla, **oculta ese
+bloque** y sigue respondiendo — nunca propaga el error. Detalle en
+[docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
+
+> ⚠️ **Esto describe el diseño, no el código actual.** Hoy las integraciones ya existen y funcionan
+> como microservicios independientes en `servicios/` (`ms-satelital`, `ms-transparencia`,
+> `ms-social`), y `back/.../Integrations/` todavía no tiene código. Falta que el equipo decida si
+> `servicios/` se migra a `Integrations/` o si este documento se ajusta a `servicios/` como destino
+> final — ver `docs/ARQUITECTURA.md`.
 
 **Documentación de referencia:**
 
@@ -69,40 +78,51 @@ backend **oculta ese bloque** y sigue respondiendo — nunca propaga el error.
 La unidad de organización es el **caso de uso**, no la capa técnica.
 
 ```
-backend/src/
+back/src/ConectaRiesgoAI.Api/
   Features/
-    <Feature>/                    # Reportes, Ayudas, Seguimiento, …
-      <CasoDeUso>/                # CrearReporte, ListarReportes, AsignarAyuda, …
+    <Feature>/                    # Reportes, Auth, Estadisticas, Verificacion, Transparencia, …
+      <CasoDeUso>/                # CrearReporte, ListarReportes, VerificacionSatelital, …
         <CasoDeUso>Endpoint.cs    # transporte: minimal API o controller delgado
-        <CasoDeUso>Request.cs     # entrada (record inmutable)
+        <CasoDeUso>Command.cs / <CasoDeUso>Query.cs   # entrada (record inmutable)
         <CasoDeUso>Response.cs    # salida (record inmutable)
         <CasoDeUso>Handler.cs     # la lógica del caso de uso, de punta a punta
         <CasoDeUso>Validator.cs   # validación de entrada
-      <Feature>Entity.cs          # modelo persistido compartido por la feature
-  Shared/                         # transversal real: auth, errores, paginación, logging
-  Infrastructure/                 # acceso a datos, clientes externos, wiring
+  Domain/                         # modelo compartido entre slices: entidades, enums, value objects
+  Persistence/                    # EF Core: configuraciones y migraciones
+  Common/                         # transversal real: auth, errores, paginación, logging
+  Integrations/                   # clientes HTTP de APIs externas (NASA FIRMS, SECOP)
   Program.cs
 ```
+
+Detalle completo de la estructura en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
 **Las reglas, en orden de importancia:**
 
 1. **La rebanada es la unidad.** Un caso de uso vive completo en su carpeta: entrada, validación,
    lógica y acceso a datos. Se lee de arriba abajo sin saltar de proyecto en proyecto.
 2. **Cero acoplamiento entre rebanadas.** Una rebanada no referencia tipos de otra. Si dos
-   necesitan lo mismo: o se duplica (barato y explícito) o sube a `Shared/`.
+   necesitan lo mismo: o se duplica (barato y explícito) o sube a `Common/`.
 3. **Duplicar está permitido; abstraer antes de tiempo, no.** La tercera repetición justifica
    extraer, no la segunda.
-4. **`Shared/` no es un cajón de sastre.** Va lo genuinamente transversal: autenticación, manejo de
-   errores HTTP, paginación, resultados, logging. Si algo en `Shared/` lo usa una sola rebanada, no
+4. **`Common/` no es un cajón de sastre.** Va lo genuinamente transversal: autenticación, manejo de
+   errores HTTP, paginación, resultados, logging. Si algo en `Common/` lo usa una sola rebanada, no
    pertenece ahí.
 5. **El endpoint es delgado**: traduce HTTP ↔ handler y nada más.
 6. **El handler es el dueño de la regla de negocio** del caso de uso. Si una invariante debe
    sostenerse en varias rebanadas, vive en la entidad de la feature.
 7. **Sin capas fantasma.** No crees `Domain`/`Application`/`Infrastructure` dentro de una rebanada,
-   ni repositorios genéricos, ni un mediator si no está pagando su coste.
+   ni repositorios genéricos.
+
+**Sobre MediatR:** se usa, y está decidido. Paga su coste por una razón concreta: el
+`ValidationBehavior` del pipeline valida **toda** petición sin que haya que acordarse de llamar al
+validador en cada endpoint. Ese olvido es un agujero de seguridad clásico, y aquí no puede ocurrir.
+
+Lo que sí se prohíbe es la ceremonia vacía: nada de un `Handler` que solo reenvía a un servicio, ni
+interfaces con una sola implementación puestas «por si acaso». Si una rebanada no tiene lógica, su
+handler hace el trabajo directamente contra el `DbContext`.
 
 La pregunta de revisión no es "¿respeta las capas?" sino **"¿esta rebanada se entiende sola?"** y
-**"¿lo que subió a `Shared/` lo comparten de verdad varias?"**.
+**"¿lo que subió a `Common/` lo comparten de verdad varias?"**.
 
 ---
 
@@ -184,9 +204,23 @@ prueba que lo hace caer.
 `main` está **protegida**: no se hace push directo. Todo entra por Pull Request con **una
 aprobación de cualquier compañero** — basta una, y nadie aprueba su propio trabajo.
 
+**Nombrado de ramas:** `<tipo>/CR-<número>`, donde `<número>` es el número del issue de GitHub que
+la rama resuelve. El `<tipo>` corresponde al label del issue:
+
+| Tipo de issue | Prefijo de rama |
+|---|---|
+| Épica | `epic/` |
+| Feature | `feat/` |
+| Bug | `fix/` |
+| Deuda técnica | `chore/` |
+
+Para trabajo que no nace de un issue con esas plantillas (infraestructura, documentación suelta),
+usa el prefijo que mejor describa la naturaleza del cambio (`infra/`, `docs/`) seguido igual de
+`CR-<número>` si existe un issue asociado, o de una descripción corta en kebab-case si no lo hay.
+
 ```bash
-git checkout -b feat/mi-tarea
-gh pr create --fill          # el PR debe decir: Closes #<número del issue>
+git checkout -b feat/CR-12
+gh pr create --fill          # el PR debe decir: Closes #12
 ```
 
 - PRs pequeños y frecuentes. Uno gigante a la hora 17 no lo revisa nadie.

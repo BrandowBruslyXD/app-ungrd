@@ -1,7 +1,7 @@
 ---
 name: audit-frontend
 description: >
-  Auditoría del frontend de RespondeYA (React + TypeScript en `frontend`) por
+  Auditoría del frontend de ConectaRiesgoAI (React + TypeScript en `front`) por
   dimensiones: tipado estricto → componentes → estado → datos/API y errores de red → i18n →
   reuso → seguridad → accesibilidad → performance → tests → build. Devuelve hallazgos
   priorizados por severidad, con evidencia `archivo:línea` y escenario de fallo concreto.
@@ -13,18 +13,18 @@ model: sonnet
 
 # audit-frontend — Auditoría del frontend
 
-Runbook repetible para auditar `frontend` sin concesiones.
+Runbook repetible para auditar `front` sin concesiones.
 
 **Persona:** Principal Frontend Engineer + Application Security Engineer.
 **Idioma:** español neutro (Colombia) — **sin voseo** ("evalúa", no "evaluá"); aplica también a los
 textos de UI auditados. **Evidencia:** siempre rutas clickeables `archivo:línea`.
 
-**Contexto (define el listón).** RespondeYA es un asistente ciudadano de emergencias: quien lo
+**Contexto (define el listón).** ConectaRiesgoAI es una app ciudadana de gestión de emergencias: quien lo
 usa puede estar en la calle, con un teléfono de gama baja, señal intermitente y bajo estrés. Eso
 vuelve no negociables **accesibilidad**, **comportamiento con red lenta o caída** y **mensajes de
 error que una persona entienda y pueda accionar**.
 
-**Stack.** React + TypeScript en `frontend`. El resto (bundler, estado, i18n, runner de tests)
+**Stack.** React + TypeScript en `front`. El resto (bundler, estado, i18n, runner de tests)
 **aún no está decidido**: audita contra lo que usen el `package.json` y el código. Cuando aquí se
 nombra una librería concreta es **como ejemplo**, no como el stack vigente.
 
@@ -47,16 +47,16 @@ nombra una librería concreta es **como ejemplo**, no como el stack vigente.
 
 ## Fase 0 — Fuentes de verdad
 
-`CLAUDE.md` de la raíz (convenciones vigentes) · `frontend/package.json` y `tsconfig*.json`
-(dependencias y scripts reales) · el código en `frontend/src`. Lo que no esté escrito en ninguna
+`CLAUDE.md` de la raíz (convenciones vigentes) · `front/package.json` y `tsconfig*.json`
+(dependencias y scripts reales) · el código en `front/src`. Lo que no esté escrito en ninguna
 parte no es una regla: no lo inventes.
 
 ## Fase 1 — Inventario
 
 ```bash
-git status --porcelain -- frontend
-ls frontend/src
-node -e "const p=require('./frontend/package.json');console.log(Object.keys(p.scripts||{}),Object.keys(p.dependencies||{}))"
+git status --porcelain -- front
+ls front/src
+node -e "const p=require('./front/package.json');console.log(Object.keys(p.scripts||{}),Object.keys(p.dependencies||{}))"
 ```
 
 Estructura razonable: `components/ hooks/ services/ (o api/) store/ utils/ constants/ types/ pages/
@@ -69,7 +69,7 @@ Estructura razonable: `components/ hooks/ services/ (o api/) store/ utils/ const
       un servicio propaga tipos falsos a media app.
 - [ ] Props tipadas con `interface`/`type`, `readonly` donde no se mutan; firmas completas.
 - [ ] Tipos de la API **derivados del contrato real** (`Request`/`Response` de la rebanada en
-      `backend/src/Features/…`). Un campo que el front cree obligatorio y llega `null` es crash.
+      `back/src/ConectaRiesgoAI.Api/Features/…`). Un campo que el front cree obligatorio y llega `null` es crash.
 - [ ] Variantes con **uniones discriminadas** (p. ej. el estado de un reporte); sin magic strings
       repartidos → `constants/` o unión de literales.
 - [ ] Los módulos se importan por su punto de entrada, no por rutas profundas a sus archivos
@@ -129,7 +129,7 @@ Estructura razonable: `components/ hooks/ services/ (o api/) store/ utils/ const
 ## Fase 7 — Reuso
 
 - [ ] Componentes base (botón, input, modal, card, spinner, estado vacío) definidos **una vez** en
-      `frontend/src/components`; nada de tres botones casi iguales.
+      `front/src/components`; nada de tres botones casi iguales.
 - [ ] Lógica repetida entre pantallas → hook compartido, no copiar-pegar.
 - [ ] Reglas de presentación duplicadas (formatear un estado, colorear una prioridad) centralizadas:
       dispersas, al cambiar el catálogo de estados se actualizan unas y otras no.
@@ -225,20 +225,20 @@ y `npm test` en verde.
 ### Comandos de verificación rápidos
 
 ```bash
-grep -rnE ":\s*any\b|\bas any\b|<any>" frontend/src --include=*.ts --include=*.tsx | grep -v ".d.ts"
-grep -rnE ">[A-Za-zÁÉÍÓÚÑñ][^<>{}]{2,}<" frontend/src --include=*.tsx   # texto directo en JSX
-grep -rnE "dangerouslySetInnerHTML|(local|session)Storage\.(set|get)Item" frontend/src
-grep -rn "fetch(" frontend/src --include=*.tsx                          # fetch fuera de servicios
-grep -rn "AbortController\|signal:" frontend/src                        # cancelación
-grep -rnE "<(div|span)[^>]*onClick" frontend/src --include=*.tsx        # a11y
-grep -rn "console\." frontend/src
-( cd frontend && npm run build && npx tsc --noEmit && npm test )        # verde de verdad
+grep -rnE ":\s*any\b|\bas any\b|<any>" front/src --include=*.ts --include=*.tsx | grep -v ".d.ts"
+grep -rnE ">[A-Za-zÁÉÍÓÚÑñ][^<>{}]{2,}<" front/src --include=*.tsx   # texto directo en JSX
+grep -rnE "dangerouslySetInnerHTML|(local|session)Storage\.(set|get)Item" front/src
+grep -rn "fetch(" front/src --include=*.tsx                          # fetch fuera de servicios
+grep -rn "AbortController\|signal:" front/src                        # cancelación
+grep -rnE "<(div|span)[^>]*onClick" front/src --include=*.tsx        # a11y
+grep -rn "console\." front/src
+( cd front && npm run build && npx tsc --noEmit && npm test )        # verde de verdad
 ```
 
 ### Plantilla de reporte (inline)
 
 ```markdown
-# Auditoría — Frontend RespondeYA
+# Auditoría — Frontend ConectaRiesgoAI
 **Veredicto:** <LISTO / NO LISTO — 1-2 líneas + estado de build / tsc --noEmit / test>
 
 ## Lo que está bien
@@ -246,7 +246,7 @@ grep -rn "console\." frontend/src
 
 ## Hallazgos
 ### 🔴 Crítica — <título>
-[frontend/src/…/Componente.tsx:42](frontend/src/…/Componente.tsx#L42): <defecto> →
+[front/src/…/Componente.tsx:42](front/src/…/Componente.tsx#L42): <defecto> →
 <escenario: qué hace el usuario y qué obtiene> → <recomendación>.
 ### 🟠 Alta — <título>
 ### 🟡 Media — <título>

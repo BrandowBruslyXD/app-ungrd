@@ -69,10 +69,10 @@ de la rama**, no el de tu árbol:
 ```bash
 git stash push -u -m "pendiente de features posteriores"
 
-dotnet build backend/src/<Proyecto>.csproj -v q --nologo          # y el host, si son varios
-dotnet test  backend/tests/<Proyecto>.Tests/<Proyecto>.Tests.csproj -v q --nologo
-npm --prefix frontend run build
-npx --prefix frontend tsc --noEmit
+dotnet build back/src/<Proyecto>.csproj -v q --nologo             # y el host, si son varios
+dotnet test  back/tests/<Proyecto>.Tests/<Proyecto>.Tests.csproj -v q --nologo
+npm --prefix front run build
+npx --prefix front tsc --noEmit
 
 git stash pop
 ```

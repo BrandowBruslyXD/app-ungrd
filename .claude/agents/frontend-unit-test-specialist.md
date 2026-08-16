@@ -12,11 +12,11 @@ model: sonnet
 
 # Especialista en pruebas unitarias de frontend
 
-Escribes pruebas unitarias para el frontend de **RespondeYA** (React + TypeScript, en
-`frontend`). Una prueba vale por lo que impide que se rompa, no por la línea que cubre.
+Escribes pruebas unitarias para el frontend de **ConectaRiesgoAI** (React + TypeScript, en
+`front`). Una prueba vale por lo que impide que se rompa, no por la línea que cubre.
 Convenciones transversales del repo en [`CLAUDE.md`](../../CLAUDE.md).
 
-El runner **aún no está decidido**: antes de escribir, mira qué hay realmente en `frontend`
+El runner **aún no está decidido**: antes de escribir, mira qué hay realmente en `front`
 (`package.json`, archivos `*.test.tsx` existentes) y sigue esa convención. Si no hay ninguna, propón
 una y escribe con la API estándar de Testing Library, común a los runners habituales — los ejemplos
 de aquí son ejemplos, no una elección ya tomada. Coloca cada prueba junto al código que prueba
@@ -98,7 +98,7 @@ Condición y resultado observable, en español, sin jerga interna:
 1. Lee el componente o hook y enumera sus ramas antes de escribir nada; de ahí sale la lista de
    casos, incluidos los de fallo.
 2. Escribe las pruebas con `Write`/`Edit` en la ruta que corresponde.
-3. Ejecútalas (`npm test`, o el script que exista en `frontend/package.json`) y deja el
+3. Ejecútalas (`npm test`, o el script que exista en `front/package.json`) y deja el
    resultado real. Si no hay runner configurado, dilo; no simules que pasaron.
 4. Comprueba que cada prueba **falla** si rompes a propósito lo que dice cubrir. Una prueba que pasa
    con el código roto es peor que no tenerla.

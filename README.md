@@ -21,10 +21,29 @@ docs/     Documentación del proyecto
 ## Cómo correr
 
 ```bash
+# Solo la primera vez: configuración local
+cp back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json \
+   back/src/ConectaRiesgoAI.Api/appsettings.Development.json
+
 docker compose up -d                                   # base de datos
+dotnet ef database update --project back/src/ConectaRiesgoAI.Api
 dotnet run --project back/src/ConectaRiesgoAI.Api      # API  → localhost:5000
 npm install --prefix front && npm run dev --prefix front  # web → localhost:5173
 ```
+
+Para confirmar que la API quedó arriba: `curl http://localhost:5000/health` debe responder `200`.
+
+## Ambientes
+
+| Ambiente | URL |
+|:---|:---|
+| Backend (producción) | https://conectariesgoai-api.delightfulsand-f3f95f4d.brazilsouth.azurecontainerapps.io |
+| Frontend (producción) | _pendiente — bloqueado por issue #33 (front sin inicializar)_ |
+
+El backend corre en Azure Container Apps (`conectariesgoai-rg`, región `brazilsouth`) con
+PostgreSQL en Azure Database for PostgreSQL Flexible Server. Cada push a `main` que toque `back/`
+dispara [`deploy-backend.yml`](.github/workflows/deploy-backend.yml), que reconstruye la imagen y
+la despliega automáticamente.
 
 ## Documentación
 
@@ -32,6 +51,6 @@ npm install --prefix front && npm run dev --prefix front  # web → localhost:51
 |:---|:---|
 | [ARQUITECTURA.md](docs/ARQUITECTURA.md) | dónde va cada archivo y por qué |
 | [CONTRATO-API.md](docs/CONTRATO-API.md) | qué devuelve cada endpoint — fuente de verdad entre back y front |
-| [investigacion/](docs/investigacion/) | la investigación que originó el proyecto |
+| [idea-negocio/](docs/idea-negocio/) | la investigación que originó el proyecto |
 
 > **Antes de escribir código, lee `ARQUITECTURA.md`.** Son cinco minutos y evitan que terminemos con cinco formas distintas de hacer lo mismo.
