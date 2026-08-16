@@ -85,6 +85,53 @@ Dos reglas que sostienen esto:
 
 Son cuatro rutas. Ni una más para que el bot funcione de punta a punta.
 
+### Diagrama de secuencia
+
+```mermaid
+sequenceDiagram
+    actor Ciudadano
+    participant WA as wabots<br/>(plataforma WhatsApp)
+    participant Bot as ms-bot-api<br/>(puente temporal)
+    participant API as Backend .NET<br/>/api/ingesta/*
+    participant DB as PostgreSQL
+
+    Note over Ciudadano, DB: Flujo de reporte
+    Ciudadano->>WA: Descripción + ubicación + foto
+    WA->>Bot: webhook con datos del mensaje
+    Bot->>Bot: Extrae tipo, ubicación y nivel de daño
+
+    Bot->>API: POST /api/ingesta/reportes<br/>[X-Api-Key] { telefono, tipo, descripcion, ubicacionTexto }
+    API->>DB: Resuelve Usuario por teléfono<br/>(crea si no existe)
+    DB-->>API: Usuario
+    API->>DB: INSERT Reporte (Estado = Reportado)
+    DB-->>API: Reporte creado
+    API-->>Bot: 201 { codigo: "RPT-2026-08-16-0001", estado: "Reportado" }
+    Bot-->>WA: Texto con código de seguimiento
+    WA-->>Ciudadano: "Tu reporte fue recibido. Código: RPT-2026-08-16-0001"
+
+    Note over Ciudadano, DB: Consulta de seguimiento
+    Ciudadano->>WA: "Consultar RPT-2026-08-16-0001"
+    WA->>Bot: webhook
+    Bot->>API: GET /api/ingesta/reportes/RPT-2026-08-16-0001<br/>[sin autenticación]
+    Note right of API: Siempre responde 200,<br/>incluso si el código no existe.<br/>El bot no distingue ramas de error.
+    API-->>Bot: 200 { codigo, estado, detalle (texto plano listo para WhatsApp) }
+    Bot-->>WA: Texto formateado
+    WA-->>Ciudadano: Estado actual + cronología
+
+    Note over Ciudadano, DB: Registro de damnificado (brigadista acreditado)
+    Ciudadano->>WA: Datos del damnificado + consentimiento
+    WA->>Bot: webhook
+    Bot->>API: POST /api/ingesta/censo<br/>[X-Api-Key] { telefono brigadista, datosPersona, consentimiento: true }
+    Note right of API: Rechaza si consentimiento = false (Ley 1581).<br/>Rechaza si el brigadista no está acreditado.
+    API->>DB: Reutiliza OperacionCenso abierta<br/>o abre una nueva
+    DB-->>API: OperacionCenso
+    API->>DB: INSERT PersonaAfectada (Estado = Borrador)
+    DB-->>API: Registro creado
+    API-->>Bot: 201 { codigo: "DMN-2026-08-16-0031" }
+    Bot-->>WA: Confirmación con código
+    WA-->>Ciudadano: "Damnificado registrado. Código: DMN-2026-08-16-0031"
+```
+
 ### 3.1 `POST /api/ingesta/reportes` 🔑 clave de servicio
 
 Lo que hoy hace `ms-bot-api`. Crea el reporte y devuelve el código.
