@@ -77,6 +77,21 @@ describe('ManagerDashboard — la cola', () => {
       ),
     ).toBeInTheDocument();
   });
+
+  it('vuelve a pedir las cifras cuando el gestor reintenta', async () => {
+    resumenMock.mockRejectedValueOnce(new ErrorApi(500, 'se cayó'));
+    const usuario = userEvent.setup();
+    montarPanel();
+
+    await usuario.click(await screen.findByRole('button', { name: 'Volver a intentar' }));
+
+    expect(await screen.findByText('47')).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        'No pudimos cargar las cifras del día. La cola de atención sigue funcionando.',
+      ),
+    ).not.toBeInTheDocument();
+  });
 });
 
 describe('ManagerDashboard — cerrar el ciclo', () => {

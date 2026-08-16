@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Package, FileText } from 'lucide-react';
+import { Package, FileText, AlertCircle } from 'lucide-react';
 import type { WizardFamily, NeedCategory } from '@/shared/types/edan';
 
 interface Props {
@@ -39,8 +39,8 @@ export default function StepNeedsAssessment({ families, onUpdateFamilies }: Prop
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-slate-900">{t('census.needs.title')}</h2>
-        <p className="mt-1 text-sm text-slate-500">{t('census.needs.subtitle')}</p>
+        <h2 className="text-xl font-semibold text-slate-900">{t('census.needs.title')}</h2>
+        <p className="mt-1 text-base text-slate-600">{t('census.needs.subtitle')}</p>
       </div>
 
       {families.map((family, fi) => {
@@ -49,41 +49,44 @@ export default function StepNeedsAssessment({ families, onUpdateFamilies }: Prop
           ? `${headPerson.firstName} ${headPerson.lastName}`.trim()
           : t('census.people.familyLabel', { index: fi + 1 });
         const notesId = `family-${family.id}-needNotes`;
+        const sinNecesidades = family.needs.length === 0;
 
         return (
-          <div key={family.id} className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Package className="h-5 w-5 text-ungrd-600" aria-hidden="true" />
-              <h3 className="text-sm font-bold text-slate-800">
+          <div key={family.id} className="card-sub p-4 sm:p-5">
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <Package className="h-5 w-5 shrink-0 text-ungrd-600" aria-hidden="true" />
+              <h3 className="text-lg font-semibold text-slate-900">
                 {t('census.needs.familyHeading', { index: fi + 1, name: headName })}
               </h3>
-              <span className="text-xs text-slate-400">
+              <span className="text-sm text-slate-600">
                 {t('census.needs.personCount', { count: family.persons.length })}
               </span>
             </div>
 
             <div className="mb-4 grid gap-2 sm:grid-cols-2">
-              {NEED_KEYS.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => toggleNeed(fi, key)}
-                  className={`flex items-start gap-3 rounded-xl border-2 p-3 text-left transition-all ${
-                    family.needs.includes(key)
-                      ? 'border-gold-400 bg-gold-50'
-                      : 'border-slate-200 bg-slate-50 hover:border-slate-300'
-                  }`}
-                >
-                  <span className={`text-sm font-medium ${family.needs.includes(key) ? 'text-gold-900' : 'text-slate-700'}`}>
-                    {t(`census.needCategories.${key}`)}
-                  </span>
-                </button>
-              ))}
+              {NEED_KEYS.map((key) => {
+                const marcada = family.needs.includes(key);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => toggleNeed(fi, key)}
+                    aria-pressed={marcada}
+                    className={`flex items-center gap-3 rounded-xl border-2 px-3 text-left transition-all min-h-toque ${
+                      marcada ? 'border-gold-500 bg-gold-50' : 'border-slate-200 bg-slate-50 hover:border-slate-300'
+                    }`}
+                  >
+                    <span className={`text-base font-medium ${marcada ? 'text-gold-900' : 'text-slate-700'}`}>
+                      {t(`census.needCategories.${key}`)}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             <div>
-              <label htmlFor={notesId} className="mb-1 flex items-center gap-1 text-xs font-medium text-slate-600">
-                <FileText className="h-3 w-3" aria-hidden="true" />
+              <label htmlFor={notesId} className="mb-1.5 flex items-center gap-1.5 text-base font-semibold text-slate-800">
+                <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
                 {t('census.needs.notes')}
               </label>
               <textarea
@@ -92,12 +95,16 @@ export default function StepNeedsAssessment({ families, onUpdateFamilies }: Prop
                 onChange={(e) => updateNotes(fi, e.target.value)}
                 rows={2}
                 placeholder={t('census.needs.notesPlaceholder')}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm focus:border-ungrd-400 focus:outline-none focus:ring-2 focus:ring-ungrd-100 resize-none"
+                className="textarea-field"
               />
             </div>
 
-            {family.needs.length === 0 && (
-              <p className="mt-2 text-xs text-red-500">{t('census.needs.emptyError')}</p>
+            {/* El error lleva icono además del color: en rojo sobre blanco el color solo no basta. */}
+            {sinNecesidades && (
+              <p className="mt-2 flex items-start gap-1.5 text-base font-medium text-red-700">
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+                {t('census.needs.emptyError')}
+              </p>
             )}
           </div>
         );

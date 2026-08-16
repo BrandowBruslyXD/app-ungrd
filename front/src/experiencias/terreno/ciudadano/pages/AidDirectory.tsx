@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { listAyudas } from '@/shared/api/reportes';
 import type { AidItem } from '@/shared/types';
+import EncabezadoPantalla from '@/experiencias/terreno/comunes/EncabezadoPantalla';
+import EstadoVacio from '@/experiencias/terreno/comunes/EstadoVacio';
 
 const categoryIcons: Record<string, typeof HeartHandshake> = {
   'heart-handshake': HeartHandshake,
@@ -28,50 +30,50 @@ function AidItemCard({ item }: { item: AidItem }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const statusConfig = {
-    disponible: { label: t('aid.available'), icon: CheckCircle2, class: 'text-emerald-600 bg-emerald-50' },
-    agotado: { label: t('aid.exhausted'), icon: AlertTriangle, class: 'text-red-600 bg-red-50' },
-    proximo: { label: t('aid.upcoming'), icon: Clock, class: 'text-amber-600 bg-amber-50' },
+    disponible: { label: t('aid.available'), icon: CheckCircle2, class: 'text-emerald-700 bg-emerald-50' },
+    agotado: { label: t('aid.exhausted'), icon: AlertTriangle, class: 'text-red-700 bg-red-50' },
+    proximo: { label: t('aid.upcoming'), icon: Clock, class: 'text-amber-700 bg-amber-50' },
   };
   const status = statusConfig[item.status];
   const StatusIcon = status.icon;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white transition-shadow hover:shadow-sm">
+    <div className="card-sub transition-shadow hover:shadow-sm">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center gap-3 p-4 text-left"
+        className="flex w-full items-center gap-3 p-4 text-left min-h-toque"
         aria-expanded={expanded}
         aria-label={expanded ? t('aid.collapseAid', { title: item.title }) : t('aid.expandAid', { title: item.title })}
       >
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-slate-800">{item.title}</p>
-          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">
-            <Building className="h-3 w-3" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-base font-semibold text-slate-900">{item.title}</span>
+          <span className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-600">
+            <Building className="h-4 w-4 shrink-0" aria-hidden="true" />
             {item.entity}
-          </p>
-        </div>
-        <span className={`badge flex items-center gap-1 ${status.class}`}>
-          <StatusIcon className="h-3 w-3" />
+          </span>
+        </span>
+        <span className={`badge badge-lg shrink-0 ${status.class}`}>
+          <StatusIcon className="h-4 w-4" aria-hidden="true" />
           {status.label}
         </span>
         {expanded ? (
-          <ChevronUp className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+          <ChevronUp className="h-5 w-5 shrink-0 text-slate-500" aria-hidden="true" />
         ) : (
-          <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+          <ChevronDown className="h-5 w-5 shrink-0 text-slate-500" aria-hidden="true" />
         )}
       </button>
 
       {expanded && (
-        <div className="border-t border-slate-100 px-4 pb-4 pt-3 animate-slide-up">
+        <div className="animate-slide-up border-t border-slate-100 px-4 pb-4 pt-3">
           <div className="mb-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-slate-600">
               {t('aid.requirements')}
             </p>
-            <ul className="space-y-1.5">
+            <ul className="space-y-2">
               {item.requirements.map((req) => (
-                <li key={req} className="flex items-start gap-2 text-sm text-slate-600">
-                  <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ungrd-500" />
+                <li key={req} className="flex items-start gap-2 text-base leading-relaxed text-slate-700">
+                  <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-ungrd-600" aria-hidden="true" />
                   {req}
                 </li>
               ))}
@@ -79,16 +81,12 @@ function AidItemCard({ item }: { item: AidItem }) {
           </div>
 
           {item.lostDocsAlternative && (
-            <div className="rounded-lg bg-amber-50 border border-amber-100 p-3">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
               <div className="flex items-start gap-2">
-                <FileWarning className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <FileWarning className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" aria-hidden="true" />
                 <div>
-                  <p className="text-xs font-semibold text-amber-700 mb-0.5">
-                    {t('aid.lostDocs')}
-                  </p>
-                  <p className="text-xs text-amber-600 leading-relaxed">
-                    {item.lostDocsAlternative}
-                  </p>
+                  <p className="mb-0.5 text-base font-semibold text-amber-900">{t('aid.lostDocs')}</p>
+                  <p className="text-base leading-relaxed text-amber-900">{item.lostDocsAlternative}</p>
                 </div>
               </div>
             </div>
@@ -119,19 +117,20 @@ export default function AidDirectory() {
     : mockAidCategories;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 lg:py-12 animate-fade-in">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">{t('aid.title')}</h1>
-        <p className="mt-1 text-sm text-slate-500">{t('aid.subtitle')}</p>
+    <div className="space-y-6 animate-fade-in">
+      <EncabezadoPantalla
+        icono={HeartHandshake}
+        titulo={t('aid.title')}
+        descripcion={t('aid.subtitle')}
+      />
+
+      <div className="rounded-2xl border border-ungrd-100 bg-ungrd-50 p-4">
+        <p className="text-lg font-semibold text-ungrd-900">{t('aid.noticeTitle')}</p>
+        <p className="mt-1 text-base leading-relaxed text-ungrd-800">{t('aid.noticeBody')}</p>
       </div>
 
-      <div className="mb-6 rounded-2xl bg-ungrd-50 border border-ungrd-100 p-4">
-        <p className="text-sm font-semibold text-ungrd-800 mb-1">{t('aid.noticeTitle')}</p>
-        <p className="text-sm text-ungrd-600 leading-relaxed">{t('aid.noticeBody')}</p>
-      </div>
-
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" aria-hidden="true" />
         <label htmlFor="aid-search" className="sr-only">
           {t('aid.searchLabel')}
         </label>
@@ -145,64 +144,63 @@ export default function AidDirectory() {
         />
       </div>
 
-      <div className="space-y-4">
-        {filteredCategories.map((category) => {
-          const Icon = categoryIcons[category.icon] || HeartHandshake;
-          const isOpen = openCategory === category.id;
+      {filteredCategories.length === 0 ? (
+        <EstadoVacio
+          icono={Search}
+          titulo={t('aid.noResults', { query: searchQuery })}
+          descripcion={t('aid.noResultsBody')}
+          accion={
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="btn-secondary w-full sm:w-auto"
+            >
+              {t('aid.clearSearch')}
+            </button>
+          }
+        />
+      ) : (
+        <div className="space-y-4">
+          {filteredCategories.map((category) => {
+            const Icon = categoryIcons[category.icon] || HeartHandshake;
+            const isOpen = openCategory === category.id;
 
-          return (
-            <div key={category.id} className="card overflow-hidden">
-              <button
-                type="button"
-                onClick={() => setOpenCategory(isOpen ? null : category.id)}
-                className="flex w-full items-center gap-4 p-5 text-left hover:bg-slate-50 transition-colors"
-                aria-expanded={isOpen}
-                aria-label={isOpen ? t('aid.collapseCategory', { title: category.title }) : t('aid.expandCategory', { title: category.title })}
-              >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-ungrd-50 text-ungrd-600">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-base font-bold text-slate-800">{category.title}</p>
-                  <p className="text-sm text-slate-500">{category.description}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="badge bg-slate-100 text-slate-600">
-                    {category.items.length}
+            return (
+              <div key={category.id} className="card overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setOpenCategory(isOpen ? null : category.id)}
+                  className="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-slate-50 sm:p-5 min-h-toque"
+                  aria-expanded={isOpen}
+                  aria-label={isOpen ? t('aid.collapseCategory', { title: category.title }) : t('aid.expandCategory', { title: category.title })}
+                >
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-ungrd-50 text-ungrd-600">
+                    <Icon className="h-6 w-6" aria-hidden="true" />
                   </span>
-                  {isOpen ? (
-                    <ChevronUp className="h-5 w-5 text-slate-400" aria-hidden="true" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5 text-slate-400" aria-hidden="true" />
-                  )}
-                </div>
-              </button>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-lg font-semibold text-slate-900">{category.title}</span>
+                    <span className="block text-base text-slate-600">{category.description}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span className="badge bg-slate-100 text-sm text-slate-700">{category.items.length}</span>
+                    {isOpen ? (
+                      <ChevronUp className="h-5 w-5 text-slate-500" aria-hidden="true" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-slate-500" aria-hidden="true" />
+                    )}
+                  </span>
+                </button>
 
-              {isOpen && (
-                <div className="border-t border-slate-100 bg-slate-50/50 p-4 space-y-3 animate-slide-up">
-                  {category.items.map((item) => (
-                    <AidItemCard key={item.id} item={item} />
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {filteredCategories.length === 0 && (
-        <div className="py-12 text-center">
-          <Search className="mx-auto h-10 w-10 text-slate-300" />
-          <p className="mt-3 text-sm font-medium text-slate-500">
-            {t('aid.noResults', { query: searchQuery })}
-          </p>
-          <button
-            type="button"
-            onClick={() => setSearchQuery('')}
-            className="mt-2 text-sm text-ungrd-600 hover:text-ungrd-700"
-          >
-            {t('aid.clearSearch')}
-          </button>
+                {isOpen && (
+                  <div className="animate-slide-up space-y-3 border-t border-slate-100 bg-slate-50/60 p-4">
+                    {category.items.map((item) => (
+                      <AidItemCard key={item.id} item={item} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

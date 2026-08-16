@@ -16,15 +16,12 @@ export default function TablaNecesidades({ necesidades, costoTotal }: TablaNeces
   const { t } = useTranslation();
 
   return (
-    <section
-      aria-labelledby="titulo-necesidades"
-      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-    >
+    <section aria-labelledby="titulo-necesidades" className="card overflow-hidden">
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-100 px-5 py-3.5">
-        <h2 id="titulo-necesidades" className="text-sm font-bold text-slate-800">
+        <h2 id="titulo-necesidades" className="text-base font-bold text-slate-900">
           {t('paquete.necesidadesTitulo')}
         </h2>
-        <p className="text-xs text-slate-500">{t('paquete.necesidadesApoyo')}</p>
+        <p className="text-sm text-slate-600">{t('paquete.necesidadesApoyo')}</p>
       </div>
 
       <div className="overflow-x-auto">

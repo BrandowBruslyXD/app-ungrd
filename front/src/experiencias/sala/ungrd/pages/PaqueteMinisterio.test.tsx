@@ -71,6 +71,26 @@ describe('PaqueteMinisterio', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('deja el foco atrapado en el diálogo mientras pide la confirmación', async () => {
+    const usuario = userEvent.setup();
+    renderizarPaquete('PQT-2026-08-15-0007');
+    await screen.findByRole('heading', { name: /Ministerio de Educación Nacional/ });
+
+    await usuario.click(screen.getByRole('button', { name: /Aprobar y enviar/ }));
+    const dialogo = screen.getByRole('dialog');
+    const confirmar = screen.getByRole('button', { name: /Sí, aprobar y enviar/ });
+    const cancelar = screen.getByRole('button', { name: 'Cancelar' });
+
+    // Confirmar es el último enfocable: al tabular, el foco vuelve al primero del diálogo
+    // en vez de escaparse al contenido de fondo.
+    expect(confirmar).toHaveFocus();
+    await usuario.tab();
+    expect(cancelar).toHaveFocus();
+    expect(dialogo).toContainElement(cancelar);
+    await usuario.tab();
+    expect(confirmar).toHaveFocus();
+  });
+
   it('no envía nada cuando el funcionario cancela la confirmación', async () => {
     const usuario = userEvent.setup();
     renderizarPaquete('PQT-2026-08-15-0007');

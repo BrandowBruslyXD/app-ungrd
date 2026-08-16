@@ -17,9 +17,7 @@ export default function InsigniaEstadoPaquete({ estado }: InsigniaEstadoPaqueteP
   const { t } = useTranslation();
 
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${estilos[estado]}`}
-    >
+    <span className={`badge badge-lg whitespace-nowrap ring-1 ${estilos[estado]}`}>
       {t(`paquete.estado.${estado}`)}
     </span>
   );

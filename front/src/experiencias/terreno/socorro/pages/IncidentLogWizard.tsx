@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  ArrowLeft,
   ArrowRight,
   Check,
   MapPin,
@@ -16,22 +15,25 @@ import type { EdanEventType, IncidentStatus } from '@/shared/types/edan';
 import { COLOMBIAN_DEPARTMENTS } from '@/shared/mocks/mockEdan';
 import { INCIDENT_STEP_COUNT, useIncidentLog } from '@/experiencias/terreno/socorro/hooks/useIncidentLog';
 import type { IncidentPersonCountKey } from '@/experiencias/terreno/socorro/hooks/useIncidentLog';
+import PasosAsistente from '@/experiencias/terreno/comunes/PasosAsistente';
+import PieAsistente from '@/experiencias/terreno/comunes/PieAsistente';
+import Contador from '@/experiencias/terreno/comunes/Contador';
 
 const STEP_NUMBERS = [1, 2, 3, 4] as const;
 
 const STATUS_OPTIONS: readonly IncidentStatus[] = ['en_atencion', 'controlado', 'cerrado'];
 
 const STATUS_COLORS: Record<IncidentStatus, string> = {
-  en_atencion: 'border-red-200 bg-red-50 text-red-700',
-  controlado: 'border-amber-200 bg-amber-50 text-amber-700',
-  cerrado: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  en_atencion: 'border-red-500 bg-red-50 text-red-800',
+  controlado: 'border-amber-500 bg-amber-50 text-amber-900',
+  cerrado: 'border-emerald-500 bg-emerald-50 text-emerald-800',
 };
 
 const COUNT_FIELDS: readonly { key: IncidentPersonCountKey; icon: typeof Activity; color: string }[] = [
-  { key: 'personsInjured', icon: Activity, color: 'text-red-600' },
-  { key: 'personsDead', icon: AlertTriangle, color: 'text-slate-800' },
-  { key: 'personsMissing', icon: Users, color: 'text-amber-600' },
-  { key: 'personsEvacuated', icon: Users, color: 'text-blue-600' },
+  { key: 'personsInjured', icon: Activity, color: 'text-red-700' },
+  { key: 'personsDead', icon: AlertTriangle, color: 'text-slate-900' },
+  { key: 'personsMissing', icon: Users, color: 'text-amber-700' },
+  { key: 'personsEvacuated', icon: Users, color: 'text-blue-700' },
 ];
 
 const COUNT_LABEL_KEYS: Record<IncidentPersonCountKey, string> = {
@@ -60,21 +62,29 @@ export default function IncidentLogWizard() {
 
   if (submitted) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-16 text-center animate-scale-in" aria-live="polite">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100">
-          <Check className="h-10 w-10 text-emerald-600" aria-hidden="true" />
-        </div>
-        <h1 className="text-2xl font-bold text-slate-800">{t('incident.successTitle')}</h1>
-        <p className="mt-3 text-base text-slate-500 leading-relaxed">{t('incident.successText')}</p>
-        <div className="mt-6 card p-5">
-          <p className="text-sm text-slate-500">{t('incident.incidentNumber')}</p>
-          <p className="mt-1 text-2xl font-bold text-ungrd-600 tracking-wide">{resultId}</p>
+      <div className="animate-scale-in py-12 text-center" aria-live="polite">
+        <span className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100">
+          <Check className="h-10 w-10 text-emerald-700" aria-hidden="true" />
+        </span>
+        <h1 className="text-2xl font-bold text-slate-900">{t('incident.successTitle')}</h1>
+        <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-slate-600">{t('incident.successText')}</p>
+        <div className="card mx-auto mt-6 max-w-sm p-5">
+          <p className="text-base text-slate-600">{t('incident.incidentNumber')}</p>
+          <p className="mt-1 font-mono text-2xl font-bold tracking-wide text-ungrd-700">{resultId}</p>
         </div>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <button type="button" onClick={() => navigate('/socorro/evaluacion')} className="btn-primary">
+          <button
+            type="button"
+            onClick={() => navigate('/socorro/evaluacion')}
+            className="btn-primary btn-lg"
+          >
             {t('incident.evaluateHousings')}
           </button>
-          <button type="button" onClick={() => navigate('/socorro')} className="btn-secondary">
+          <button
+            type="button"
+            onClick={() => navigate('/socorro')}
+            className="btn-secondary w-full sm:w-auto"
+          >
             {t('incident.backToPanel')}
           </button>
         </div>
@@ -82,52 +92,31 @@ export default function IncidentLogWizard() {
     );
   }
 
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-8 lg:py-12 animate-fade-in">
-      <h1 className="text-xl font-bold text-slate-800 lg:text-2xl mb-1">{t('incident.title')}</h1>
-      <p className="text-sm text-slate-500 mb-6">{t('incident.subtitle')}</p>
+  const pasos = STEP_NUMBERS.map((number) => ({
+    clave: String(number),
+    etiqueta: t(`incident.steps.${number}`),
+  }));
 
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-3">
-          {STEP_NUMBERS.map((number) => (
-            <div key={number} className="flex items-center gap-2">
-              <div
-                aria-current={step === number ? 'step' : undefined}
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${
-                  step === number
-                    ? 'bg-ungrd-600 text-white shadow-sm'
-                    : step > number
-                      ? 'bg-gold-100 text-gold-700'
-                      : 'bg-slate-100 text-slate-400'
-                }`}
-              >
-                {step > number ? <Check className="h-4 w-4" aria-hidden="true" /> : number}
-              </div>
-              <span className={`hidden text-sm font-medium sm:block ${step === number ? 'text-slate-800' : 'text-slate-400'}`}>
-                {t(`incident.steps.${number}`)}
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
-          <div
-            className="h-full rounded-full bg-ungrd-600 transition-all duration-500"
-            style={{ width: `${((step - 1) / (INCIDENT_STEP_COUNT - 1)) * 100}%` }}
-          />
-        </div>
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">{t('incident.title')}</h1>
+        <p className="mt-1 text-base text-slate-600">{t('incident.subtitle')}</p>
       </div>
 
+      <PasosAsistente pasos={pasos} actual={step} />
+
       {step === 1 && (
-        <div className="space-y-4 animate-slide-up">
+        <div className="animate-slide-up space-y-5">
           <div>
-            <label htmlFor="incident-event-type" className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label htmlFor="incident-event-type" className="field-label">
               {t('incident.eventType')}
             </label>
             <select
               id="incident-event-type"
               value={form.eventType}
               onChange={(e) => update({ eventType: e.target.value as EdanEventType })}
-              className="input-field"
+              className="select-field"
             >
               <option value="">{t('incident.selectPlaceholder')}</option>
               {EDAN_EVENT_TYPES.map((eventType) => (
@@ -138,7 +127,7 @@ export default function IncidentLogWizard() {
             </select>
           </div>
           <div>
-            <label htmlFor="incident-event-date" className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label htmlFor="incident-event-date" className="field-label">
               {t('incident.eventDate')}
             </label>
             <input
@@ -150,8 +139,8 @@ export default function IncidentLogWizard() {
             />
           </div>
           <div>
-            <label htmlFor="incident-linked-report" className="block text-sm font-medium text-slate-700 mb-1.5">
-              <Link2 className="inline h-4 w-4 mr-1" aria-hidden="true" />
+            <label htmlFor="incident-linked-report" className="field-label">
+              <Link2 className="mr-1 inline h-4 w-4" aria-hidden="true" />
               {t('incident.linkedReport')}
             </label>
             <input
@@ -162,20 +151,21 @@ export default function IncidentLogWizard() {
               placeholder={t('incident.linkedReportPlaceholder')}
               className="input-field"
             />
-            <p className="mt-1 text-xs text-slate-400">{t('incident.linkedReportHint')}</p>
+            <p className="mt-1 text-base text-slate-600">{t('incident.linkedReportHint')}</p>
           </div>
           <div>
-            <p className="block text-sm font-medium text-slate-700 mb-1.5">{t('incident.statusLabel')}</p>
+            <p className="field-label">{t('incident.statusLabel')}</p>
             <div className="grid grid-cols-3 gap-2">
               {STATUS_OPTIONS.map((value) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => update({ status: value })}
-                  className={`rounded-xl border-2 p-3 text-center text-sm transition-all ${
+                  aria-pressed={form.status === value}
+                  className={`rounded-xl border-2 px-2 text-center text-base transition-all min-h-toque ${
                     form.status === value
-                      ? `${STATUS_COLORS[value]} border-current font-semibold`
-                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      ? `${STATUS_COLORS[value]} font-semibold`
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                   }`}
                 >
                   {t(`socorro.status.${value}`)}
@@ -187,17 +177,18 @@ export default function IncidentLogWizard() {
       )}
 
       {step === 2 && (
-        <div className="space-y-4 animate-slide-up">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="animate-slide-up space-y-5">
+          {/* Una columna en celular: «Norte de Santander» no cabe en medio ancho de 390 px. */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="incident-departamento" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label htmlFor="incident-departamento" className="field-label">
                 {t('incident.departamento')}
               </label>
               <select
                 id="incident-departamento"
                 value={form.departamento}
                 onChange={(e) => update({ departamento: e.target.value, municipio: '' })}
-                className="input-field"
+                className="select-field"
               >
                 <option value="">{t('incident.selectPlaceholder')}</option>
                 {COLOMBIAN_DEPARTMENTS.map((dept) => (
@@ -206,14 +197,14 @@ export default function IncidentLogWizard() {
               </select>
             </div>
             <div>
-              <label htmlFor="incident-municipio" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label htmlFor="incident-municipio" className="field-label">
                 {t('incident.municipio')}
               </label>
               <select
                 id="incident-municipio"
                 value={form.municipio}
                 onChange={(e) => update({ municipio: e.target.value })}
-                className="input-field"
+                className="select-field disabled:cursor-not-allowed disabled:bg-slate-100"
                 disabled={!form.departamento}
               >
                 <option value="">{t('incident.selectPlaceholder')}</option>
@@ -225,23 +216,24 @@ export default function IncidentLogWizard() {
           </div>
 
           <div>
-            <label htmlFor="incident-location" className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label htmlFor="incident-location" className="field-label">
               {t('incident.specificLocation')}
             </label>
             <button
               type="button"
               onClick={() => update({ useGps: !form.useGps, location: '' })}
-              className={`flex w-full items-center gap-3 rounded-xl border-2 p-4 transition-all mb-3 ${
-                form.useGps ? 'border-ungrd-400 bg-ungrd-50' : 'border-slate-200 bg-white hover:bg-slate-50'
+              aria-pressed={form.useGps}
+              className={`mb-3 flex w-full items-center gap-3 rounded-xl border-2 p-4 text-left transition-all ${
+                form.useGps ? 'border-ungrd-500 bg-ungrd-50' : 'border-slate-200 bg-white hover:bg-slate-50'
               }`}
             >
-              <LocateFixed className={`h-5 w-5 ${form.useGps ? 'text-ungrd-600' : 'text-slate-400'}`} aria-hidden="true" />
-              <span className={`text-sm ${form.useGps ? 'text-ungrd-700 font-medium' : 'text-slate-600'}`}>
+              <LocateFixed className={`h-6 w-6 shrink-0 ${form.useGps ? 'text-ungrd-700' : 'text-slate-500'}`} aria-hidden="true" />
+              <span className={`text-base ${form.useGps ? 'font-semibold text-ungrd-800' : 'text-slate-700'}`}>
                 {form.useGps ? t('incident.gpsOn') : t('incident.useGps')}
               </span>
             </button>
             <div className="relative">
-              <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+              <MapPin className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" aria-hidden="true" />
               <input
                 id="incident-location"
                 type="text"
@@ -256,9 +248,9 @@ export default function IncidentLogWizard() {
       )}
 
       {step === 3 && (
-        <div className="space-y-4 animate-slide-up">
+        <div className="animate-slide-up space-y-5">
           <div>
-            <label htmlFor="incident-description" className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label htmlFor="incident-description" className="field-label">
               {t('incident.description')}
             </label>
             <textarea
@@ -271,119 +263,92 @@ export default function IncidentLogWizard() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {COUNT_FIELDS.map(({ key, icon: Icon, color }) => {
               const label = t(COUNT_LABEL_KEYS[key]);
               return (
-                <div key={key} className="card p-3">
-                  <Icon className={`h-4 w-4 ${color} mb-1`} aria-hidden="true" />
-                  <p className="text-xs text-slate-500 mb-2">{label}</p>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => adjustCount(key, -1)}
-                      aria-label={t('incident.a11y.decrease', { label })}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 text-sm"
-                    >
-                      -
-                    </button>
-                    <span className="w-8 text-center font-bold text-slate-800">{form[key]}</span>
-                    <button
-                      type="button"
-                      onClick={() => adjustCount(key, 1)}
-                      aria-label={t('incident.a11y.increase', { label })}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 text-sm"
-                    >
-                      +
-                    </button>
-                  </div>
+                <div key={key} className="card flex items-center justify-between gap-3 p-4">
+                  <p className="flex min-w-0 items-center gap-2 text-base font-semibold text-slate-800">
+                    <Icon className={`h-5 w-5 shrink-0 ${color}`} aria-hidden="true" />
+                    {label}
+                  </p>
+                  <Contador
+                    valor={form[key]}
+                    onCambiar={(delta) => adjustCount(key, delta)}
+                    enMinimo={form[key] <= 0}
+                    etiquetaDisminuir={t('incident.a11y.decrease', { label })}
+                    etiquetaAumentar={t('incident.a11y.increase', { label })}
+                  />
                 </div>
               );
             })}
           </div>
 
-          <div className="card p-3">
-            <p className="text-xs text-slate-500 mb-2">{t('incident.familiesAffected')}</p>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => adjustCount('familiesAffected', -1)}
-                aria-label={t('incident.a11y.decrease', { label: t('incident.familiesAffected') })}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 text-sm"
-              >
-                -
-              </button>
-              <span className="w-8 text-center font-bold text-slate-800">{form.familiesAffected}</span>
-              <button
-                type="button"
-                onClick={() => adjustCount('familiesAffected', 1)}
-                aria-label={t('incident.a11y.increase', { label: t('incident.familiesAffected') })}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 text-sm"
-              >
-                +
-              </button>
-            </div>
+          <div className="card flex items-center justify-between gap-3 p-4">
+            <p className="min-w-0 text-base font-semibold text-slate-800">{t('incident.familiesAffected')}</p>
+            <Contador
+              valor={form.familiesAffected}
+              onCambiar={(delta) => adjustCount('familiesAffected', delta)}
+              enMinimo={form.familiesAffected <= 0}
+              etiquetaDisminuir={t('incident.a11y.decrease', { label: t('incident.familiesAffected') })}
+              etiquetaAumentar={t('incident.a11y.increase', { label: t('incident.familiesAffected') })}
+            />
           </div>
         </div>
       )}
 
       {step === 4 && (
-        <div className="space-y-4 animate-slide-up">
+        <div className="animate-slide-up space-y-4">
           <div className="card p-5">
-            <h3 className="font-bold text-slate-800 mb-3">{t('incident.summaryTitle')}</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-500">{t('incident.summaryEvent')}</span>
-                <span className="font-medium text-slate-700">
+            <h2 className="mb-3 text-lg font-semibold text-slate-900">{t('incident.summaryTitle')}</h2>
+            <dl className="space-y-2 text-base">
+              <div className="flex justify-between gap-4">
+                <dt className="text-slate-600">{t('incident.summaryEvent')}</dt>
+                <dd className="text-right font-medium text-slate-900">
                   {form.eventType ? t(`census.eventTypes.${form.eventType}`) : t('incident.emptyValue')}
-                </span>
+                </dd>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">{t('incident.summaryDate')}</span>
-                <span className="font-medium text-slate-700">{form.eventDate}</span>
+              <div className="flex justify-between gap-4">
+                <dt className="text-slate-600">{t('incident.summaryDate')}</dt>
+                <dd className="text-right font-medium text-slate-900">{form.eventDate}</dd>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">{t('incident.summaryLocation')}</span>
-                <span className="font-medium text-slate-700">{form.municipio}, {form.departamento}</span>
+              <div className="flex justify-between gap-4">
+                <dt className="text-slate-600">{t('incident.summaryLocation')}</dt>
+                <dd className="text-right font-medium text-slate-900">{form.municipio}, {form.departamento}</dd>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">{t('incident.summaryAddress')}</span>
-                <span className="font-medium text-slate-700 text-right max-w-[60%]">
+              <div className="flex justify-between gap-4">
+                <dt className="text-slate-600">{t('incident.summaryAddress')}</dt>
+                <dd className="max-w-[60%] text-right font-medium text-slate-900">
                   {form.location || t('incident.summaryGps')}
-                </span>
+                </dd>
               </div>
               {form.linkedReportId && (
-                <div className="flex justify-between">
-                  <span className="text-slate-500">{t('incident.summaryLinked')}</span>
-                  <span className="font-medium text-ungrd-600">{form.linkedReportId}</span>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-slate-600">{t('incident.summaryLinked')}</dt>
+                  <dd className="text-right font-mono font-medium text-ungrd-700">{form.linkedReportId}</dd>
                 </div>
               )}
-            </div>
+            </dl>
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="card p-3 text-center">
-              <p className="text-lg font-bold text-red-600">{form.personsInjured}</p>
-              <p className="text-xs text-slate-500">{t('incident.injured')}</p>
-            </div>
-            <div className="card p-3 text-center">
-              <p className="text-lg font-bold text-slate-800">{form.personsDead}</p>
-              <p className="text-xs text-slate-500">{t('incident.dead')}</p>
-            </div>
-            <div className="card p-3 text-center">
-              <p className="text-lg font-bold text-amber-600">{form.personsMissing}</p>
-              <p className="text-xs text-slate-500">{t('incident.missing')}</p>
-            </div>
-            <div className="card p-3 text-center">
-              <p className="text-lg font-bold text-blue-600">{form.personsEvacuated}</p>
-              <p className="text-xs text-slate-500">{t('incident.evacuated')}</p>
-            </div>
+            {[
+              { label: t('incident.injured'), value: form.personsInjured, color: 'text-red-700' },
+              { label: t('incident.dead'), value: form.personsDead, color: 'text-slate-900' },
+              { label: t('incident.missing'), value: form.personsMissing, color: 'text-amber-700' },
+              { label: t('incident.evacuated'), value: form.personsEvacuated, color: 'text-blue-700' },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="card p-3 text-center">
+                <p className={`text-xl font-bold ${color}`}>{value}</p>
+                <p className="text-sm text-slate-600">{label}</p>
+              </div>
+            ))}
           </div>
 
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-            <p className="text-sm text-blue-800">
+            <p className="text-base leading-relaxed text-blue-900">
               <strong>{t('incident.trustLevel')}</strong> {t('incident.trustText')}{' '}
-              <span className="inline-flex items-center mx-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-blue-200">
+              <span className="badge mx-1 bg-blue-100 text-blue-800 ring-1 ring-blue-200">
                 {t('incident.verifiedBadge')}
               </span>{' '}
               {t('incident.trustSuffix')}
@@ -392,26 +357,29 @@ export default function IncidentLogWizard() {
         </div>
       )}
 
-      <div className="mt-10 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => (step > 1 ? goPrev() : navigate('/socorro'))}
-          className="btn-ghost gap-1.5"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          {step > 1 ? t('incident.previous') : t('incident.cancel')}
-        </button>
-
+      <PieAsistente
+        atras={{
+          etiqueta: step > 1 ? t('incident.previous') : t('incident.cancel'),
+          onClick: () => (step > 1 ? goPrev() : navigate('/socorro')),
+        }}
+      >
         {step < INCIDENT_STEP_COUNT ? (
-          <button type="button" onClick={goNext} disabled={!canProceed} className="btn-primary">
-            {t('incident.next')} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          <button
+            type="button"
+            onClick={goNext}
+            disabled={!canProceed}
+            className="btn-primary btn-lg"
+          >
+            {t('incident.next')}
+            <ArrowRight className="h-5 w-5" aria-hidden="true" />
           </button>
         ) : (
-          <button type="button" onClick={submit} className="btn-primary">
-            {t('incident.submit')} <Check className="h-4 w-4" aria-hidden="true" />
+          <button type="button" onClick={submit} className="btn-primary btn-lg">
+            {t('incident.submit')}
+            <Check className="h-5 w-5" aria-hidden="true" />
           </button>
         )}
-      </div>
+      </PieAsistente>
     </div>
   );
 }

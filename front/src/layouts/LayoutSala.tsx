@@ -10,6 +10,9 @@ import SelectorRolDemo from '@/shared/components/SelectorRolDemo';
  * Navegación lateral persistente y densidad alta: quien trabaja aquí necesita
  * ver varias cosas a la vez, lo contrario que quien está en la calle.
  * En pantalla estrecha la barra lateral pasa a ser una fila superior.
+ *
+ * El ancho de contenido lo pone este armazón: `max-w-7xl` con `px-4 lg:px-6`.
+ * Ninguna página vuelve a declarar `mx-auto`, `max-w-*` ni `px-*` en su raíz.
  */
 
 interface DestinoSala {
@@ -44,18 +47,25 @@ export default function LayoutSala() {
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white">
+      <a
+        href="#contenido"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-modal focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-base focus:font-semibold focus:text-ungrd-700"
+      >
+        {t('nav.saltarAlContenido')}
+      </a>
+
+      <header className="sticky top-0 z-sticky border-b border-slate-200 bg-white">
         <div className="flex h-14 items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-ungrd-600">
-              <Shield className="h-4.5 w-4.5 text-gold-400" aria-hidden="true" />
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-ungrd-600">
+              <Shield className="h-5 w-5 text-gold-400" aria-hidden="true" />
             </span>
             <div className="leading-tight">
-              <p className="text-sm font-bold text-slate-800">
+              <p className="text-sm font-bold text-slate-900">
                 {t('brand.conecta')}
                 <span className="text-ungrd-600">{t('brand.riesgo')}</span>
               </p>
-              <p className="text-[11px] text-slate-500">{t(`roles.${rol}`)}</p>
+              <p className="text-xs text-slate-600">{t(`roles.${rol}`)}</p>
             </div>
           </div>
           <SelectorRolDemo variante="claro" />
@@ -64,32 +74,43 @@ export default function LayoutSala() {
 
       <div className="flex flex-col lg:flex-row">
         <nav
-          aria-label={t('nav.triagePanel')}
-          className="border-b border-slate-200 bg-white lg:min-h-[calc(100vh-3.5rem)] lg:w-56 lg:border-b-0 lg:border-r"
+          aria-label={t('nav.sala')}
+          className="border-b border-slate-200 bg-white lg:min-h-[calc(100vh-3.5rem)] lg:w-56 lg:shrink-0 lg:border-b-0 lg:border-r"
         >
-          <ul className="flex gap-1 overflow-x-auto p-2 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:p-3">
+          <ul className="flex gap-1 overflow-x-auto p-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:p-3">
             {visibles.map(({ to, label, icon: Icono }) => (
               <li key={to}>
                 <NavLink
                   to={to}
                   end
                   className={({ isActive }) =>
-                    `flex items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    `relative flex min-h-toque items-center gap-2.5 whitespace-nowrap rounded-lg py-2 pl-4 pr-3 text-sm font-medium transition-colors ${
                       isActive
                         ? 'bg-ungrd-50 text-ungrd-700'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
                     }`
                   }
                 >
-                  <Icono className="h-4 w-4" aria-hidden="true" />
-                  {label}
+                  {({ isActive }) => (
+                    <>
+                      {/* El oro marca la posición. NavLink ya pone aria-current, así que el color no va solo. */}
+                      {isActive && (
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-y-2 left-1.5 w-1 rounded-full bg-gold-500"
+                        />
+                      )}
+                      <Icono className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      {label}
+                    </>
+                  )}
                 </NavLink>
               </li>
             ))}
           </ul>
         </nav>
 
-        <main className="min-w-0 flex-1 px-4 py-5 lg:px-6">
+        <main id="contenido" className="mx-auto w-full min-w-0 max-w-7xl flex-1 px-4 py-6 lg:px-6">
           <Outlet />
         </main>
       </div>

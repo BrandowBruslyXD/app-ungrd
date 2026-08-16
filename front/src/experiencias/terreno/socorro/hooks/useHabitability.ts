@@ -63,7 +63,11 @@ export function useHabitability() {
     setForm((prev) => ({ ...prev, occupantsPresent: Math.max(0, prev.occupantsPresent + delta) }));
   };
 
+  /** Una vivienda se evalúa una sola vez: dos toques seguidos no pueden crear dos evaluaciones. */
   const submit = (): void => {
+    if (submitted) {
+      return;
+    }
     setResultId(buildAssessmentId());
     setSubmitted(true);
   };

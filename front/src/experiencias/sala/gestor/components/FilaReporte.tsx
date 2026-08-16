@@ -53,27 +53,32 @@ export default function FilaReporte({ fila, guardando, aviso, onCambiar }: Props
         <EmergencyIcon type={reporte.tipo} size="sm" />
 
         <div className="min-w-0 flex-1">
+          {/* Prioridad y estado van primero: es por donde el gestor decide a qué fila entra. */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-xs text-slate-500">{reporte.codigo}</span>
             <SeverityBadge severity={reporte.prioridad} />
             <StatusBadge status={reporte.estado} />
+            <span className="font-mono text-sm text-slate-500">{reporte.codigo}</span>
           </div>
 
-          <p className="mt-1.5 text-sm font-semibold text-slate-800">{reporte.descripcion}</p>
+          <p className="mt-2 text-base font-semibold text-slate-900">{reporte.descripcion}</p>
 
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-            <span className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
               {reporte.direccion ?? reporte.municipio}
             </span>
-            <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <span
+              className={`flex items-center gap-1.5 ${
+                reporte.prioridad === 'Alta' ? 'font-semibold text-slate-700' : ''
+              }`}
+            >
+              <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
               {t('gestor.esperando', { tiempo: tiempoTranscurrido(reporte.creadoEn, t) })}
             </span>
           </div>
 
           {ultimoEvento !== undefined && (
-            <p className="mt-1.5 text-xs text-slate-500">
+            <p className="mt-1.5 text-sm text-slate-500">
               {t('gestor.ultimoEvento', {
                 estado: t(`status.${ultimoEvento.estado}`),
                 responsable: ultimoEvento.responsable,
@@ -94,22 +99,27 @@ export default function FilaReporte({ fila, guardando, aviso, onCambiar }: Props
                   ? t('gestor.cerrarCambioDe', { codigo: reporte.codigo })
                   : t('gestor.cambiarEstadoDe', { codigo: reporte.codigo })
               }
-              className="btn-secondary min-h-[44px] px-4 py-2 text-sm"
+              className="btn-secondary btn-sm"
             >
               {abierto ? t('gestor.cerrarCambio') : t('gestor.cambiarEstado')}
             </button>
           ) : (
-            <p className="text-xs text-slate-500 sm:max-w-[180px] sm:text-right">
+            <p className="text-sm text-slate-500 sm:max-w-[200px] sm:text-right">
               {t('gestor.sinAvance')}
             </p>
           )}
 
+          {/* Se abre en otra pestaña a propósito: /reportes/:codigo es una pantalla de terreno y
+              volver desde ahí sacaría al gestor de la sala de crisis. */}
           <Link
             to={`/reportes/${reporte.codigo}`}
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl px-3 text-sm font-medium text-ungrd-700 hover:bg-ungrd-50"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t('gestor.verSeguimientoDe', { codigo: reporte.codigo })}
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl px-3 text-sm font-medium text-ungrd-700 hover:bg-ungrd-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ungrd-400"
           >
             {t('gestor.verSeguimiento')}
-            <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+            <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
           </Link>
         </div>
       </div>

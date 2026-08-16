@@ -15,6 +15,10 @@ interface DialogoConfirmacionProps {
   onCancelar: () => void;
 }
 
+/** Lo que puede recibir el foco dentro del diálogo. */
+const SELECTOR_ENFOCABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 /**
  * Confirmación previa a una acción que no se puede deshacer.
  *
@@ -33,15 +37,59 @@ export default function DialogoConfirmacion({
 }: DialogoConfirmacionProps) {
   const { t } = useTranslation();
   const botonConfirmar = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const origenDelFoco = document.activeElement;
     botonConfirmar.current?.focus();
+
+    return () => {
+      // Devolver el foco a donde estaba evita que el teclado quede al principio de la página.
+      if (origenDelFoco instanceof HTMLElement && document.contains(origenDelFoco)) {
+        origenDelFoco.focus();
+      }
+    };
   }, []);
 
   useEffect(() => {
     function alPresionarTecla(evento: KeyboardEvent) {
-      if (evento.key === 'Escape' && !trabajando) onCancelar();
+      if (evento.key === 'Escape' && !trabajando) {
+        onCancelar();
+        return;
+      }
+      if (evento.key !== 'Tab') return;
+
+      const contenedor = panel.current;
+      if (contenedor === null) return;
+
+      // Sin esto el tabulador se escapa al contenido de fondo, que sigue siendo navegable
+      // aunque el diálogo lo tape.
+      const enfocables = Array.from(contenedor.querySelectorAll<HTMLElement>(SELECTOR_ENFOCABLE));
+      if (enfocables.length === 0) {
+        evento.preventDefault();
+        contenedor.focus();
+        return;
+      }
+
+      const primero = enfocables[0];
+      const ultimo = enfocables[enfocables.length - 1];
+      const activo = document.activeElement;
+      const dentroDelDialogo = activo instanceof Node && contenedor.contains(activo);
+
+      if (!dentroDelDialogo) {
+        evento.preventDefault();
+        (evento.shiftKey ? ultimo : primero).focus();
+        return;
+      }
+      if (evento.shiftKey && activo === primero) {
+        evento.preventDefault();
+        ultimo.focus();
+      } else if (!evento.shiftKey && activo === ultimo) {
+        evento.preventDefault();
+        primero.focus();
+      }
     }
+
     document.addEventListener('keydown', alPresionarTecla);
     return () => document.removeEventListener('keydown', alPresionarTecla);
   }, [onCancelar, trabajando]);
@@ -49,11 +97,13 @@ export default function DialogoConfirmacion({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
       <div
+        ref={panel}
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-confirmacion"
         aria-describedby="descripcion-confirmacion"
-        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl animate-scale-in"
+        tabIndex={-1}
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl animate-scale-in focus:outline-none"
       >
         <div className="flex items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold-100">
@@ -76,7 +126,7 @@ export default function DialogoConfirmacion({
             type="button"
             onClick={onCancelar}
             disabled={trabajando}
-            className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ungrd-400 focus-visible:ring-offset-2 disabled:opacity-50"
+            className="btn-secondary btn-sm"
           >
             {t('paquete.cancelar')}
           </button>
@@ -85,7 +135,7 @@ export default function DialogoConfirmacion({
             type="button"
             onClick={onConfirmar}
             disabled={trabajando}
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-ungrd-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ungrd-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ungrd-400 focus-visible:ring-offset-2 disabled:opacity-60"
+            className="btn-primary btn-sm"
           >
             {trabajando && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
             {trabajando ? textoTrabajando : textoConfirmar}

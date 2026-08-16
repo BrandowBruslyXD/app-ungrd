@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Sistema visual de ConectaRiesgoAI.
+ *
+ * Dos experiencias, un solo vocabulario. La escala de referencia es la de terreno
+ * (celular, bajo el sol, con una mano): cuerpo a 16 px y 44 px de área tocable.
+ * La sala de crisis puede bajar un escalón en textos de apoyo, nunca por debajo de 12 px.
+ *
+ * Si una pantalla necesita otra medida de un botón o de un campo, se ajusta la utilidad
+ * de aquí. Reescribir la cadena de clases en la página es lo que rompe la consistencia.
+ */
+
 @layer base {
   * {
     -webkit-tap-highlight-color: transparent;
@@ -15,66 +26,202 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-800;
+    @apply bg-slate-50 text-base text-slate-800;
     line-height: 1.5;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /*
+   * Foco visible en todo lo interactivo sin tener que acordarse en cada componente.
+   *
+   * Anillo de dos tonos porque la app tiene fondos opuestos: el oro se ve sobre el azul
+   * de la cabecera y sobre el rojo de emergencia; el azul oscuro que lo envuelve se ve
+   * sobre blanco y sobre el propio oro. `:where()` no suma especificidad, así que
+   * cualquier componente puede sustituirlo cuando lo necesite.
+   */
+  :where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex='-1'])):focus-visible {
+    outline: 2px solid theme('colors.gold.500');
+    outline-offset: 0;
+    box-shadow: 0 0 0 4px theme('colors.ungrd.800');
   }
 }
 
 @layer components {
+  /* ---------------------------------------------------------------- Botones */
+
+  /**
+   * Base de todos los botones: 44 px de alto y cuerpo a 16 px.
+   * No se usa suelta; siempre a través de una variante.
+   */
+  .btn-base {
+    @apply inline-flex min-h-toque items-center justify-center gap-2 rounded-xl px-5 py-3 text-base font-semibold transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none;
+  }
+
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-ungrd-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-ungrd-700 hover:shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply btn-base bg-ungrd-600 text-white shadow-sm hover:bg-ungrd-700 hover:shadow-md;
   }
 
+  /** Amarillo institucional: solo funciona con texto azul oscuro encima. */
   .btn-accent {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gold-500 px-5 py-3 text-base font-semibold text-ungrd-900 shadow-sm transition-all duration-200 hover:bg-gold-400 hover:shadow-md active:scale-[0.98];
+    @apply btn-base bg-gold-500 text-ungrd-900 shadow-sm hover:bg-gold-400 hover:shadow-md;
   }
 
+  /** Reservado para reportar una emergencia. No es «el botón que destaca». */
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-red-700 hover:shadow-md active:scale-[0.98];
+    @apply btn-base bg-red-700 text-white shadow-sm hover:bg-red-800 hover:shadow-md;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-base font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98];
+    @apply btn-base border border-slate-300 bg-white text-slate-700 shadow-sm hover:border-slate-400 hover:bg-slate-50;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-100 active:scale-[0.98];
+    @apply btn-base font-medium text-slate-700 hover:bg-slate-100;
   }
+
+  /** Botón de solo icono. Exige `aria-label`. */
+  .btn-icon {
+    @apply inline-flex min-h-toque min-w-toque items-center justify-center rounded-xl text-slate-600 transition-colors duration-200 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-icon-danger {
+    @apply btn-icon text-red-700 hover:bg-red-50;
+  }
+
+  /** Los «−/+» de un contador. Cuadrados de 44 px: se usan con una mano en la calle. */
+  .btn-stepper {
+    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition-colors duration-200 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  /*
+   * Modificador de tamaño para LA acción de la pantalla: 56 px de alto y ancho
+   * completo en celular. Va después de las variantes para ganarles el tamaño.
+   */
+  .btn-lg {
+    @apply min-h-toque-principal w-full gap-2.5 rounded-2xl px-6 text-lg sm:w-auto;
+  }
+
+  /*
+   * Modificador de densidad de la sala de crisis: cuerpo a 14 px, como el resto de
+   * esa experiencia. El alto sigue en los 44 px de `.btn-base` — el escritorio también
+   * se usa con ratón tembloroso a las tres de la mañana.
+   *
+   * Existe para que las pantallas de sala dejen de reescribir `px-4 py-2 text-sm`
+   * a mano: eso ya había derivado en dos rellenos distintos para el mismo botón.
+   */
+  .btn-sm {
+    @apply gap-1.5 px-4 py-2 text-sm;
+  }
+
+  /* ---------------------------------------------------------------- Tarjetas */
 
   .card {
-    @apply rounded-2xl border border-slate-200/60 bg-white shadow-sm transition-shadow duration-200;
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
   }
 
-  .card-hover {
-    @apply card hover:shadow-md hover:border-slate-200;
+  /** `.card` con el relleno estándar. La mayoría de tarjetas quieren esta. */
+  .card-pad {
+    @apply card p-4 sm:p-5;
   }
+
+  /** Solo para tarjetas que de verdad llevan a algún sitio. */
+  .card-hover {
+    @apply card transition-shadow duration-200 hover:border-slate-300 hover:shadow-md;
+  }
+
+  /**
+   * Tarjeta anidada dentro de otra: radio menor y sin sombra, porque dos sombras
+   * apiladas ensucian el borde y en la calle solo se ve un manchón gris.
+   * La usan el directorio de ayudas y los bloques por familia del censo.
+   */
+  .card-sub {
+    @apply rounded-xl border border-slate-200 bg-white;
+  }
+
+  /* ----------------------------------------------------------------- Campos */
 
   .input-field {
-    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-800 placeholder:text-slate-400 transition-all duration-200 focus:border-ungrd-400 focus:outline-none focus:ring-2 focus:ring-ungrd-100;
+    @apply block min-h-toque w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-800 transition-colors duration-200 placeholder:text-slate-500 focus:border-ungrd-600 focus:outline-none focus:ring-2 focus:ring-ungrd-500/40 disabled:bg-slate-100 disabled:text-slate-500;
   }
 
   .textarea-field {
-    @apply input-field resize-none;
+    @apply input-field min-h-[7.5rem] resize-y;
   }
+
+  /* La flecha va como fondo: el `appearance-none` borra la del navegador. */
+  .select-field {
+    @apply input-field appearance-none bg-no-repeat pr-11;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.875rem center;
+    background-size: 1.25rem 1.25rem;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-base font-semibold text-slate-800;
+  }
+
+  /** Texto de apoyo bajo un campo: se lee, así que no baja de 14 px. */
+  .field-hint {
+    @apply mt-1.5 text-sm text-slate-600;
+  }
+
+  .field-error {
+    @apply mt-1.5 flex items-start gap-1.5 text-sm font-medium text-red-700;
+  }
+
+  /* ---------------------------------------------------------------- Insignias */
 
   .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold leading-4;
   }
 
-  .severity-Baja { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
-  .severity-Media { @apply bg-amber-50 text-amber-700 border border-amber-200; }
-  .severity-Alta { @apply bg-red-50 text-red-700 border border-red-200; }
+  /** Cuando la insignia es información y no un metadato al margen. */
+  .badge-lg {
+    @apply px-3 py-1 text-sm leading-5;
+  }
 
-  .status-Reportado { @apply bg-slate-100 text-slate-600; }
-  .status-Verificado { @apply bg-ungrd-50 text-ungrd-700; }
-  .status-Asignado { @apply bg-gold-50 text-gold-800; }
-  .status-EnAtencion { @apply bg-ungrd-100 text-ungrd-700; }
-  .status-Atendido { @apply bg-blue-50 text-blue-700; }
-  .status-Cerrado { @apply bg-emerald-50 text-emerald-700; }
+  .severity-Baja {
+    @apply border border-emerald-200 bg-emerald-50 text-emerald-800;
+  }
+  .severity-Media {
+    @apply border border-amber-200 bg-amber-50 text-amber-800;
+  }
+  .severity-Alta {
+    @apply border border-red-200 bg-red-50 text-red-800;
+  }
+
+  .status-Reportado {
+    @apply bg-slate-100 text-slate-700;
+  }
+  .status-Verificado {
+    @apply bg-ungrd-50 text-ungrd-700;
+  }
+  /* El oro nunca como texto: aquí es fondo y el texto es gold-800 (5,8:1). */
+  .status-Asignado {
+    @apply bg-gold-100 text-gold-800;
+  }
+  .status-EnAtencion {
+    @apply bg-ungrd-100 text-ungrd-700;
+  }
+  .status-Atendido {
+    @apply bg-blue-50 text-blue-800;
+  }
+  .status-Cerrado {
+    @apply bg-emerald-50 text-emerald-800;
+  }
 }
 
 @layer utilities {
@@ -87,21 +234,56 @@
   }
 
   .animate-scale-in {
-    animation: scaleIn 0.2s ease-out;
+    animation: scaleIn 0.15s cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Quien pide menos movimiento no debería recibir ninguno; tampoco el rebote al pulsar. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .btn-base:active {
+    transform: none;
+  }
 }

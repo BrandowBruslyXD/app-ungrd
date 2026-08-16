@@ -42,7 +42,7 @@ function PantallaCargando() {
   const { t } = useTranslation();
   return (
     <div className="flex min-h-[50vh] items-center justify-center" role="status">
-      <p className="text-sm text-slate-500">{t('app.loadingPage')}</p>
+      <p className="text-base text-slate-600">{t('app.loadingPage')}</p>
     </div>
   );
 }
@@ -59,15 +59,15 @@ function NoEncontrado() {
   const destino = rolesDeSala.includes(rol) ? '/panel' : '/';
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-16 text-center">
-      <h1 className="text-lg font-bold text-slate-800">{t('acceso.noEncontradoTitulo')}</h1>
-      <p className="mt-2 text-sm text-slate-600">{t('acceso.noEncontradoApoyo')}</p>
-      <a
-        href={destino}
-        className="mt-6 inline-flex items-center justify-center rounded-lg bg-ungrd-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ungrd-700"
-      >
-        {t('acceso.volverInicio')}
-      </a>
+    // Esta ruta cae fuera de los dos armazones, así que aquí sí le toca poner su propia caja.
+    <div className="flex min-h-screen items-center justify-center px-4 py-16">
+      <div className="w-full max-w-md text-center">
+        <h1 className="text-2xl font-bold text-slate-900">{t('acceso.noEncontradoTitulo')}</h1>
+        <p className="mt-2 text-base text-slate-600">{t('acceso.noEncontradoApoyo')}</p>
+        <a href={destino} className="btn-primary mt-6">
+          {t('acceso.volverInicio')}
+        </a>
+      </div>
     </div>
   );
 }

@@ -79,7 +79,7 @@ export default function CambioEstado({
         <label htmlFor={idNota} className="mt-4 block text-sm font-semibold text-slate-800">
           {t('gestor.notaEtiqueta')}
         </label>
-        <p className="text-xs text-slate-500">{t('gestor.notaAyuda')}</p>
+        <p className="text-sm text-slate-600">{t('gestor.notaAyuda')}</p>
         <textarea
           id={idNota}
           value={nota}
@@ -119,14 +119,14 @@ export default function CambioEstado({
           <button
             type="submit"
             disabled={estadoElegido === null || guardando}
-            className="btn-primary min-h-[44px] px-4 py-2 text-sm"
+            className="btn-primary btn-sm"
           >
             {guardando ? t('gestor.guardando') : t('gestor.confirmar')}
           </button>
           <button
             type="button"
             onClick={onCancelar}
-            className="btn-secondary min-h-[44px] px-4 py-2 text-sm"
+            className="btn-secondary btn-sm"
           >
             {t('gestor.cancelar')}
           </button>

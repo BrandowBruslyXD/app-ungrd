@@ -19,7 +19,7 @@ export default function InsigniaConfianza({ nivel }: InsigniaConfianzaProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${insignia}`}
+      className={`badge whitespace-nowrap ring-1 ${insignia}`}
       title={t(`paquete.confianzaDetalle.${nivel}`)}
     >
       <Icono className="h-3 w-3 shrink-0" aria-hidden="true" />

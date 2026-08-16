@@ -7,6 +7,8 @@ import { aReporteLegado } from '@/shared/hooks/reporteLegado';
 import { StatusBadge, SeverityBadge } from '@/shared/components/StatusBadge';
 import EmergencyIcon from '@/shared/components/EmergencyIcon';
 import TrustBadge from '@/shared/components/TrustBadge';
+import EncabezadoPantalla from '@/experiencias/terreno/comunes/EncabezadoPantalla';
+import EstadoVacio from '@/experiencias/terreno/comunes/EstadoVacio';
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('es-CO', {
@@ -33,80 +35,112 @@ export default function MyReports() {
   );
 
   const stats = [
-    { value: misReportes.length, label: t('myReports.total'), icon: FileText, color: 'text-ungrd-600 bg-ungrd-50' },
-    { value: misReportes.filter((r) => r.status !== 'Cerrado').length, label: t('myReports.active'), icon: Clock, color: 'text-gold-700 bg-gold-50' },
-    { value: misReportes.filter((r) => r.satelliteVerified).length, label: t('myReports.verified'), icon: Satellite, color: 'text-emerald-600 bg-emerald-50' },
+    {
+      value: misReportes.length,
+      label: t('myReports.total'),
+      icon: FileText,
+      color: 'text-ungrd-600',
+    },
+    {
+      value: misReportes.filter((r) => r.status !== 'Cerrado').length,
+      label: t('myReports.active'),
+      icon: Clock,
+      // gold-800 y no gold-700: sobre blanco el 700 se queda en 3,3:1 y no pasa AA.
+      color: 'text-gold-800',
+    },
+    {
+      value: misReportes.filter((r) => r.satelliteVerified).length,
+      label: t('myReports.verified'),
+      icon: Satellite,
+      color: 'text-emerald-600',
+    },
   ];
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 lg:py-12 animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">{t('myReports.title')}</h1>
-          <p className="mt-1 text-sm text-slate-500">{t('myReports.subtitle')}</p>
-        </div>
-        <Link to="/reportar" className="btn-primary" aria-label={t('myReports.newReport')}>
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">{t('myReports.newReport')}</span>
-        </Link>
-      </div>
+    <div className="space-y-6 animate-fade-in">
+      <EncabezadoPantalla
+        titulo={t('myReports.title')}
+        descripcion={t('myReports.subtitle')}
+        accion={
+          <Link to="/reportar" className="btn-primary btn-lg">
+            <Plus className="h-5 w-5" aria-hidden="true" />
+            {t('myReports.newReport')}
+          </Link>
+        }
+      />
 
-      <div className="grid grid-cols-3 gap-3 mb-8">
+      <div className="grid grid-cols-3 gap-3">
         {stats.map(({ value, label, icon: Icon, color }) => (
           <div key={label} className="card p-4 text-center">
-            <Icon className={`mx-auto h-5 w-5 mb-1.5 ${color.split(' ')[0]}`} />
-            <p className={`text-xl font-bold ${color.split(' ')[0]}`}>{value}</p>
-            <p className="text-xs text-slate-500">{label}</p>
+            <Icon className={`mx-auto mb-1.5 h-6 w-6 ${color}`} aria-hidden="true" />
+            <p className={`text-2xl font-bold ${color}`}>{value}</p>
+            <p className="text-sm text-slate-600">{label}</p>
           </div>
         ))}
       </div>
 
-      <div className="space-y-3">
-        {misReportes.map((report) => (
-          <Link
-            key={report.id}
-            to={`/reportes/${report.id}`}
-            className="card-hover flex items-center gap-4 p-4 group"
-          >
-            <EmergencyIcon type={report.type} />
+      {misReportes.length === 0 ? (
+        <EstadoVacio
+          icono={FileText}
+          titulo={t('myReports.emptyTitle')}
+          descripcion={t('myReports.emptyBody')}
+          accion={
+            <Link to="/reportar" className="btn-primary btn-lg">
+              <Plus className="h-5 w-5" aria-hidden="true" />
+              {t('myReports.newReport')}
+            </Link>
+          }
+        />
+      ) : (
+        <div className="space-y-3">
+          {misReportes.map((report) => (
+            <Link
+              key={report.id}
+              to={`/reportes/${report.id}`}
+              className="card-hover group flex items-center gap-4 p-4 min-h-toque"
+            >
+              <EmergencyIcon type={report.type} />
 
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                <span className="text-xs font-mono text-slate-400">{report.id}</span>
-                <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium ${
-                  report.reportType === 'testigo'
-                    ? 'bg-slate-100 text-slate-600'
-                    : 'bg-red-50 text-red-600'
-                }`}>
-                  {report.reportType === 'testigo' ? <Eye className="h-3 w-3" /> : <Home className="h-3 w-3" />}
-                  {report.reportType === 'testigo' ? t('myReports.witness') : t('myReports.affected')}
-                </span>
-                <TrustBadge level={report.trustLevel} />
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-sm text-slate-600">{report.id}</span>
+                  <span
+                    className={`badge ${
+                      report.reportType === 'testigo'
+                        ? 'bg-slate-100 text-slate-700'
+                        : 'bg-red-50 text-red-700'
+                    }`}
+                  >
+                    {report.reportType === 'testigo' ? <Eye className="h-3.5 w-3.5" aria-hidden="true" /> : <Home className="h-3.5 w-3.5" aria-hidden="true" />}
+                    {report.reportType === 'testigo' ? t('myReports.witness') : t('myReports.affected')}
+                  </span>
+                  <TrustBadge level={report.trustLevel} />
+                </div>
+                <p className="truncate text-lg font-semibold text-slate-900 transition-colors group-hover:text-ungrd-700">
+                  {report.title}
+                </p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                  <StatusBadge status={report.status} />
+                  <SeverityBadge severity={report.prioridad} />
+                  <span className="flex items-center gap-1 text-sm text-slate-600">
+                    <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span className="max-w-[160px] truncate">{report.location}</span>
+                  </span>
+                </div>
               </div>
-              <p className="text-sm font-semibold text-slate-800 group-hover:text-ungrd-600 transition-colors truncate">
-                {report.title}
-              </p>
-              <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                <StatusBadge status={report.status} />
-                <SeverityBadge severity={report.prioridad} />
-                <span className="flex items-center gap-1 text-xs text-slate-400">
-                  <MapPin className="h-3 w-3" />
-                  <span className="truncate max-w-[140px]">{report.location}</span>
-                </span>
+
+              <div className="hidden shrink-0 text-right sm:block">
+                <p className="text-sm text-slate-500">{formatDate(report.createdAt)}</p>
+                <p className="mt-0.5 text-sm text-slate-500">
+                  {t('myReports.updates', { count: report.timeline.length })}
+                </p>
               </div>
-            </div>
 
-            <div className="hidden shrink-0 text-right sm:block">
-              <p className="text-xs text-slate-400">{formatDate(report.createdAt)}</p>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {t('myReports.updates', { count: report.timeline.length })}
-              </p>
-            </div>
-
-            <ChevronRight className="h-5 w-5 shrink-0 text-slate-300 group-hover:text-ungrd-500 transition-colors" />
-          </Link>
-        ))}
-      </div>
+              <ChevronRight className="h-6 w-6 shrink-0 text-slate-400 transition-colors group-hover:text-ungrd-600" aria-hidden="true" />
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

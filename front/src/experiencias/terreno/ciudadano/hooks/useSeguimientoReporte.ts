@@ -123,6 +123,21 @@ export function useSeguimientoReporte(): Seguimiento {
   return { codigo, reporte, esRecienCreado: reporteCreado !== undefined };
 }
 
+/**
+ * Enlaces públicos a las dos fuentes que sostienen el discurso de verificación y transparencia.
+ *
+ * Se abren en el portal oficial y no en una pantalla propia: la app no puede prometer un
+ * contrato concreto que todavía no consulta, pero sí puede dejar al ciudadano en la fuente.
+ */
+
+/** Mapa de focos de calor de la NASA, centrado en las coordenadas del reporte. */
+export function enlaceFirms(coordenadas: { lat: number; lng: number }): string {
+  return `https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@${coordenadas.lng},${coordenadas.lat},11z`;
+}
+
+/** Buscador público de procesos de contratación de SECOP II. */
+export const ENLACE_SECOP = 'https://community.secop.gov.co/Public/Tendering/ContractNoticeManagement/Index';
+
 /** Qué pasó con el último intento de copiar el código. */
 export type ResultadoCopia = 'inactivo' | 'copiado' | 'fallido';
 
@@ -163,4 +178,55 @@ export function useCopiarCodigo(): {
   }, []);
 
   return { resultado, copiar };
+}
+
+/** Qué pasó con el último intento de compartir el seguimiento. */
+export type ResultadoCompartir = 'inactivo' | 'compartido' | 'copiado' | 'fallido';
+
+/**
+ * Comparte el enlace del seguimiento.
+ *
+ * `/reportes/:codigo` es la única ruta pública con datos y se comparte por WhatsApp, así que se
+ * usa el diálogo nativo del sistema cuando existe. Si no, se copia el enlace y se dice que se
+ * copió: quedarse callado haría creer que el botón no hace nada.
+ */
+export function useCompartirSeguimiento(): {
+  resultado: ResultadoCompartir;
+  compartir: (titulo: string) => Promise<void>;
+} {
+  const [resultado, setResultado] = useState<ResultadoCompartir>('inactivo');
+
+  useEffect(() => {
+    if (resultado === 'inactivo') {
+      return;
+    }
+    const temporizador = window.setTimeout(() => setResultado('inactivo'), MS_RESULTADO_COPIA);
+    return () => window.clearTimeout(temporizador);
+  }, [resultado]);
+
+  const compartir = useCallback(async (titulo: string): Promise<void> => {
+    const url = window.location.href;
+    try {
+      if (typeof navigator.share === 'function') {
+        await navigator.share({ title: titulo, url });
+        setResultado('compartido');
+        return;
+      }
+      const portapapeles = navigator.clipboard;
+      if (!portapapeles) {
+        throw new Error('El navegador no expone el portapapeles');
+      }
+      await portapapeles.writeText(url);
+      setResultado('copiado');
+    } catch (error) {
+      // Cerrar el diálogo del sistema no es un fallo: no hay nada que avisarle al usuario.
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        setResultado('inactivo');
+        return;
+      }
+      setResultado('fallido');
+    }
+  }, []);
+
+  return { resultado, compartir };
 }

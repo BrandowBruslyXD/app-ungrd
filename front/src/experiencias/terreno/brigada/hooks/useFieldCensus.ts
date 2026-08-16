@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CensusWizardState, WizardFamily, WizardPerson, Parentesco } from '@/shared/types/edan';
 
 export const CENSUS_STEP_COUNT = 6;
@@ -81,6 +81,17 @@ export function useFieldCensus() {
   const [data, setData] = useState<CensusWizardState>(createInitialState);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const temporizadorEnvio = useRef<number | null>(null);
+
+  // El brigadista puede salir de la pantalla durante el segundo y medio del envío simulado; sin
+  // esta limpieza el temporizador escribiría estado sobre un componente ya desmontado.
+  useEffect(() => {
+    return () => {
+      if (temporizadorEnvio.current !== null) {
+        window.clearTimeout(temporizadorEnvio.current);
+      }
+    };
+  }, []);
 
   const update = (partial: Partial<CensusWizardState>): void => {
     setData((prev) => {
@@ -111,15 +122,24 @@ export function useFieldCensus() {
   const canProceed = validations[step] ?? false;
   const totalPersons = data.families.reduce((sum, family) => sum + family.persons.length, 0);
 
+  /** Un censo se registra una sola vez: dos toques seguidos no pueden abrir dos envíos. */
   const handleSubmit = (): void => {
+    if (submitting || submitted) {
+      return;
+    }
     setSubmitting(true);
-    window.setTimeout(() => {
+    temporizadorEnvio.current = window.setTimeout(() => {
+      temporizadorEnvio.current = null;
       setSubmitting(false);
       setSubmitted(true);
     }, 1500);
   };
 
   const reset = (): void => {
+    if (temporizadorEnvio.current !== null) {
+      window.clearTimeout(temporizadorEnvio.current);
+      temporizadorEnvio.current = null;
+    }
     setData(createInitialState());
     setStep(1);
     setSubmitted(false);

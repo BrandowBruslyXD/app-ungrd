@@ -38,16 +38,13 @@ export default function DetalleDanos({ danos, porConfianza }: DetalleDanosProps)
   ];
 
   return (
-    <section
-      aria-labelledby="titulo-danos"
-      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-    >
+    <section aria-labelledby="titulo-danos" className="card overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-3.5">
-        <div>
-          <h2 id="titulo-danos" className="text-sm font-bold text-slate-800">
+        <div className="min-w-0">
+          <h2 id="titulo-danos" className="text-base font-bold text-slate-900">
             {t('paquete.danosTitulo')}
           </h2>
-          <p className="text-xs text-slate-500">{t('paquete.danosApoyo')}</p>
+          <p className="text-sm text-slate-600">{t('paquete.danosApoyo')}</p>
         </div>
 
         <div
@@ -62,20 +59,21 @@ export default function DetalleDanos({ danos, porConfianza }: DetalleDanosProps)
               onClick={() => setFiltro(valor)}
               aria-pressed={filtro === valor}
               disabled={cantidad === 0}
-              className={`min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ungrd-400 disabled:cursor-not-allowed disabled:opacity-40 ${
+              className={`min-h-[44px] rounded-lg px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ungrd-400 disabled:cursor-not-allowed disabled:opacity-40 ${
                 filtro === valor
                   ? 'bg-white text-ungrd-700 shadow-sm'
                   : 'text-slate-600 hover:bg-white/70 hover:text-slate-800'
               }`}
             >
               {etiqueta}
-              <span className="ml-1.5 tabular-nums text-slate-400">{cantidad}</span>
+              <span className="ml-1.5 tabular-nums text-slate-500">{cantidad}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Oculta y no desmontada: al volver a «Todos» la tabla conserva su desplazamiento. */}
+      <div className={visibles.length === 0 ? 'hidden' : 'overflow-x-auto'}>
         <table className="w-full min-w-[56rem] text-sm">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
@@ -108,7 +106,7 @@ export default function DetalleDanos({ danos, porConfianza }: DetalleDanosProps)
                 </td>
                 <td className="max-w-md px-3 py-3 text-slate-700">
                   {dano.descripcion}
-                  <span className="mt-1 block font-mono text-xs text-slate-400">
+                  <span className="mt-1 block font-mono text-xs text-slate-500">
                     {t(`paquete.origen.${dano.origen}`)} · {dano.origenCodigo}
                   </span>
                 </td>
@@ -134,7 +132,16 @@ export default function DetalleDanos({ danos, porConfianza }: DetalleDanosProps)
       </div>
 
       {visibles.length === 0 && (
-        <p className="px-5 py-8 text-center text-sm text-slate-500">{t('paquete.danosVacio')}</p>
+        <div className="px-5 py-10 text-center">
+          <p className="text-base text-slate-700">{t('paquete.danosVacio')}</p>
+          <button
+            type="button"
+            onClick={() => setFiltro('todos')}
+            className="btn-secondary btn-sm mt-4"
+          >
+            {t('paquete.danosQuitarFiltro')}
+          </button>
+        </div>
       )}
     </section>
   );

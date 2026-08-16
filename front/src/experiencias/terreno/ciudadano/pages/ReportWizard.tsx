@@ -6,9 +6,7 @@ import {
   AlertTriangle,
   Camera,
   MapPin,
-  ArrowLeft,
   ArrowRight,
-  Check,
   Upload,
   LocateFixed,
   Eye,
@@ -20,14 +18,17 @@ import {
 } from 'lucide-react';
 import type { EmergencyType } from '@/shared/types';
 import { useReportWizard } from '@/experiencias/terreno/ciudadano/hooks/useReportWizard';
+import PasosAsistente from '@/experiencias/terreno/comunes/PasosAsistente';
+import PieAsistente from '@/experiencias/terreno/comunes/PieAsistente';
+import Contador from '@/experiencias/terreno/comunes/Contador';
 
 const emergencyTypeMeta: { type: EmergencyType; icon: typeof Droplets; color: string }[] = [
   { type: 'Inundacion', icon: Droplets, color: 'border-ungrd-200 bg-ungrd-50 text-ungrd-700 hover:border-ungrd-400' },
-  { type: 'Deslizamiento', icon: Mountain, color: 'border-amber-200 bg-amber-50 text-amber-700 hover:border-amber-400' },
+  { type: 'Deslizamiento', icon: Mountain, color: 'border-amber-200 bg-amber-50 text-amber-800 hover:border-amber-400' },
   { type: 'Incendio', icon: Flame, color: 'border-red-200 bg-red-50 text-red-700 hover:border-red-400' },
   { type: 'ViaAfectada', icon: MapPin, color: 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400' },
-  { type: 'ColapsoEstructural', icon: AlertTriangle, color: 'border-orange-200 bg-orange-50 text-orange-700 hover:border-orange-400' },
-  { type: 'Otro', icon: AlertTriangle, color: 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-400' },
+  { type: 'ColapsoEstructural', icon: AlertTriangle, color: 'border-orange-200 bg-orange-50 text-orange-800 hover:border-orange-400' },
+  { type: 'Otro', icon: AlertTriangle, color: 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400' },
 ];
 
 export default function ReportWizard() {
@@ -50,74 +51,48 @@ export default function ReportWizard() {
     handleSubmit,
   } = wizard;
 
+  // El primer paso elige testigo o afectado y no cuenta como paso del formulario: la barra de
+  // progreso empieza cuando el ciudadano ya sabe qué está llenando.
+  const pasos = stepKeys.slice(1).map((key) => ({
+    clave: key,
+    etiqueta: t(`wizard.steps.${key}`),
+    etiquetaCorta: t(`wizard.stepsShort.${key}`),
+  }));
+
   // Al enviar no hay pantalla de confirmación: el asistente lleva directo al seguimiento del
   // reporte, que es donde el ciudadano ve avanzar su caso.
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 lg:py-12 animate-fade-in">
-      {step > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            {stepKeys.slice(1).map((key, index) => {
-              const number = index + 1;
-              return (
-                <div key={key} className="flex items-center gap-2">
-                  <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${
-                      step === number
-                        ? 'bg-ungrd-600 text-white shadow-sm'
-                        : step > number
-                          ? 'bg-gold-100 text-gold-700'
-                          : 'bg-slate-100 text-slate-400'
-                    }`}
-                  >
-                    {step > number ? <Check className="h-4 w-4" /> : number}
-                  </div>
-                  <span
-                    className={`hidden text-sm font-medium sm:block ${
-                      step === number ? 'text-slate-800' : 'text-slate-400'
-                    }`}
-                  >
-                    {t(`wizard.steps.${key}`)}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-ungrd-600 transition-all duration-500"
-              style={{ width: `${((step - 1) / (totalSteps - 2)) * 100}%` }}
-            />
-          </div>
-        </div>
-      )}
+    <div className="space-y-6 animate-fade-in">
+      {step > 0 && <PasosAsistente pasos={pasos} actual={step} />}
 
       {step === 0 && (
-        <div className="animate-slide-up">
-          <h2 className="text-xl font-bold text-slate-800 lg:text-2xl">{t('wizard.type.title')}</h2>
-          <p className="mt-2 text-sm text-slate-500">{t('wizard.type.subtitle')}</p>
+        <div className="animate-slide-up space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">{t('wizard.type.title')}</h1>
+            <p className="mt-2 text-base text-slate-600">{t('wizard.type.subtitle')}</p>
+          </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <button
               type="button"
               onClick={() => setReportType('testigo')}
               className={`flex flex-col items-start gap-4 rounded-2xl border-2 p-6 text-left transition-all duration-200 ${
                 reportType === 'testigo'
-                  ? 'border-ungrd-400 bg-ungrd-50 ring-2 ring-ungrd-200 scale-[1.02]'
+                  ? 'border-ungrd-500 bg-ungrd-50 ring-2 ring-ungrd-200'
                   : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
-              <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
-                reportType === 'testigo' ? 'bg-ungrd-600 text-white' : 'bg-slate-100 text-slate-500'
+              <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
+                reportType === 'testigo' ? 'bg-ungrd-600 text-white' : 'bg-slate-100 text-slate-600'
               }`}>
-                <Eye className="h-7 w-7" />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-slate-800">{t('wizard.type.witnessTitle')}</p>
-                <p className="mt-1 text-sm text-slate-500 leading-relaxed">{t('wizard.type.witnessBody')}</p>
-              </div>
-              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                reportType === 'testigo' ? 'bg-ungrd-100 text-ungrd-700' : 'bg-slate-100 text-slate-500'
+                <Eye className="h-7 w-7" aria-hidden="true" />
+              </span>
+              <span>
+                <span className="block text-xl font-bold text-slate-900">{t('wizard.type.witnessTitle')}</span>
+                <span className="mt-1 block text-base leading-relaxed text-slate-600">{t('wizard.type.witnessBody')}</span>
+              </span>
+              <span className={`badge badge-lg ${
+                reportType === 'testigo' ? 'bg-ungrd-100 text-ungrd-800' : 'bg-slate-100 text-slate-600'
               }`}>
                 {t('wizard.type.witnessBadge')}
               </span>
@@ -128,21 +103,21 @@ export default function ReportWizard() {
               onClick={() => setReportType('afectado')}
               className={`flex flex-col items-start gap-4 rounded-2xl border-2 p-6 text-left transition-all duration-200 ${
                 reportType === 'afectado'
-                  ? 'border-red-400 bg-red-50 ring-2 ring-red-200 scale-[1.02]'
+                  ? 'border-red-500 bg-red-50 ring-2 ring-red-200'
                   : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
-              <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
-                reportType === 'afectado' ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-500'
+              <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
+                reportType === 'afectado' ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-600'
               }`}>
-                <Home className="h-7 w-7" />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-slate-800">{t('wizard.type.affectedTitle')}</p>
-                <p className="mt-1 text-sm text-slate-500 leading-relaxed">{t('wizard.type.affectedBody')}</p>
-              </div>
-              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                reportType === 'afectado' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-500'
+                <Home className="h-7 w-7" aria-hidden="true" />
+              </span>
+              <span>
+                <span className="block text-xl font-bold text-slate-900">{t('wizard.type.affectedTitle')}</span>
+                <span className="mt-1 block text-base leading-relaxed text-slate-600">{t('wizard.type.affectedBody')}</span>
+              </span>
+              <span className={`badge badge-lg ${
+                reportType === 'afectado' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-600'
               }`}>
                 {t('wizard.type.affectedBadge')}
               </span>
@@ -152,25 +127,28 @@ export default function ReportWizard() {
       )}
 
       {step === 1 && (
-        <div className="animate-slide-up">
-          <h2 className="text-xl font-bold text-slate-800 lg:text-2xl">
-            {isAfectado ? t('wizard.emergency.affectedTitle') : t('wizard.emergency.witnessTitle')}
-          </h2>
-          <p className="mt-2 text-sm text-slate-500">{t('wizard.emergency.subtitle')}</p>
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="animate-slide-up space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">
+              {isAfectado ? t('wizard.emergency.affectedTitle') : t('wizard.emergency.witnessTitle')}
+            </h1>
+            <p className="mt-2 text-base text-slate-600">{t('wizard.emergency.subtitle')}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {emergencyTypeMeta.map(({ type, icon: Icon, color }) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => updateForm({ type })}
+                aria-pressed={form.type === type}
                 className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-5 transition-all duration-200 ${
                   form.type === type
-                    ? `${color} border-current ring-2 ring-current/20 scale-[1.02]`
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                    ? `${color} border-current ring-2 ring-current/20`
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <Icon className="h-7 w-7" />
-                <span className="text-sm font-semibold">{t(`emergencyType.${type}`)}</span>
+                <Icon className="h-8 w-8" aria-hidden="true" />
+                <span className="text-base font-semibold">{t(`emergencyType.${type}`)}</span>
               </button>
             ))}
           </div>
@@ -178,17 +156,19 @@ export default function ReportWizard() {
       )}
 
       {step === 2 && (
-        <div className="animate-slide-up">
-          <h2 className="text-xl font-bold text-slate-800 lg:text-2xl">
-            {isAfectado ? t('wizard.details.affectedTitle') : t('wizard.details.witnessTitle')}
-          </h2>
-          <p className="mt-2 text-sm text-slate-500">
-            {isAfectado ? t('wizard.details.affectedSubtitle') : t('wizard.details.witnessSubtitle')}
-          </p>
+        <div className="animate-slide-up space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">
+              {isAfectado ? t('wizard.details.affectedTitle') : t('wizard.details.witnessTitle')}
+            </h1>
+            <p className="mt-2 text-base text-slate-600">
+              {isAfectado ? t('wizard.details.affectedSubtitle') : t('wizard.details.witnessSubtitle')}
+            </p>
+          </div>
 
-          <div className="mt-6 space-y-4">
+          <div className="space-y-5">
             <div>
-              <label htmlFor="report-description" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label htmlFor="report-description" className="field-label">
                 {t('wizard.details.description')}
               </label>
               <textarea
@@ -197,9 +177,9 @@ export default function ReportWizard() {
                 onChange={(e) => updateForm({ description: e.target.value })}
                 placeholder={isAfectado ? t('wizard.details.placeholderAffected') : t('wizard.details.placeholderWitness')}
                 rows={4}
-                className="textarea-field text-base"
+                className="textarea-field"
               />
-              <p className="mt-1 text-xs text-slate-400" aria-live="polite">
+              <p className="field-hint" aria-live="polite">
                 {form.description.length < 10
                   ? t('wizard.details.minChars', { count: form.description.length })
                   : t('wizard.details.goodDescription')}
@@ -209,8 +189,8 @@ export default function ReportWizard() {
             {isAfectado && (
               <>
                 <div>
-                  <label htmlFor="contact-phone" className="block text-sm font-medium text-slate-700 mb-1.5">
-                    <Phone className="mr-1 inline h-4 w-4" />
+                  <label htmlFor="contact-phone" className="field-label">
+                    <Phone className="mr-1 inline h-4 w-4" aria-hidden="true" />
                     {t('wizard.details.contactPhone')}
                   </label>
                   <input
@@ -224,70 +204,60 @@ export default function ReportWizard() {
                 </div>
 
                 <div>
-                  <p id="household-size-label" className="block text-sm font-medium text-slate-700 mb-1.5">
-                    <Users className="mr-1 inline h-4 w-4" />
+                  <p id="household-size-label" className="field-label">
+                    <Users className="mr-1 inline h-4 w-4" aria-hidden="true" />
                     {t('wizard.details.householdSize')}
                   </p>
-                  <div className="flex items-center gap-3" role="group" aria-labelledby="household-size-label">
-                    <button
-                      type="button"
-                      onClick={() => updateForm({ householdSize: Math.max(1, form.householdSize - 1) })}
-                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"
-                      aria-label={t('wizard.details.decreaseHousehold')}
-                    >
-                      -
-                    </button>
-                    <span className="w-12 text-center text-lg font-bold text-slate-800" aria-live="polite">
-                      {form.householdSize}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => updateForm({ householdSize: form.householdSize + 1 })}
-                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"
-                      aria-label={t('wizard.details.increaseHousehold')}
-                    >
-                      +
-                    </button>
+                  <div role="group" aria-labelledby="household-size-label">
+                    <Contador
+                      valor={form.householdSize}
+                      onCambiar={(delta) => updateForm({ householdSize: Math.max(1, form.householdSize + delta) })}
+                      enMinimo={form.householdSize <= 1}
+                      etiquetaDisminuir={t('wizard.details.decreaseHousehold')}
+                      etiquetaAumentar={t('wizard.details.increaseHousehold')}
+                    />
                   </div>
                 </div>
 
                 <div>
-                  <p className="block text-sm font-medium text-slate-700 mb-1.5">
-                    <Home className="mr-1 inline h-4 w-4" />
+                  <p className="field-label">
+                    <Home className="mr-1 inline h-4 w-4" aria-hidden="true" />
                     {t('wizard.details.isHabitable')}
                   </p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => updateForm({ isHabitable: true })}
-                      className={`rounded-xl border-2 p-3 text-center transition-all ${
+                      aria-pressed={form.isHabitable}
+                      className={`rounded-xl border-2 p-3 text-center text-base font-semibold transition-all min-h-toque ${
                         form.isHabitable
-                          ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
-                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
-                      <p className="text-sm font-semibold">{t('wizard.details.habitableYes')}</p>
+                      {t('wizard.details.habitableYes')}
                     </button>
                     <button
                       type="button"
                       onClick={() => updateForm({ isHabitable: false })}
-                      className={`rounded-xl border-2 p-3 text-center transition-all ${
+                      aria-pressed={!form.isHabitable}
+                      className={`rounded-xl border-2 p-3 text-center text-base font-semibold transition-all min-h-toque ${
                         !form.isHabitable
-                          ? 'border-red-400 bg-red-50 text-red-700'
-                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                          ? 'border-red-500 bg-red-50 text-red-800'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
-                      <p className="text-sm font-semibold">{t('wizard.details.habitableNo')}</p>
+                      {t('wizard.details.habitableNo')}
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <p className="block text-sm font-medium text-slate-700 mb-1.5">
-                    <Heart className="mr-1 inline h-4 w-4" />
+                  <p className="field-label">
+                    <Heart className="mr-1 inline h-4 w-4" aria-hidden="true" />
                     {t('wizard.details.urgentNeed')}
                   </p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     {([
                       { value: 'alimentos', labelKey: 'wizard.details.needFood' },
                       { value: 'albergue', labelKey: 'wizard.details.needShelter' },
@@ -298,10 +268,11 @@ export default function ReportWizard() {
                         key={value}
                         type="button"
                         onClick={() => updateForm({ urgentNeed: value })}
-                        className={`rounded-xl border-2 p-3 text-left text-sm transition-all ${
+                        aria-pressed={form.urgentNeed === value}
+                        className={`rounded-xl border-2 p-3 text-left text-base transition-all min-h-toque ${
                           form.urgentNeed === value
-                            ? 'border-ungrd-400 bg-ungrd-50 text-ungrd-700 font-semibold'
-                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                            ? 'border-ungrd-500 bg-ungrd-50 font-semibold text-ungrd-800'
+                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                         }`}
                       >
                         {t(labelKey)}
@@ -315,54 +286,56 @@ export default function ReportWizard() {
             {!isAfectado && (
               <>
                 <div>
-                  <p className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <p className="field-label">
                     {t('wizard.details.howSevere')}
                   </p>
                   <div className="grid grid-cols-3 gap-2">
                     {([
-                      { value: 'leve', labelKey: 'wizard.details.severityMild', descKey: 'wizard.details.severityMildDesc', color: 'border-emerald-200 bg-emerald-50 text-emerald-700' },
-                      { value: 'moderado', labelKey: 'wizard.details.severityModerate', descKey: 'wizard.details.severityModerateDesc', color: 'border-gold-300 bg-gold-50 text-gold-800' },
-                      { value: 'grave', labelKey: 'wizard.details.severitySevere', descKey: 'wizard.details.severitySevereDesc', color: 'border-red-200 bg-red-50 text-red-700' },
+                      { value: 'leve', labelKey: 'wizard.details.severityMild', descKey: 'wizard.details.severityMildDesc', color: 'border-emerald-500 bg-emerald-50 text-emerald-800' },
+                      { value: 'moderado', labelKey: 'wizard.details.severityModerate', descKey: 'wizard.details.severityModerateDesc', color: 'border-gold-500 bg-gold-50 text-gold-900' },
+                      { value: 'grave', labelKey: 'wizard.details.severitySevere', descKey: 'wizard.details.severitySevereDesc', color: 'border-red-500 bg-red-50 text-red-800' },
                     ] as const).map(({ value, labelKey, descKey, color }) => (
                       <button
                         key={value}
                         type="button"
                         onClick={() => updateForm({ severity: value })}
+                        aria-pressed={form.severity === value}
                         className={`rounded-xl border-2 p-3 text-center transition-all ${
                           form.severity === value
-                            ? `${color} border-current`
-                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                            ? color
+                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                         }`}
                       >
-                        <p className="text-sm font-semibold">{t(labelKey)}</p>
-                        <p className="text-xs mt-0.5 opacity-75">{t(descKey)}</p>
+                        <span className="block text-base font-semibold">{t(labelKey)}</span>
+                        <span className="mt-0.5 block text-sm leading-snug opacity-90">{t(descKey)}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <p className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <p className="field-label">
                     {t('wizard.details.photoOptional')}
                   </p>
                   <button
                     type="button"
                     onClick={() => updateForm({ hasPhoto: !form.hasPhoto })}
+                    aria-pressed={form.hasPhoto}
                     className={`flex w-full items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 transition-colors ${
                       form.hasPhoto
-                        ? 'border-ungrd-300 bg-ungrd-50'
-                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                        ? 'border-ungrd-400 bg-ungrd-50'
+                        : 'border-slate-300 hover:border-slate-400 hover:bg-slate-50'
                     }`}
                   >
                     {form.hasPhoto ? (
                       <>
-                        <Camera className="h-6 w-6 text-ungrd-600" />
-                        <span className="text-sm font-medium text-ungrd-700">{t('wizard.details.photoSelected')}</span>
+                        <Camera className="h-6 w-6 text-ungrd-600" aria-hidden="true" />
+                        <span className="text-base font-semibold text-ungrd-700">{t('wizard.details.photoSelected')}</span>
                       </>
                     ) : (
                       <>
-                        <Upload className="h-6 w-6 text-slate-400" />
-                        <span className="text-sm text-slate-500">{t('wizard.details.photoUpload')}</span>
+                        <Upload className="h-6 w-6 text-slate-500" aria-hidden="true" />
+                        <span className="text-base text-slate-700">{t('wizard.details.photoUpload')}</span>
                       </>
                     )}
                   </button>
@@ -374,51 +347,52 @@ export default function ReportWizard() {
       )}
 
       {step === 3 && (
-        <div className="animate-slide-up">
-          <h2 className="text-xl font-bold text-slate-800 lg:text-2xl">
-            {isAfectado ? t('wizard.location.affectedTitle') : t('wizard.location.witnessTitle')}
-          </h2>
-          <p className="mt-2 text-sm text-slate-500">
-            {isAfectado ? t('wizard.location.affectedSubtitle') : t('wizard.location.witnessSubtitle')}
-          </p>
+        <div className="animate-slide-up space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">
+              {isAfectado ? t('wizard.location.affectedTitle') : t('wizard.location.witnessTitle')}
+            </h1>
+            <p className="mt-2 text-base text-slate-600">
+              {isAfectado ? t('wizard.location.affectedSubtitle') : t('wizard.location.witnessSubtitle')}
+            </p>
+          </div>
 
-          <div className="mt-6 space-y-4">
+          <div className="space-y-5">
             <button
               type="button"
               onClick={() => updateForm({ useGps: !form.useGps, location: '' })}
-              className={`flex w-full items-center gap-4 rounded-2xl border-2 p-5 transition-all ${
-                form.useGps
-                  ? 'border-ungrd-400 bg-ungrd-50'
-                  : 'border-slate-200 bg-white hover:bg-slate-50'
+              aria-pressed={form.useGps}
+              className={`flex w-full items-center gap-4 rounded-2xl border-2 p-5 text-left transition-all ${
+                form.useGps ? 'border-ungrd-500 bg-ungrd-50' : 'border-slate-200 bg-white hover:bg-slate-50'
               }`}
             >
-              <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${
-                form.useGps ? 'bg-ungrd-600 text-white' : 'bg-slate-100 text-slate-400'
+              <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
+                form.useGps ? 'bg-ungrd-600 text-white' : 'bg-slate-100 text-slate-600'
               }`}>
-                <LocateFixed className="h-6 w-6" />
-              </div>
-              <div className="text-left">
-                <p className={`font-semibold ${form.useGps ? 'text-ungrd-700' : 'text-slate-700'}`}>
+                <LocateFixed className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <span>
+                <span className={`block text-base font-semibold ${form.useGps ? 'text-ungrd-800' : 'text-slate-800'}`}>
                   {t('wizard.location.useGps')}
-                </p>
-                <p className="text-sm text-slate-500">
+                </span>
+                <span className="mt-0.5 block text-base text-slate-600">
                   {form.useGps ? t('wizard.location.gpsDetected') : t('wizard.location.gpsHint')}
-                </p>
-              </div>
+                </span>
+              </span>
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-slate-200" />
-              <span className="text-xs font-medium text-slate-400">{t('wizard.location.orAddress')}</span>
-              <div className="h-px flex-1 bg-slate-200" />
+              <span className="h-px flex-1 bg-slate-200" aria-hidden="true" />
+              <span className="text-sm font-medium text-slate-600">{t('wizard.location.orAddress')}</span>
+              <span className="h-px flex-1 bg-slate-200" aria-hidden="true" />
             </div>
 
             <div>
-              <label htmlFor="report-location" className="sr-only">
+              <label htmlFor="report-location" className="field-label">
                 {t('wizard.location.addressLabel')}
               </label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                <MapPin className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" aria-hidden="true" />
                 <input
                   id="report-location"
                   type="text"
@@ -428,34 +402,35 @@ export default function ReportWizard() {
                   className="input-field pl-10"
                 />
               </div>
-              <p className="mt-1.5 text-xs text-slate-400">
+              <p className="mt-1.5 text-sm text-slate-600">
                 {isAfectado ? t('wizard.location.hintAffected') : t('wizard.location.hintWitness')}
               </p>
             </div>
 
             {isAfectado && (
               <div>
-                <p className="block text-sm font-medium text-slate-700 mb-1.5">
+                <p className="field-label">
                   {t('wizard.location.damagePhoto')}
                 </p>
                 <button
                   type="button"
                   onClick={() => updateForm({ hasPhoto: !form.hasPhoto })}
+                  aria-pressed={form.hasPhoto}
                   className={`flex w-full items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 transition-colors ${
                     form.hasPhoto
-                      ? 'border-ungrd-300 bg-ungrd-50'
-                      : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                      ? 'border-ungrd-400 bg-ungrd-50'
+                      : 'border-slate-300 hover:border-slate-400 hover:bg-slate-50'
                   }`}
                 >
                   {form.hasPhoto ? (
                     <>
-                      <Camera className="h-6 w-6 text-ungrd-600" />
-                      <span className="text-sm font-medium text-ungrd-700">{t('wizard.details.photoSelected')}</span>
+                      <Camera className="h-6 w-6 text-ungrd-600" aria-hidden="true" />
+                      <span className="text-base font-semibold text-ungrd-700">{t('wizard.details.photoSelected')}</span>
                     </>
                   ) : (
                     <>
-                      <Upload className="h-6 w-6 text-slate-400" />
-                      <span className="text-sm text-slate-500">{t('wizard.location.damagePhotoUpload')}</span>
+                      <Upload className="h-6 w-6 text-slate-500" aria-hidden="true" />
+                      <span className="text-base text-slate-700">{t('wizard.location.damagePhotoUpload')}</span>
                     </>
                   )}
                 </button>
@@ -466,18 +441,18 @@ export default function ReportWizard() {
       )}
 
       {step === 4 && isAfectado && (
-        <div className="animate-slide-up">
-          <h2 className="text-xl font-bold text-slate-800 lg:text-2xl">{t('wizard.disclaimer.title')}</h2>
+        <div className="animate-slide-up space-y-6">
+          <h1 className="text-2xl font-bold text-slate-900">{t('wizard.disclaimer.title')}</h1>
 
-          <div className="mt-6 space-y-4">
-            <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-6">
+          <div className="space-y-4">
+            <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 sm:p-6">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-200">
-                  <ShieldAlert className="h-5 w-5 text-amber-800" />
-                </div>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-200">
+                  <ShieldAlert className="h-6 w-6 text-amber-900" aria-hidden="true" />
+                </span>
                 <div>
-                  <h3 className="text-base font-bold text-amber-900">{t('wizard.disclaimer.notCensusTitle')}</h3>
-                  <div className="mt-3 space-y-3 text-sm text-amber-800 leading-relaxed">
+                  <h2 className="text-lg font-bold text-amber-900">{t('wizard.disclaimer.notCensusTitle')}</h2>
+                  <div className="mt-3 space-y-3 text-base leading-relaxed text-amber-900">
                     <p>
                       <Trans i18nKey="wizard.disclaimer.body1" components={{ strong: <strong /> }} />
                     </p>
@@ -492,12 +467,12 @@ export default function ReportWizard() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h4 className="text-sm font-bold text-slate-700">{t('wizard.disclaimer.whatNext')}</h4>
-              <ol className="mt-3 space-y-2 text-sm text-slate-600">
+            <div className="card p-5">
+              <h2 className="text-lg font-semibold text-slate-900">{t('wizard.disclaimer.whatNext')}</h2>
+              <ol className="mt-3 space-y-2.5 text-base leading-relaxed text-slate-700">
                 {(['step1', 'step2', 'step3', 'step4'] as const).map((key, index) => (
-                  <li key={key} className="flex items-start gap-2">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ungrd-100 text-xs font-bold text-ungrd-700">
+                  <li key={key} className="flex items-start gap-2.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ungrd-100 text-sm font-bold text-ungrd-800">
                       {index + 1}
                     </span>
                     {t(`wizard.disclaimer.${key}`)}
@@ -506,15 +481,18 @@ export default function ReportWizard() {
               </ol>
             </div>
 
-            <label htmlFor="disclaimer-accepted" className="flex items-start gap-3 cursor-pointer rounded-xl border border-slate-200 bg-slate-50 p-4 transition-colors hover:bg-slate-100">
+            <label
+              htmlFor="disclaimer-accepted"
+              className="flex cursor-pointer items-start gap-3 rounded-xl border-2 border-slate-200 bg-white p-4 transition-colors hover:border-ungrd-300"
+            >
               <input
                 id="disclaimer-accepted"
                 type="checkbox"
                 checked={disclaimerAccepted}
                 onChange={(e) => setDisclaimerAccepted(e.target.checked)}
-                className="mt-0.5 h-5 w-5 rounded border-slate-300 text-ungrd-600 focus:ring-ungrd-500"
+                className="mt-0.5 h-6 w-6 shrink-0 rounded border-slate-400 text-ungrd-600 focus:ring-ungrd-500"
               />
-              <span className="text-sm text-slate-700 leading-relaxed">
+              <span className="text-base leading-relaxed text-slate-800">
                 <Trans i18nKey="wizard.disclaimer.accept" components={{ strong: <strong /> }} />
               </span>
             </label>
@@ -522,29 +500,29 @@ export default function ReportWizard() {
         </div>
       )}
 
-      <div className="mt-10 flex items-center justify-between">
-        <button type="button" onClick={goBack} className="btn-ghost gap-1.5">
-          <ArrowLeft className="h-4 w-4" />
-          {step > 0 ? t('wizard.nav.back') : t('wizard.nav.cancel')}
-        </button>
-
+      <PieAsistente atras={{ etiqueta: step > 0 ? t('wizard.nav.back') : t('wizard.nav.cancel'), onClick: goBack }}>
         {step < totalSteps - 1 ? (
-          <button type="button" onClick={goNext} disabled={!canProceed} className="btn-primary">
+          <button
+            type="button"
+            onClick={goNext}
+            disabled={!canProceed}
+            className="btn-primary btn-lg"
+          >
             {t('wizard.nav.next')}
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-5 w-5" aria-hidden="true" />
           </button>
         ) : (
           <button
             type="button"
             onClick={handleSubmit}
             disabled={!canProceed}
-            className={isAfectado ? 'btn-danger' : 'btn-primary'}
+            className={`${isAfectado ? 'btn-danger' : 'btn-primary'} btn-lg`}
           >
             {isAfectado ? t('wizard.nav.submitVisit') : t('wizard.nav.submitNotice')}
-            <AlertTriangle className="h-4 w-4" />
+            <AlertTriangle className="h-5 w-5" aria-hidden="true" />
           </button>
         )}
-      </div>
+      </PieAsistente>
     </div>
   );
 }

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import type { DemoView } from '@/shared/types';
 import { inicioPorRol, useSesionDemo } from '@/shared/hooks/useSesionDemo';
 
@@ -18,12 +18,41 @@ interface SelectorRolDemoProps {
 /**
  * Cambia el rol activo sin cerrar sesión. Existe para poder recorrer las dos
  * experiencias en vivo durante la demostración; no es un control de acceso.
+ *
+ * El menú se cierra al pulsar fuera y con Escape, sin capa invisible a pantalla
+ * completa: esa capa era un botón enfocable con el que el teclado se quedaba atrapado.
  */
 export default function SelectorRolDemo({ variante = 'oscuro' }: SelectorRolDemoProps) {
   const { t } = useTranslation();
   const { rol, cambiarRol } = useSesionDemo();
   const [abierto, setAbierto] = useState(false);
   const navigate = useNavigate();
+  const contenedorRef = useRef<HTMLDivElement>(null);
+  const disparadorRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!abierto) return undefined;
+
+    function alPulsarFuera(evento: PointerEvent) {
+      if (!contenedorRef.current?.contains(evento.target as Node)) {
+        setAbierto(false);
+      }
+    }
+
+    function alPresionarTecla(evento: KeyboardEvent) {
+      if (evento.key !== 'Escape') return;
+      setAbierto(false);
+      // El foco vuelve al disparador: si se queda en el aire, el teclado empieza de cero.
+      disparadorRef.current?.focus();
+    }
+
+    document.addEventListener('pointerdown', alPulsarFuera);
+    document.addEventListener('keydown', alPresionarTecla);
+    return () => {
+      document.removeEventListener('pointerdown', alPulsarFuera);
+      document.removeEventListener('keydown', alPresionarTecla);
+    };
+  }, [abierto]);
 
   if (!modoDemo) return null;
 
@@ -35,56 +64,59 @@ export default function SelectorRolDemo({ variante = 'oscuro' }: SelectorRolDemo
 
   const estiloDisparador =
     variante === 'oscuro'
-      ? 'text-ungrd-100 hover:bg-white/10'
-      : 'text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50';
+      ? 'text-white ring-1 ring-white/30 hover:bg-white/10'
+      : 'text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50';
 
   return (
-    <div className="relative">
+    <div className="relative" ref={contenedorRef}>
       <button
+        ref={disparadorRef}
         type="button"
         onClick={() => setAbierto(!abierto)}
-        className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${estiloDisparador}`}
+        className={`inline-flex min-h-toque items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${estiloDisparador}`}
         aria-expanded={abierto}
         aria-haspopup="menu"
         aria-label={t('header.roleMenu')}
       >
         <span className="h-2 w-2 rounded-full bg-gold-400" aria-hidden="true" />
         {t(`roles.${rol}`)}
-        <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+        <ChevronDown
+          className={`h-4 w-4 transition-transform duration-200 ${abierto ? 'rotate-180' : ''}`}
+          aria-hidden="true"
+        />
       </button>
 
       {abierto && (
-        <>
-          <button
-            type="button"
-            className="fixed inset-0 z-40 cursor-default bg-transparent"
-            aria-label={t('header.closeRoleMenu')}
-            onClick={() => setAbierto(false)}
-          />
-          <div
-            role="menu"
-            className="absolute right-0 top-full z-50 mt-1 w-56 rounded-xl border border-slate-200 bg-white py-1 shadow-lg animate-scale-in"
-          >
-            <p className="px-3 py-1.5 text-xs font-medium text-slate-400">{t('header.changeView')}</p>
-            {rolesDemo.map((opcion) => (
+        <div
+          role="menu"
+          aria-label={t('header.changeView')}
+          className="animate-scale-in absolute right-0 top-full z-dropdown mt-2 w-60 origin-top-right rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg"
+        >
+          <p className="px-2.5 py-1.5 text-xs font-semibold text-slate-500">
+            {t('header.changeView')}
+          </p>
+          {rolesDemo.map((opcion) => {
+            const activo = opcion === rol;
+            return (
               <button
                 key={opcion}
                 type="button"
-                role="menuitem"
+                role="menuitemradio"
+                aria-checked={activo}
                 onClick={() => seleccionar(opcion)}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors ${
-                  opcion === rol ? 'bg-ungrd-50 font-medium text-ungrd-700' : 'text-slate-600 hover:bg-slate-50'
+                className={`flex min-h-toque w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-base transition-colors ${
+                  activo
+                    ? 'bg-ungrd-50 font-semibold text-ungrd-700'
+                    : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                <span
-                  className={`h-2 w-2 rounded-full ${opcion === rol ? 'bg-ungrd-600' : 'bg-slate-300'}`}
-                  aria-hidden="true"
-                />
                 {t(`roles.${opcion}`)}
+                {/* El marcado no puede ser solo el color de fondo: lo dice el icono y aria-checked. */}
+                {activo && <Check className="h-4 w-4 shrink-0" aria-hidden="true" />}
               </button>
-            ))}
-          </div>
-        </>
+            );
+          })}
+        </div>
       )}
     </div>
   );

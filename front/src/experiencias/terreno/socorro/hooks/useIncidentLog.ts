@@ -79,7 +79,16 @@ export function useIncidentLog() {
     setForm((prev) => ({ ...prev, [key]: Math.max(0, prev[key] + delta) }));
   };
 
+  /**
+   * Registra el incidente una sola vez.
+   *
+   * Sin esta guarda, dos toques seguidos en escena abren dos bitácoras del mismo hecho y el
+   * consolidado del evento cuenta los heridos por duplicado.
+   */
   const submit = (): void => {
+    if (submitted) {
+      return;
+    }
     setResultId(buildIncidentId());
     setSubmitted(true);
   };

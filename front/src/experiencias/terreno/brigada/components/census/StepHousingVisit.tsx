@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Droplets, Home, Zap } from 'lucide-react';
 import type { CensusWizardState, HousingVisit } from '@/shared/types/edan';
+import MarcaObligatorio from '@/experiencias/terreno/comunes/MarcaObligatorio';
+import Contador from '@/experiencias/terreno/comunes/Contador';
 
 interface Props {
   data: CensusWizardState;
@@ -25,8 +27,6 @@ const OWNERSHIP_TYPE_KEYS: readonly HousingVisit['ownershipType'][] = [
 
 export default function StepHousingVisit({ data, update }: Props) {
   const { t } = useTranslation();
-  const inputClass =
-    'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 transition-all focus:border-ungrd-400 focus:outline-none focus:ring-2 focus:ring-ungrd-100';
 
   const services = [
     { key: 'waterAffected' as const, labelKey: 'census.housing.water', icon: Droplets },
@@ -37,13 +37,13 @@ export default function StepHousingVisit({ data, update }: Props) {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-slate-900">{t('census.housing.title')}</h2>
-        <p className="mt-1 text-sm text-slate-500">{t('census.housing.subtitle')}</p>
+        <h2 className="text-xl font-semibold text-slate-900">{t('census.housing.title')}</h2>
+        <p className="mt-1 text-base text-slate-600">{t('census.housing.subtitle')}</p>
       </div>
 
       <div>
-        <label htmlFor="census-address" className="mb-1.5 block text-sm font-medium text-slate-700">
-          {t('census.housing.address')} <span className="text-red-500">{t('census.requiredMark')}</span>
+        <label htmlFor="census-address" className="field-label">
+          {t('census.housing.address')} <MarcaObligatorio />
         </label>
         <input
           id="census-address"
@@ -51,20 +51,20 @@ export default function StepHousingVisit({ data, update }: Props) {
           value={data.address}
           onChange={(e) => update({ address: e.target.value })}
           placeholder={t('census.housing.addressPlaceholder')}
-          className={inputClass}
+          className="input-field"
         />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="census-housing-type" className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label htmlFor="census-housing-type" className="field-label">
             {t('census.housing.housingType')}
           </label>
           <select
             id="census-housing-type"
             value={data.housingType}
             onChange={(e) => update({ housingType: e.target.value as HousingVisit['housingType'] })}
-            className={inputClass}
+            className="select-field"
           >
             {HOUSING_TYPE_KEYS.map((value) => (
               <option key={value} value={value}>{t(`census.housingTypes.${value}`)}</option>
@@ -72,14 +72,14 @@ export default function StepHousingVisit({ data, update }: Props) {
           </select>
         </div>
         <div>
-          <label htmlFor="census-ownership" className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label htmlFor="census-ownership" className="field-label">
             {t('census.housing.ownership')}
           </label>
           <select
             id="census-ownership"
             value={data.ownershipType}
             onChange={(e) => update({ ownershipType: e.target.value as HousingVisit['ownershipType'] })}
-            className={inputClass}
+            className="select-field"
           >
             {OWNERSHIP_TYPE_KEYS.map((value) => (
               <option key={value} value={value}>{t(`census.ownershipTypes.${value}`)}</option>
@@ -89,50 +89,39 @@ export default function StepHousingVisit({ data, update }: Props) {
       </div>
 
       <div>
-        <p className="mb-1.5 block text-sm font-medium text-slate-700">
-          {t('census.housing.families')} <span className="text-red-500">{t('census.requiredMark')}</span>
+        <p id="census-families-label" className="field-label">
+          {t('census.housing.families')} <MarcaObligatorio />
         </p>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => update({ numberOfFamilies: Math.max(1, data.numberOfFamilies - 1) })}
-            aria-label={t('census.a11y.decreaseFamilies')}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-600 hover:bg-slate-50"
-          >
-            -
-          </button>
-          <span className="flex h-10 w-14 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-lg font-bold text-slate-900">
-            {data.numberOfFamilies}
-          </span>
-          <button
-            type="button"
-            onClick={() => update({ numberOfFamilies: data.numberOfFamilies + 1 })}
-            aria-label={t('census.a11y.increaseFamilies')}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-600 hover:bg-slate-50"
-          >
-            +
-          </button>
-          <span className="text-xs text-slate-400">
+        <div className="flex flex-wrap items-center gap-3" role="group" aria-labelledby="census-families-label">
+          <Contador
+            valor={data.numberOfFamilies}
+            onCambiar={(delta) => update({ numberOfFamilies: Math.max(1, data.numberOfFamilies + delta) })}
+            enMinimo={data.numberOfFamilies <= 1}
+            etiquetaDisminuir={t('census.a11y.decreaseFamilies')}
+            etiquetaAumentar={t('census.a11y.increaseFamilies')}
+          />
+          <span className="text-base text-slate-600">
             {t('census.housing.headsExpected', { count: data.numberOfFamilies })}
           </span>
         </div>
       </div>
 
       <div>
-        <p className="mb-2 block text-sm font-medium text-slate-700">{t('census.housing.services')}</p>
+        <p className="field-label">{t('census.housing.services')}</p>
         <div className="flex flex-wrap gap-2">
           {services.map((svc) => (
             <button
               key={svc.key}
               type="button"
               onClick={() => update({ [svc.key]: !data[svc.key] })}
-              className={`flex items-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+              aria-pressed={data[svc.key]}
+              className={`flex items-center gap-2 rounded-xl border-2 px-4 text-base font-medium transition-colors min-h-toque ${
                 data[svc.key]
-                  ? 'border-red-400 bg-red-50 text-red-700'
-                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                  ? 'border-red-500 bg-red-50 text-red-800'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
               }`}
             >
-              <svc.icon className="h-4 w-4" aria-hidden="true" />
+              <svc.icon className="h-5 w-5" aria-hidden="true" />
               {t(svc.labelKey)}
             </button>
           ))}

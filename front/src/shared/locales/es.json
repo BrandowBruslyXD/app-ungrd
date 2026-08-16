@@ -219,7 +219,10 @@
       "pregnant": "Gestante",
       "lactating": "Lactante",
       "unaccompaniedMinor": "Menor no acompañado",
-      "addPerson": "Agregar persona"
+      "addPerson": "Agregar persona",
+      "injuredBadge": "Herida",
+      "pregnantBadge": "Gestante",
+      "removePersonConfirm": "¿Quitar a {{name}} del registro? Se pierden los datos que ya escribiste."
     },
     "damage": {
       "title": "Evaluación de daños",
@@ -260,7 +263,8 @@
       "checkDamage": "Evaluación de daño registrada",
       "checkPersons": "{{count}} persona(s) registrada(s)",
       "authorizeTitle": "El/la jefe de hogar autoriza el tratamiento de datos",
-      "authorizeText": "Autorizo libre, previa, expresa e informada el tratamiento de los datos personales y sensibles aquí consignados, conforme a la Ley 1581 de 2012."
+      "authorizeText": "Autorizo libre, previa, expresa e informada el tratamiento de los datos personales y sensibles aquí consignados, conforme a la Ley 1581 de 2012.",
+      "eventLine": "{{fecha}} · {{zona}}, {{municipio}}, {{departamento}}"
     },
     "a11y": {
       "decreaseFamilies": "Disminuir número de familias",
@@ -270,7 +274,8 @@
       "collapseFamily": "Contraer familia {{index}}",
       "expandPerson": "Expandir persona {{name}}",
       "collapsePerson": "Contraer persona {{name}}"
-    }
+    },
+    "requiredLabel": "obligatorio"
   },
   "rescuer": {
     "newCensus": "Nuevo Censo EDAN",
@@ -295,7 +300,10 @@
     "visitCount": "{{count}} visitas",
     "familyPersonCount": "{{families}} fam. — {{persons}} per.",
     "recentTitle": "Últimos registros",
-    "recentMeta": "{{families}} familia(s) — {{persons}} persona(s) — {{time}}"
+    "recentMeta": "{{families}} familia(s) — {{persons}} persona(s) — {{time}}",
+    "opLine": "{{evento}} · {{zona}}, {{municipio}}",
+    "emptyRecentTitle": "Sin visitas registradas hoy",
+    "emptyRecentBody": "Las viviendas que censes durante la jornada van apareciendo en esta lista."
   },
   "socorro": {
     "entities": {
@@ -334,7 +342,10 @@
     "a11y": {
       "collapseIncident": "Contraer incidente {{id}}",
       "expandIncident": "Expandir incidente {{id}}"
-    }
+    },
+    "incidentLine": "{{evento}} · {{lugar}}",
+    "emptyIncidentsTitle": "Sin incidentes registrados",
+    "emptyIncidentsBody": "Cuando registres la bitácora de un incidente atendido, la vas a encontrar aquí con sus evaluaciones de vivienda."
   },
   "incident": {
     "title": "Registro de incidente atendido",
@@ -469,16 +480,19 @@
   },
   "nav": {
     "home": "Inicio",
-    "myReports": "Mis Reportes",
+    "myReports": "Reportes",
     "report": "Reportar",
     "aid": "Ayudas",
     "alerts": "Alertas",
     "triagePanel": "Panel de Triage",
-    "myPanel": "Mi Panel",
-    "newCensus": "Nuevo Censo",
+    "myPanel": "Mi panel",
+    "newCensus": "Censo",
     "incident": "Incidente",
-    "evaluateHousing": "Evaluar Vivienda",
-    "paqueteMinisterio": "Paquete del ministerio"
+    "evaluateHousing": "Vivienda",
+    "paqueteMinisterio": "Paquete del ministerio",
+    "principal": "Navegación principal",
+    "sala": "Navegación de la sala de crisis",
+    "saltarAlContenido": "Saltar al contenido"
   },
   "roles": {
     "Ciudadano": "Ciudadano",
@@ -553,7 +567,10 @@
     "spendingTracked": "Gasto rastreado",
     "attendedValue": "1,247",
     "verifiedValue": "94%",
-    "spendingValue": "$2.1B"
+    "spendingValue": "$2.1B",
+    "emptyNearbyTitle": "Sin emergencias activas cerca",
+    "emptyNearbyBody": "Cuando reportes una emergencia, o cuando alguien reporte una en tu zona, la vas a ver aquí con su estado.",
+    "emptyNearbyAction": "Reportar una emergencia"
   },
   "wizard": {
     "steps": {
@@ -671,6 +688,15 @@
       "next": "Siguiente",
       "submitVisit": "Enviar solicitud de visita",
       "submitNotice": "Enviar aviso"
+    },
+    "stepsShort": {
+      "whatHappened": "Qué pasó",
+      "yourSituation": "Situación",
+      "whereAreYou": "Dónde",
+      "importantNotice": "Aviso",
+      "whatDidYouSee": "Qué viste",
+      "tellUsMore": "Detalles",
+      "whereItHappens": "Dónde"
     }
   },
   "myReports": {
@@ -682,7 +708,9 @@
     "verified": "Verificados",
     "witness": "Testigo",
     "affected": "Afectado",
-    "updates": "{{count}} actualizaciones"
+    "updates": "{{count}} actualizaciones",
+    "emptyTitle": "Todavía no has reportado nada",
+    "emptyBody": "Cuando envíes un reporte vas a poder seguir aquí, paso a paso, cómo avanza su atención."
   },
   "reportDetail": {
     "notFound": "Reporte no encontrado",
@@ -714,13 +742,18 @@
     "resolved": "Resuelto",
     "satelliteVerified": "Verificado por satélite",
     "satelliteBody": "Datos de NASA/Copernicus confirman la situación reportada en esta zona.",
-    "seeSatellite": "Ver datos satelitales",
+    "seeSatellite": "Ver la zona en NASA FIRMS",
     "publicSpending": "Gasto público",
     "spendingBody": "Destinados por la alcaldía para atender esta emergencia",
-    "seeSecop": "Ver en SECOP",
+    "seeSecop": "Consultar contratos en SECOP II",
     "history": "Historial del reporte",
-    "share": "Compartir reporte",
-    "seeAid": "Ver ayudas disponibles"
+    "share": "Compartir seguimiento",
+    "seeAid": "Ver ayudas disponibles",
+    "shareTitle": "Seguimiento del reporte {{codigo}}",
+    "shareCopied": "Copiamos el enlace del seguimiento. Pégalo donde quieras compartirlo.",
+    "shareFailed": "No pudimos compartir el enlace. Copia la dirección desde la barra del navegador.",
+    "timelineTitle": "Recorrido del reporte",
+    "stepsDone": "{{cumplidos}} de {{total}} pasos cumplidos"
   },
   "alerts": {
     "title": "Alertas Activas",
@@ -730,7 +763,10 @@
     "sourceSatellite": "Datos satelitales",
     "sourceSocial": "Redes sociales (IA)",
     "sourceOfficial": "Alerta oficial",
-    "requiredAction": "Acción requerida: Si estás en la zona indicada, toma precauciones y sigue las instrucciones de las autoridades."
+    "requiredAction": "Acción requerida: Si estás en la zona indicada, toma precauciones y sigue las instrucciones de las autoridades.",
+    "sourcesTitle": "De dónde salen las alertas",
+    "emptyTitle": "No hay alertas activas en tu zona",
+    "emptyBody": "Seguimos vigilando con datos satelitales, reportes ciudadanos y avisos oficiales. Si algo cambia, lo vas a ver aquí."
   },
   "aid": {
     "title": "Ayudas Disponibles",
@@ -749,7 +785,8 @@
     "expandCategory": "Abrir categoría {{title}}",
     "collapseCategory": "Cerrar categoría {{title}}",
     "noResults": "No se encontraron ayudas para \"{{query}}\"",
-    "clearSearch": "Limpiar búsqueda"
+    "clearSearch": "Limpiar búsqueda",
+    "noResultsBody": "Revisa la ortografía o borra la búsqueda para volver a ver todas las ayudas disponibles."
   },
   "manager": {
     "title": "Panel de Emergencias",
@@ -766,6 +803,7 @@
     "colaTitulo": "Cola de atención",
     "colaApoyo": "Primero lo más grave; a igual prioridad, lo que lleva más tiempo esperando.",
     "colaVacia": "No hay reportes en la cola.",
+    "colaVaciaApoyo": "Todo lo que llegó ya está atendido. El próximo reporte aparecerá aquí de primero.",
     "esperando": "Esperando {{tiempo}}",
     "ultimoEvento": "Último avance: {{estado}} · {{responsable}}",
     "cambiarEstado": "Cambiar estado",
@@ -774,6 +812,7 @@
     "cerrarCambioDe": "Cerrar el cambio de estado del reporte {{codigo}}",
     "sinAvance": "Este reporte ya está cerrado: no puede avanzar más.",
     "verSeguimiento": "Ver lo que ve el ciudadano",
+    "verSeguimientoDe": "Ver el seguimiento del reporte {{codigo}} como lo ve el ciudadano; se abre en una pestaña nueva",
     "elegirEstado": "¿A qué estado avanza?",
     "notaEtiqueta": "Nota para el ciudadano (opcional)",
     "notaAyuda": "Es lo que la persona que reportó va a leer en su seguimiento.",
@@ -793,9 +832,11 @@
     "cronologiaTitulo": "Lo que ve el ciudadano",
     "resumenCargando": "Cargando las cifras del día…",
     "resumenError": "No pudimos cargar las cifras del día. La cola de atención sigue funcionando.",
+    "resumenReintentar": "Volver a intentar",
+    "cifrasTitulo": "Cifras del día",
     "statHoy": "Reportes hoy",
     "statAtendidos": "Atendidos",
-    "statPorcentaje": "Atendidos",
+    "statPorcentaje": "% atendidos",
     "statPromedio": "Tiempo promedio",
     "statEnCola": "En cola",
     "statPorVerificar": "Por verificar",
@@ -837,6 +878,7 @@
     "danosTitulo": "Detalle de daños",
     "danosApoyo": "Cada línea conserva su origen y su nivel de confianza",
     "danosVacio": "No hay daños de este nivel de confianza en el paquete.",
+    "danosQuitarFiltro": "Ver todos los daños",
     "filtroConfianza": "Filtrar los daños por nivel de confianza",
     "filtroTodos": "Todos",
     "necesidadesTitulo": "Necesidades y costos",
@@ -963,5 +1005,11 @@
       "asunto": "Remisión de daños del sector {{sector}} — {{evento}} ({{codigo}})",
       "cuerpo": "Señores\n{{entidad}}\n\nAsunto: remisión de información consolidada de daños del sector {{sector}}.\n\nEn el marco del evento «{{evento}}», amparado por el {{decreto}} que declara la {{declaratoria}}, la Unidad Nacional para la Gestión del Riesgo de Desastres remite la información de los daños que corresponden a su sector.\n\nSe registran {{danos}} daños en {{municipios}} municipios, con un costo estimado de {{costo}}. Del total, {{verificados}} están verificados por el CMGRD mediante EDAN municipal, {{censados}} fueron censados en terreno por brigadistas y {{autorreportados}} provienen de reportes ciudadanos sin verificar. Cada línea del archivo adjunto conserva su nivel de confianza para que puedan separarse al formular los proyectos.\n\nLas necesidades identificadas suman {{costoNecesidades}} y se detallan con los equipos o elementos requeridos.\n\nSe adjuntan el oficio de remisión y el detalle línea a línea en formato CSV.\n\nCordialmente,\nUnidad Nacional para la Gestión del Riesgo de Desastres"
     }
+  },
+  "asistente": {
+    "pasoActual": "Paso {{actual}} de {{total}}: {{nombre}}"
+  },
+  "common": {
+    "opensInNewTab": "Se abre en una pestaña nueva"
   }
 }

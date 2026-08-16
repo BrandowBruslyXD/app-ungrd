@@ -16,15 +16,12 @@ export default function TotalesPorMunicipio({ resumen }: TotalesPorMunicipioProp
   const { t } = useTranslation();
 
   return (
-    <section
-      aria-labelledby="titulo-municipios"
-      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-    >
+    <section aria-labelledby="titulo-municipios" className="card overflow-hidden">
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-100 px-5 py-3.5">
-        <h2 id="titulo-municipios" className="text-sm font-bold text-slate-800">
+        <h2 id="titulo-municipios" className="text-base font-bold text-slate-900">
           {t('paquete.municipiosTitulo')}
         </h2>
-        <p className="text-xs text-slate-500">{t('paquete.municipiosApoyo')}</p>
+        <p className="text-sm text-slate-600">{t('paquete.municipiosApoyo')}</p>
       </div>
 
       <div className="overflow-x-auto">
@@ -50,9 +47,13 @@ export default function TotalesPorMunicipio({ resumen }: TotalesPorMunicipioProp
               <tr key={`${fila.departamento}-${fila.municipio}`} className="hover:bg-slate-50/70">
                 <th scope="row" className="px-5 py-3 text-left font-semibold text-slate-800">
                   {fila.municipio}
-                  <span className="block text-xs font-normal text-slate-500">{fila.departamento}</span>
+                  <span className="block text-sm font-normal text-slate-600">
+                    {fila.departamento}
+                  </span>
                 </th>
-                <td className="px-3 py-3 text-right tabular-nums text-slate-700">{fila.danos}</td>
+                <td className="whitespace-nowrap px-3 py-3 text-right tabular-nums text-slate-700">
+                  {fila.danos}
+                </td>
                 <td className="px-3 py-3">
                   <ul className="flex flex-wrap gap-1.5">
                     {NIVELES_CONFIANZA.filter((nivel) => fila.porConfianza[nivel] > 0).map((nivel) => (
@@ -70,7 +71,7 @@ export default function TotalesPorMunicipio({ resumen }: TotalesPorMunicipioProp
                     ))}
                   </ul>
                 </td>
-                <td className="px-5 py-3 text-right tabular-nums font-semibold text-slate-800">
+                <td className="whitespace-nowrap px-5 py-3 text-right tabular-nums font-semibold text-slate-800">
                   {fila.costoEstimado > 0 ? formatearPesos(fila.costoEstimado) : t('paquete.sinCosto')}
                 </td>
               </tr>
@@ -81,9 +82,11 @@ export default function TotalesPorMunicipio({ resumen }: TotalesPorMunicipioProp
               <th scope="row" className="px-5 py-3 text-left">
                 {t('paquete.totalGeneral')}
               </th>
-              <td className="px-3 py-3 text-right tabular-nums">{resumen.totalDanos}</td>
+              <td className="whitespace-nowrap px-3 py-3 text-right tabular-nums">
+                {resumen.totalDanos}
+              </td>
               <td className="px-3 py-3" />
-              <td className="px-5 py-3 text-right tabular-nums">
+              <td className="whitespace-nowrap px-5 py-3 text-right tabular-nums">
                 {formatearPesos(resumen.costoEstimadoTotal)}
               </td>
             </tr>

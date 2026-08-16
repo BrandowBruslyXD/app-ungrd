@@ -37,6 +37,27 @@ export default {
       spacing: {
         18: '4.5rem',
         88: '22rem',
+        /** Alto de la barra de navegación de terreno más el aire que debe quedar debajo del contenido. */
+        'barra-terreno': 'calc(5.5rem + env(safe-area-inset-bottom))',
+      },
+      minHeight: {
+        /** Área tocable mínima: 44 px. */
+        toque: '2.75rem',
+        /** Acción principal de una pantalla de terreno: 56 px. */
+        'toque-principal': '3.5rem',
+      },
+      minWidth: {
+        toque: '2.75rem',
+      },
+      /**
+       * Escala semántica de apilamiento. Evita los 999 sueltos: si algo tiene que ir
+       * encima de otra cosa, se nombra la capa, no se sube el número.
+       */
+      zIndex: {
+        sticky: '40',
+        dropdown: '50',
+        modal: '60',
+        toast: '70',
       },
     },
   },

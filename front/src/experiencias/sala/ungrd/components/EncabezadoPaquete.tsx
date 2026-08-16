@@ -24,10 +24,10 @@ export default function EncabezadoPaquete({ paquete, otrosPaquetes }: Encabezado
     .join(' · ');
 
   return (
-    <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <header className="card-pad">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
+          <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-500">
             <span>{t('paquete.migaPanel')}</span>
             <span aria-hidden="true">/</span>
             <span className="font-mono text-slate-600">{paquete.codigo}</span>
@@ -38,13 +38,13 @@ export default function EncabezadoPaquete({ paquete, otrosPaquetes }: Encabezado
             {paquete.entidad}
           </h1>
 
-          <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-600">
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-ungrd-50 px-2 py-0.5 text-xs font-semibold text-ungrd-700">
+          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-slate-600">
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-ungrd-50 px-2.5 py-1 text-sm font-semibold text-ungrd-700">
               {t('paquete.etiquetaSector')} {t(`paquete.sector.${paquete.sector}`)}
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Mail className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
-              <span className="font-mono text-xs">{paquete.correoDestino}</span>
+            <span className="inline-flex min-w-0 items-center gap-1.5">
+              <Mail className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
+              <span className="break-all font-mono text-sm">{paquete.correoDestino}</span>
             </span>
           </p>
         </div>
@@ -52,7 +52,7 @@ export default function EncabezadoPaquete({ paquete, otrosPaquetes }: Encabezado
         <div className="flex flex-col items-start gap-2 sm:items-end">
           <InsigniaEstadoPaquete estado={paquete.estado} />
           {paquete.enviadoEn !== null && (
-            <p className="text-xs text-slate-500">
+            <p className="text-sm text-slate-500">
               {t('paquete.enviadoEl', { fecha: formatearFecha(paquete.enviadoEn) })}
             </p>
           )}
@@ -84,16 +84,16 @@ export default function EncabezadoPaquete({ paquete, otrosPaquetes }: Encabezado
 
       {otrosPaquetes.length > 0 && (
         <nav aria-label={t('paquete.otrosPaquetes')} className="mt-4 border-t border-slate-100 pt-3">
-          <p className="text-xs font-medium text-slate-500">{t('paquete.otrosPaquetes')}</p>
+          <p className="text-sm font-medium text-slate-500">{t('paquete.otrosPaquetes')}</p>
           <ul className="mt-2 flex flex-wrap gap-2">
             {otrosPaquetes.map((otro) => (
               <li key={otro.codigo}>
                 <Link
                   to={`/panel/paquetes/${otro.codigo}`}
-                  className="inline-flex min-h-[36px] items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-ungrd-300 hover:bg-ungrd-50 hover:text-ungrd-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ungrd-400 focus-visible:ring-offset-2"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-ungrd-300 hover:bg-ungrd-50 hover:text-ungrd-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ungrd-400 focus-visible:ring-offset-2"
                 >
                   {t(`paquete.sector.${otro.sector}`)}
-                  <span className="text-slate-400">{t(`paquete.estado.${otro.estado}`)}</span>
+                  <span className="text-slate-500">{t(`paquete.estado.${otro.estado}`)}</span>
                 </Link>
               </li>
             ))}
@@ -114,11 +114,11 @@ interface DatoEncabezadoProps {
 function DatoEncabezado({ icono: Icono, termino, descripcion, apoyo }: DatoEncabezadoProps) {
   return (
     <div className="flex gap-2.5">
-      <Icono className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+      <Icono className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
       <div className="min-w-0">
-        <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">{termino}</dt>
-        <dd className="text-sm font-semibold text-slate-800">{descripcion}</dd>
-        <dd className="text-xs text-slate-500">{apoyo}</dd>
+        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{termino}</dt>
+        <dd className="text-base font-semibold text-slate-800">{descripcion}</dd>
+        <dd className="text-sm text-slate-600">{apoyo}</dd>
       </div>
     </div>
   );

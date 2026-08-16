@@ -32,8 +32,8 @@ export default function PanelEnvio({
 
   return (
     <div className="space-y-4">
-      <p className="flex items-start gap-2 rounded-xl bg-gold-100 px-3 py-2.5 text-xs font-semibold text-ungrd-900 ring-1 ring-gold-300">
-        <FlaskConical className="mt-px h-4 w-4 shrink-0" aria-hidden="true" />
+      <p className="flex items-start gap-2 rounded-xl bg-gold-100 px-3 py-2.5 text-sm font-semibold text-ungrd-900 ring-1 ring-gold-300">
+        <FlaskConical className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
         <span>
           {t('paquete.simuladoEtiqueta')}
           <span className="mt-0.5 block font-normal text-ungrd-800">
@@ -42,61 +42,55 @@ export default function PanelEnvio({
         </span>
       </p>
 
-      <section
-        aria-labelledby="titulo-entregables"
-        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-      >
-        <h2 id="titulo-entregables" className="text-sm font-bold text-slate-800">
+      <section aria-labelledby="titulo-entregables" className="card-pad">
+        <h2 id="titulo-entregables" className="text-base font-bold text-slate-900">
           {t('paquete.entregablesTitulo')}
         </h2>
-        <p className="mt-1 text-xs text-slate-500">{t('paquete.entregablesApoyo')}</p>
+        <p className="mt-1 text-sm text-slate-600">{t('paquete.entregablesApoyo')}</p>
 
         <button
           type="button"
           onClick={onDescargarCsv}
-          className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-ungrd-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ungrd-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ungrd-400 focus-visible:ring-offset-2"
+          className="btn-secondary btn-sm mt-3 w-full"
         >
-          <Download className="h-4 w-4" aria-hidden="true" />
+          <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
           {t('paquete.descargarCsv')}
         </button>
-        <p className="mt-1.5 text-xs text-slate-500">
+        <p className="mt-1.5 text-sm text-slate-600">
           {t('paquete.csvApoyo', { archivo: nombreArchivoCsv(paquete), filas: resumen.totalDanos })}
         </p>
 
         <button
           type="button"
           disabled
-          className="mt-3 inline-flex min-h-[44px] w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-400"
+          className="btn-secondary btn-sm mt-3 w-full"
         >
-          <FileDown className="h-4 w-4" aria-hidden="true" />
+          <FileDown className="h-4 w-4 shrink-0" aria-hidden="true" />
           {t('paquete.descargarPdf')}
         </button>
-        <p className="mt-1.5 flex items-start gap-1.5 text-xs text-slate-500">
-          <Info className="mt-px h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden="true" />
+        <p className="mt-1.5 flex items-start gap-1.5 text-sm text-slate-600">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
           {t('paquete.pdfPendiente')}
         </p>
       </section>
 
-      <section
-        aria-labelledby="titulo-correo"
-        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-      >
-        <h2 id="titulo-correo" className="text-sm font-bold text-slate-800">
+      <section aria-labelledby="titulo-correo" className="card-pad">
+        <h2 id="titulo-correo" className="text-base font-bold text-slate-900">
           {t('paquete.correoTitulo')}
         </h2>
-        <p className="mt-1 text-xs text-slate-500">{t('paquete.correoApoyo')}</p>
+        <p className="mt-1 text-sm text-slate-600">{t('paquete.correoApoyo')}</p>
 
         <dl className="mt-3 space-y-2 text-sm">
           <div className="flex gap-2">
-            <dt className="w-24 shrink-0 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <dt className="w-20 shrink-0 text-xs font-semibold uppercase tracking-wide text-slate-500">
               {t('paquete.correoPara')}
             </dt>
-            <dd className="min-w-0 break-all font-mono text-xs text-slate-700">
+            <dd className="min-w-0 break-all font-mono text-sm text-slate-700">
               {paquete.correoDestino}
             </dd>
           </div>
           <div className="flex gap-2">
-            <dt className="w-24 shrink-0 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <dt className="w-20 shrink-0 text-xs font-semibold uppercase tracking-wide text-slate-500">
               {t('paquete.correoAsunto')}
             </dt>
             <dd className="min-w-0 text-sm font-semibold text-slate-800">{asunto}</dd>
@@ -108,11 +102,8 @@ export default function PanelEnvio({
         </div>
       </section>
 
-      <section
-        aria-labelledby="titulo-firma"
-        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-      >
-        <h2 id="titulo-firma" className="text-sm font-bold text-slate-800">
+      <section aria-labelledby="titulo-firma" className="card-pad">
+        <h2 id="titulo-firma" className="text-base font-bold text-slate-900">
           {t('paquete.firmaTitulo')}
         </h2>
 
@@ -122,7 +113,7 @@ export default function PanelEnvio({
               <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
               {t('paquete.envioRegistrado')}
             </p>
-            <dl className="mt-2 space-y-1 text-xs text-emerald-900">
+            <dl className="mt-2 space-y-1 text-sm text-emerald-900">
               <div className="flex gap-1.5">
                 <dt className="font-semibold">{t('paquete.envioFecha')}</dt>
                 <dd>
@@ -141,16 +132,18 @@ export default function PanelEnvio({
           </div>
         ) : (
           <>
-            <p className="mt-1 text-xs text-slate-500">{t('paquete.firmaApoyo')}</p>
+            <p className="mt-1 text-sm text-slate-600">{t('paquete.firmaApoyo')}</p>
+            {/* Es la acción principal de la pantalla, así que lleva el azul institucional: el
+                verde queda reservado para decir que el envío ya quedó registrado. */}
             <button
               type="button"
               onClick={onSolicitarEnvio}
-              className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
+              className="btn-primary btn-sm mt-3 w-full"
             >
-              <Send className="h-4 w-4" aria-hidden="true" />
+              <Send className="h-4 w-4 shrink-0" aria-hidden="true" />
               {t('paquete.aprobarYEnviar')}
             </button>
-            <p className="mt-1.5 text-xs text-slate-500">
+            <p className="mt-1.5 text-sm text-slate-600">
               {t('paquete.firmaResumen', {
                 danos: resumen.totalDanos,
                 municipios: resumen.totalMunicipios,

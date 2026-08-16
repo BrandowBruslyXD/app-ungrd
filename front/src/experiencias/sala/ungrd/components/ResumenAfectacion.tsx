@@ -18,11 +18,16 @@ interface ResumenAfectacionProps {
 export default function ResumenAfectacion({ resumen }: ResumenAfectacionProps) {
   const { t } = useTranslation();
 
+  /**
+   * El costo lleva un escalón menos de tamaño: es la única cifra que puede pasar de los diez
+   * caracteres («$ 2.070.000.000») y a 30 px se sale de su tarjeta en un portátil de 1280 px.
+   */
   const cifras = [
     {
       clave: 'danos',
       icono: Layers,
       valor: String(resumen.totalDanos),
+      tamanoValor: 'text-3xl',
       titulo: t('paquete.totalDanos'),
       apoyo: t('paquete.totalDanosApoyo'),
     },
@@ -30,6 +35,7 @@ export default function ResumenAfectacion({ resumen }: ResumenAfectacionProps) {
       clave: 'municipios',
       icono: MapPinned,
       valor: String(resumen.totalMunicipios),
+      tamanoValor: 'text-3xl',
       titulo: t('paquete.totalMunicipios'),
       apoyo: t('paquete.totalMunicipiosApoyo'),
     },
@@ -37,6 +43,7 @@ export default function ResumenAfectacion({ resumen }: ResumenAfectacionProps) {
       clave: 'costo',
       icono: Coins,
       valor: formatearPesos(resumen.costoEstimadoTotal),
+      tamanoValor: 'text-xl sm:text-2xl',
       titulo: t('paquete.costoEstimado'),
       apoyo:
         resumen.danosSinCosto > 0
@@ -46,23 +53,27 @@ export default function ResumenAfectacion({ resumen }: ResumenAfectacionProps) {
   ];
 
   return (
-    <section aria-labelledby="titulo-resumen" className="grid gap-4 lg:grid-cols-5">
+    <section aria-labelledby="titulo-resumen" className="space-y-4">
       <h2 id="titulo-resumen" className="sr-only">
         {t('paquete.resumenTitulo')}
       </h2>
 
-      {cifras.map(({ clave, icono: Icono, valor, titulo, apoyo }) => (
-        <div key={clave} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-            <Icono className="h-4 w-4 text-ungrd-500" aria-hidden="true" />
-            {titulo}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {cifras.map(({ clave, icono: Icono, valor, tamanoValor, titulo, apoyo }) => (
+          <div key={clave} className="card min-w-0 p-4">
+            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+              <Icono className="h-4 w-4 shrink-0 text-ungrd-600" aria-hidden="true" />
+              {titulo}
+            </div>
+            <p className={`mt-2 font-bold tabular-nums text-slate-900 ${tamanoValor}`}>{valor}</p>
+            <p className="mt-1 text-sm text-slate-600">{apoyo}</p>
           </div>
-          <p className="mt-2 text-3xl font-bold tabular-nums text-slate-900">{valor}</p>
-          <p className="mt-1 text-xs text-slate-500">{apoyo}</p>
-        </div>
-      ))}
+        ))}
+      </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:col-span-2">
+      {/* A lo ancho: la composición por confianza es lo que decide si el paquete puede salir
+          tal como está, y cada nivel necesita espacio para explicarse sin recortarse. */}
+      <div className="card-pad">
         <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
           {t('paquete.composicionConfianza')}
         </p>
@@ -85,20 +96,20 @@ export default function ResumenAfectacion({ resumen }: ResumenAfectacionProps) {
           })}
         </div>
 
-        <ul className="mt-3 space-y-1.5">
+        <ul className="mt-4 grid gap-3 sm:grid-cols-3">
           {NIVELES_CONFIANZA.map((nivel) => (
-            <li key={nivel} className="flex items-center gap-2 text-sm">
+            <li key={nivel} className="flex min-w-0 gap-2.5">
               <span
-                className={`h-2.5 w-2.5 shrink-0 rounded-full ${estilosConfianza[nivel].barra}`}
+                className={`mt-2 h-2.5 w-2.5 shrink-0 rounded-full ${estilosConfianza[nivel].barra}`}
                 aria-hidden="true"
               />
-              <span className="font-semibold tabular-nums text-slate-800">
-                {resumen.porConfianza[nivel]}
-              </span>
-              <span className="text-slate-600">{t(`paquete.confianza.${nivel}`)}</span>
-              <span className="truncate text-xs text-slate-400">
-                {t(`paquete.confianzaDetalle.${nivel}`)}
-              </span>
+              <div className="min-w-0">
+                <p className="text-base text-slate-800">
+                  <span className="font-bold tabular-nums">{resumen.porConfianza[nivel]}</span>{' '}
+                  <span className="font-semibold">{t(`paquete.confianza.${nivel}`)}</span>
+                </p>
+                <p className="text-sm text-slate-600">{t(`paquete.confianzaDetalle.${nivel}`)}</p>
+              </div>
             </li>
           ))}
         </ul>
