@@ -7,7 +7,10 @@ public class CrearReporteIngestaValidator : AbstractValidator<CrearReporteIngest
 {
     public CrearReporteIngestaValidator()
     {
-        RuleFor(c => c.Telefono).NotEmpty().MaximumLength(20);
+        RuleFor(c => c.Telefono)
+            .NotEmpty().WithMessage("El teléfono es obligatorio")
+            .MaximumLength(20).WithMessage("El teléfono no puede superar los 20 caracteres")
+            .Matches(@"^\d{7,20}$").WithMessage("El teléfono debe contener solo dígitos (mínimo 7)");
         RuleFor(c => c.NombreContacto).MaximumLength(150);
         RuleFor(c => c.Clase).NotEmpty()
             .Must(v => MapeoClaseReporte.TryMapear(v, out _))

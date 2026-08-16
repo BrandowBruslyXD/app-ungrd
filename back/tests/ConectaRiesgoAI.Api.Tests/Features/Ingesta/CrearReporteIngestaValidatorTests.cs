@@ -28,6 +28,25 @@ public class CrearReporteIngestaValidatorTests
     }
 
     [Fact]
+    public void Validate_TelefonoConCaracteresEspeciales_Falla()
+    {
+        var resultado = Validador.Validate(Comando(telefono: "573@001"));
+
+        Assert.False(resultado.IsValid);
+        var error = Assert.Single(resultado.Errors, e => e.PropertyName == nameof(CrearReporteIngestaCommand.Telefono));
+        Assert.Equal("El teléfono debe contener solo dígitos (mínimo 7)", error.ErrorMessage);
+    }
+
+    [Fact]
+    public void Validate_TelefonoCorto_Falla()
+    {
+        var resultado = Validador.Validate(Comando(telefono: "57300"));
+
+        Assert.False(resultado.IsValid);
+        Assert.Contains(resultado.Errors, e => e.PropertyName == nameof(CrearReporteIngestaCommand.Telefono));
+    }
+
+    [Fact]
     public void Validate_ClaseDesconocida_Falla()
     {
         var resultado = Validador.Validate(Comando(clase: "algo_raro"));
