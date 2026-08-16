@@ -7,32 +7,28 @@
 
 ---
 
-## 1. El estado real, en dos líneas
+## 1. El estado real
 
-**El backend tiene los cimientos puestos y desplegados, pero ni un solo caso de uso.**
-Las once carpetas de `Features/` existen y están vacías: solo contienen `.gitkeep`.
+**El backend ya expone sus casos de uso.** Cuando se escribió este documento las once carpetas de `Features/` estaban vacías; hoy hay **14 endpoints en 8 rebanadas**, incluidos los tres de ingesta que el bot necesita:
 
 ```
-back/src/ConectaRiesgoAI.Api/
-├── Common/          ✅ Auth JWT, ValidationBehavior, errores, registro de endpoints
-├── Domain/          ✅ Usuario · Reporte · EventoCronologia · VerificacionSatelital
-├── Persistence/     ✅ DbContext, configuraciones y 2 migraciones aplicadas
-├── Features/        ⬜ 11 carpetas VACÍAS — 0 archivos .cs
-└── Program.cs       ✅ arranca y responde /health
+POST /api/ingesta/reportes          ← el bot crea el reporte
+GET  /api/ingesta/reportes/{codigo} ← consulta formateada para WhatsApp
+POST /api/ingesta/censo             ← registro del brigadista
 ```
 
-Verificado contra Azure:
+**Lo que falta es apuntar el bot a ellos.** Hoy sigue escribiendo en `servicios/ms-bot-api`, la API puente.
 
-| Ruta | Respuesta |
+| Paso | Estado |
 |:---|:---|
-| `GET /health` | **200** — `{"estado":"ok","servicio":"ConectaRiesgoAI"}` |
-| `GET /api/reportes` | **404** — no existe |
+| Endpoints de ingesta en el backend | ✅ construidos |
+| Migraciones aplicándose | ✅ al arrancar (PR #73) |
+| Azure verificado tras el despliegue | ⬜ **falta confirmarlo** |
+| Cambiar la URL en los 4 nodos del flujo | ⬜ |
+| Añadir el host a `HTTP_NODE_ALLOWED_HOSTS` | ⬜ requiere recrear `wabots-backend` |
+| Apagar `ms-bot-api` | ⬜ solo cuando lo anterior esté probado |
 
-**Traducción:** el backend está vivo, desplegado y con la base de datos lista, pero
-todavía no sabe hacer nada. El bot no tiene a qué conectarse.
-
-Por eso existe `servicios/ms-bot-api`: una API de paso que le da códigos de seguimiento
-reales al bot. **Está pensada para apagarse** en cuanto el backend exponga sus rutas.
+> **No apagar la API puente antes de tiempo.** Hoy el bot está completo y probado; si se le quita el respaldo antes de verificar el backend, se queda sin nada.
 
 ---
 

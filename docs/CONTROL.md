@@ -9,17 +9,15 @@
 
 ## 🔴 Bloqueantes — lo que hay que resolver ya
 
-Cada uno de estos frena a varias personas.
-
 | # | Qué | Quién lo destraba | Frena a |
 |:---|:---|:---|:---|
-| B1 | **Roles sin repartir.** 22 de 25 issues sin dueño | PMO | **Todo el equipo** |
-| B2 | **`front/` son solo carpetas vacías** (`.gitkeep`, issue #33): falta el proyecto React real. El backend ya existe — PR #34 compila y pasa 5/5 tests | Frontend | Todas las pantallas |
-| B3 | ~~Sin PostgreSQL en la nube~~ → **resuelto**: Azure Database for PostgreSQL Flexible Server en `conectariesgoai-rg` (región `brazilsouth`) | Infra | — |
+| B1 | **Azure sigue sin verificarse.** El PR #73 arregla la causa (las migraciones no se aplicaban), pero nadie con permisos ha confirmado que `GET /api/reportes` responda 200 tras el despliegue | Quien tenga acceso a la suscripción | La demo con datos reales |
+| B2 | **El frontend no consume la API.** Las pantallas están construidas pero leen de mocks y `localStorage` | Frontend | El ciclo completo en vivo |
+| B3 | **El bot escribe en `ms-bot-api`**, no en el backend. Los endpoints de ingesta ya existen: falta cambiar la URL en el flujo y añadir el host a `HTTP_NODE_ALLOWED_HOSTS` | Quien opere wabots | Un solo origen de datos |
 | B4 | **Sin MapKey de NASA** | PMO | Verificación satelital |
-| B5 | **CodeRabbit no está instalado.** El `.coderabbit.yaml` está en `main`, pero la app de GitHub no. Cero comentarios en los PRs #31, #32, #34 y #35 | PMO — **solo el dueño puede** | Revisión automática |
+| B5 | **CodeRabbit no está instalado.** El `.coderabbit.yaml` está en `main`, la app de GitHub no | Dueño del repo — **solo él puede** | Revisión automática |
 
-> **B1 sigue siendo el que más cuesta.** Mientras nadie sepa qué le toca, hay gente esperando en vez de construir.
+> **Resueltos:** ~~roles sin repartir~~ · ~~`front/` vacío~~ · ~~sin PostgreSQL en la nube~~ · ~~el backend sin casos de uso~~
 
 ---
 
@@ -65,6 +63,10 @@ Se anotan para no volver a discutir lo mismo a las 3 de la mañana.
 | D6 | **Registro de damnificados en Fase 3** | La Fase 1 sola ya es demostrable. Empezar por lo grande es apostar todo |
 | D7 | **Sin PostGIS** | Haversine en C# alcanza y ahorra una hora de pelear con extensiones |
 | D8 | **Una aprobación de cualquiera** para hacer merge | Un PR bloqueado es tiempo muerto. Solo no se vale autoaprobarse |
+| D16 | **Las migraciones se aplican al arrancar la app**, no en el workflow | Producción estuvo caída sin que nadie lo notara: `/health` respondía 200 porque no toca la base, y todo lo demás daba 500 con "relation reportes does not exist". Aplicarlas al arrancar cubre cualquier despliegue, venga de donde venga |
+| D17 | **Se amplía `TipoReporte` con Sismo, Vendaval y AvenidaTorrencial** | El agente telefónico los dicta y devolvían 500. Y como el nodo HTTP del bot no distingue un 500 de un éxito, respondía "su reporte quedó registrado" sin guardar nada |
+| D18 | **WhatsApp por Meta Cloud API, no por Evolution** | Baileys no soporta botones ni ubicación nativa, y se cae cada pocas semanas. Meta sí. Evolution queda como respaldo |
+| D19 | **Un bifurcador reparte los webhooks de Meta por `phone_number_id`** | Una app de Meta tiene un solo webhook y el número está prestado por otro cliente. El bifurcador desvía solo el número de prueba y ante cualquier duda manda a producción del cliente |
 | D9 | **Respaldo de SECOP** marcado como no real | `datos.gov.co` estuvo caído. Mostrarlo como real sería engañar al jurado |
 | D16 | **Backfill de `Reporte.Clase = AfectacionPropia`** para los reportes previos a la migración `AgregaCamposParaWhatsapp` | Es una suposición, no un dato real: no hay forma de saber retroactivamente si esos reportes eran un aviso sobre un evento o una afectación propia. Quien construya reportes o filtros por `Clase` debe saber que los históricos están adivinados |
 | D17 | **Azure Blob Storage además de Cloudinary, no en reemplazo** — `POST /api/evidencias` sube server-side a dos contenedores privados (`evidencias`, `censo`) con URL firmada. Coexiste con el flujo Cloudinary client-side de `CONTRATO-API.md` sección 2; no se tocó ese endpoint | Issue #47: Azure Container Apps no tiene disco persistente, y las fotos del censo (documentos, rostros) necesitan un contenedor con la protección más alta de la Ley 1581. Unificar ambos flujos de subida queda para cuando exista `CrearReporte` |
@@ -104,34 +106,35 @@ Encontrados al revisar el plan. **Sin issue creado todavía.**
 
 ---
 
-## 📊 Estado por área
+## 📊 Dónde está cada canal
 
-| Área | Issues | Con dueño |
-|:---|:---:|:---:|
-| Backend | 7 | 0 |
-| Frontend | 7 | 0 |
-| Datos | 3 | 0 |
-| Infra | 3 | 0 |
-| Mapas | 1 | 0 |
-| PMO | 5 | 3 |
+| Canal | Estado | Escribe en |
+|:---|:---|:---|
+| **WhatsApp (Evolution)** | ✅ Probado de punta a punta | `ms-bot-api` |
+| **WhatsApp (Meta Cloud API)** | ✅ Con botones nativos y ubicación por pin | `ms-bot-api` |
+| **Llamada telefónica (Dapta)** | ✅ Funcionando | `ms-bot-api` |
+| **App web** | 🟡 Pantallas construidas, sin conectar | mocks + `localStorage` |
+| **Backend .NET** | 🟡 14 endpoints, desplegado, **Azure sin verificar** | PostgreSQL en Azure |
+
+> **Los tres canales conversacionales escriben en la API puente, no en la base real.** Es lo último que falta para que el dato viva en un solo lugar.
 
 ---
 
 ## ✅ Lo que ya está hecho y verificado
 
-Para no perder de vista que sí hay avance:
+**Los tres canales conversacionales funcionan de punta a punta:**
 
-- **Repositorio** público, con `main` protegida y 25 issues en 7 hitos
-- **Contrato de API** escrito, con endpoints y ejemplos listos para copiar
-- **Modelo de datos** definido, incluyendo el registro de damnificados
-- **Backend base en .NET 10** con PR #34: slice vertical con MediatR, EF Core + PostgreSQL,
-  autenticación JWT y la primera migración (`Usuario`, `Reporte`, `EventoCronologia`)
-- **Tres microservicios de integración** compilando con 0 errores y 0 advertencias en `servicios/`:
-  `ms-transparencia` (probado con SECOP caído, devuelve el respaldo marcado), `ms-social` (acierta
-  los 8 casos de prueba del clasificador) y `ms-satelital` (responde correctamente sin
-  credenciales) — ver D3/H3: falta decidir si se quedan aquí o migran a `back/.../Integrations/`
-- **CodeRabbit** configurado (falta que el dueño instale la app de GitHub)
-- **Plantillas de issues** aportadas por Jason, aprobadas
+- **WhatsApp por Meta** — botones nativos, listas desplegables, ubicación por pin del mapa, y la IA entendiendo lenguaje libre (*"se me metió el agua a media pared"* → clasifica y ubica)
+- **WhatsApp por Evolution** — el mismo flujo, como respaldo
+- **Llamada telefónica** — agente de voz con transferencia por riesgo vital
+
+**El riesgo de vida no depende de la IA.** Falló una vez en pruebas —"hay una señora atrapada" no disparó la transferencia— y ahora corta por un patrón determinístico de 20 palabras, sin llamar al modelo. Verificado en tres escenarios, incluido que no dispare de más.
+
+**Backend:** 14 endpoints en 8 rebanadas, migraciones aplicándose solas, y una colección de Postman con 28 peticiones encadenadas (**62 de 69 aserciones pasan**).
+
+**Frontend:** 8 áreas funcionales más el módulo de censo EDAN, con los tipos ya alineados al contrato.
+
+**Documentación:** el sistema real de reportes de Colombia investigado con fuentes oficiales — formatos EDAN, campos del RUD, cadena CMGRD→CDGRD→UNGRD.
 
 ---
 

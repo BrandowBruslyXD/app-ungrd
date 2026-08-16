@@ -15,7 +15,7 @@ Cada fase termina en algo que se puede mostrar funcionando. Si el tiempo se acab
 ---
 
 ## Fase 0 · Cimientos
-**Estado: 🟡 en curso**
+**Estado: ✅ terminada**
 
 Sin esto no existe nada más.
 
@@ -23,9 +23,9 @@ Sin esto no existe nada más.
 |:---|:---|
 | Contrato de API cerrado | ✅ Escrito, falta que el equipo lo confirme |
 | Modelo de datos definido | ✅ En `MODELO-DATOS.md` |
-| Estructura del proyecto compilando en las 4 máquinas | ⬜ **Bloqueante — es lo que más urge** |
+| Estructura del proyecto compilando en las 4 máquinas | ✅ |
 | PostgreSQL accesible para todos | ✅ |
-| Roles repartidos | ⬜ **Bloqueante** |
+| Roles repartidos | ✅ |
 | Credenciales tramitadas | ⬜ Ver `CONTROL.md` |
 
 **Cómo se sabe que terminó:** las cuatro personas corren el proyecto y saben cuál es su tarea.
@@ -33,7 +33,7 @@ Sin esto no existe nada más.
 ---
 
 ## Fase 1 · Reporte ciudadano de punta a punta
-**Estado: ⬜ pendiente · Es el corazón de la demo**
+**Estado: 🟡 casi — funciona por WhatsApp y teléfono; falta conectar la app web**
 
 Lo mínimo que convierte esto en un producto y no en una maqueta.
 
@@ -73,7 +73,7 @@ Aquí es donde dejamos de parecernos a las apps que ya existen.
 ---
 
 ## Fase 3 · Registro de damnificados
-**Estado: ⬜ no empezada · Es la fase que se corta primero**
+**Estado: 🟡 el censo del brigadista funciona por WhatsApp y el backend lo recibe; la pantalla web está maquetada**
 
 El flujo de 5 pasos del boceto: brigadista que registra personas afectadas con documentos, núcleo familiar y evaluación de daños.
 
