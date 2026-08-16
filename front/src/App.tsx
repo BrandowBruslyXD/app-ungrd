@@ -1,23 +1,44 @@
-import { lazy, Suspense, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import Header from '@/components/layout/Header';
-import type { DemoView } from '@/types';
+import {
+  ProveedorSesionDemo,
+  inicioPorRol,
+  rolesDeSala,
+  useSesionDemo,
+} from '@/shared/hooks/useSesionDemo';
+import { ProveedorReportesDemo } from '@/shared/hooks/useReportesDemo';
+import { rutasTerreno } from '@/app/rutasTerreno';
+import { rutasSala } from '@/app/rutasSala';
 
-const CitizenDashboard = lazy(() => import('@/features/reportes/pages/CitizenDashboard'));
-const ReportWizard = lazy(() => import('@/features/reportes/pages/ReportWizard'));
-const MyReports = lazy(() => import('@/features/reportes/pages/MyReports'));
-const ReportDetail = lazy(() => import('@/features/reportes/pages/ReportDetail'));
-const AidDirectory = lazy(() => import('@/features/reportes/pages/AidDirectory'));
-const Alerts = lazy(() => import('@/features/reportes/pages/Alerts'));
-const ManagerDashboard = lazy(() => import('@/features/gestor/pages/ManagerDashboard'));
-const RescuerDashboard = lazy(() => import('@/pages/RescuerDashboard'));
-const FieldCensusWizard = lazy(() => import('@/pages/FieldCensusWizard'));
-const SocorroDashboard = lazy(() => import('@/pages/SocorroDashboard'));
-const IncidentLogWizard = lazy(() => import('@/pages/IncidentLogWizard'));
-const HabitabilityWizard = lazy(() => import('@/pages/HabitabilityWizard'));
+/**
+ * Dos experiencias en una sola aplicación: terreno (celular, en la emergencia) y
+ * sala de crisis (escritorio, coordinando). Comparten datos, tipos y marca;
+ * cambian de armazón. Detalle en docs/EXPERIENCIAS-FRONTEND.md.
+ *
+ * El proveedor de reportes envuelve a las dos: mientras no haya backend, es el único lugar donde
+ * vive el estado de un reporte, y por eso el gestor puede cambiarlo y el ciudadano verlo avanzar.
+ */
+export default function App() {
+  return (
+    <ProveedorSesionDemo>
+      <ProveedorReportesDemo>
+        <BrowserRouter>
+          <Suspense fallback={<PantallaCargando />}>
+            <Routes>
+              <Route path="/inicio-rol" element={<InicioSegunRol />} />
+              {rutasTerreno}
+              {rutasSala}
+              <Route path="*" element={<NoEncontrado />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </ProveedorReportesDemo>
+    </ProveedorSesionDemo>
+  );
+}
 
-function PageFallback() {
+function PantallaCargando() {
   const { t } = useTranslation();
   return (
     <div className="flex min-h-[50vh] items-center justify-center" role="status">
@@ -26,45 +47,27 @@ function PageFallback() {
   );
 }
 
-export default function App() {
-  const [role, setRole] = useState<DemoView>('Ciudadano');
+/** Lleva a cada rol a su pantalla de inicio; se usa al cambiar de vista en la demo. */
+function InicioSegunRol() {
+  const { rol } = useSesionDemo();
+  return <Navigate to={inicioPorRol[rol]} replace />;
+}
+
+function NoEncontrado() {
+  const { t } = useTranslation();
+  const { rol } = useSesionDemo();
+  const destino = rolesDeSala.includes(rol) ? '/panel' : '/';
 
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-slate-50 overflow-x-hidden">
-        <Header role={role} onRoleChange={setRole} />
-        <main>
-          <Suspense fallback={<PageFallback />}>
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  role === 'Gestor' ? (
-                    <Navigate to="/gestor" replace />
-                  ) : role === 'Brigadista' ? (
-                    <Navigate to="/rescatista" replace />
-                  ) : role === 'Socorro' ? (
-                    <Navigate to="/socorro" replace />
-                  ) : (
-                    <CitizenDashboard />
-                  )
-                }
-              />
-              <Route path="/reportar" element={<ReportWizard />} />
-              <Route path="/mis-reportes" element={<MyReports />} />
-              <Route path="/reporte/:id" element={<ReportDetail />} />
-              <Route path="/ayudas" element={<AidDirectory />} />
-              <Route path="/alertas" element={<Alerts />} />
-              <Route path="/gestor" element={<ManagerDashboard />} />
-              <Route path="/rescatista" element={<RescuerDashboard />} />
-              <Route path="/rescatista/censo" element={<FieldCensusWizard />} />
-              <Route path="/socorro" element={<SocorroDashboard />} />
-              <Route path="/socorro/incidente" element={<IncidentLogWizard />} />
-              <Route path="/socorro/evaluacion" element={<HabitabilityWizard />} />
-            </Routes>
-          </Suspense>
-        </main>
-      </div>
-    </BrowserRouter>
+    <div className="mx-auto max-w-lg px-4 py-16 text-center">
+      <h1 className="text-lg font-bold text-slate-800">{t('acceso.noEncontradoTitulo')}</h1>
+      <p className="mt-2 text-sm text-slate-600">{t('acceso.noEncontradoApoyo')}</p>
+      <a
+        href={destino}
+        className="mt-6 inline-flex items-center justify-center rounded-lg bg-ungrd-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ungrd-700"
+      >
+        {t('acceso.volverInicio')}
+      </a>
+    </div>
   );
 }

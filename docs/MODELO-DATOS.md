@@ -48,7 +48,7 @@ Quien entra al sistema.
 | `Activo` | bool | ✅ | Por defecto `true` |
 | `CreadoEn` | datetime | ✅ | UTC |
 | `EsAcreditadoCenso` | bool | ✅ | Si puede registrar damnificados. Por defecto `false`. **No se pregunta: se acredita** (art. 7, Res. 1110 de 2022) |
-| `OrigenRegistro` | enum | ✅ | `Web` · `WhatsApp`. Por defecto `Web` |
+| `OrigenRegistro` | enum | ✅ | `Web` · `WhatsApp` · `Telefono`. Por defecto `Web` |
 
 **Rol:** `Ciudadano` · `Brigadista` · `Gestor` · `Admin`
 
@@ -76,7 +76,9 @@ La emergencia. Es el centro del sistema.
 | `UbicacionTexto` | string(300) | ❌ | Ubicación en texto libre, tal como la escribe el ciudadano por WhatsApp |
 | `Clase` | enum | ✅ | `AvisoEvento` · `AfectacionPropia`. Por defecto `AfectacionPropia` |
 | `Confianza` | enum | ✅ | `Autorreportado` · `Verificado` · `Censado` · `Avalado`. Por defecto `Autorreportado` |
-| `Canal` | enum | ✅ | `Web` · `WhatsApp`. Por defecto `Web` |
+| `Canal` | enum | ✅ | `Web` · `WhatsApp` · `Telefono`. Por defecto `Web` |
+| `IdentificadorCanal` | string(120) | ✅ | Quién reportó en ese canal: `usuario:{id}` en web, número E.164 en WhatsApp/teléfono. **No se expone en la API pública** |
+| `ReferenciaExterna` | string(160) | ❌ | Id de la interacción externa (`wamid`, `call_id`). Nulo en web. Índice único parcial con `Canal` para idempotencia |
 | `Estado` | enum | ✅ | Arranca en `Reportado` |
 | `Prioridad` | enum | ✅ | `Baja` · `Media` · `Alta` |
 | `PersonasAfectadas` | int | ❌ | Estimado rápido |

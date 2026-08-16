@@ -65,6 +65,8 @@ Estado:     Reportado | Verificado | Asignado
             EnAtencion | Atendido | Cerrado
 
 Prioridad:  Baja | Media | Alta
+
+Canal:      Web | WhatsApp | Telefono
 ```
 
 > Sin tildes ni eñes en los valores de enum, para evitar problemas de codificación entre C# y JavaScript. Las tildes van solo en los textos que ve el usuario, que los pone el frontend.
@@ -115,6 +117,19 @@ Se puede saltar hacia adelante (de `Reportado` a `Asignado`), pero **nunca hacia
 
 Devuelve el objeto `usuario` del token. Sirve para restaurar la sesión al recargar la página.
 
+**Respuesta `200`**
+```json
+{
+  "id": 12,
+  "nombre": "María Rodríguez",
+  "email": "maria@ejemplo.com",
+  "rol": "Ciudadano",
+  "municipio": "Bogotá"
+}
+```
+
+**Respuesta `401`** — token ausente o vencido, con la forma estándar de error.
+
 ---
 
 ## 2. Reportes
@@ -128,8 +143,8 @@ Crea el reporte, genera el `codigo` y registra el primer evento de la cronologí
 {
   "tipo": "Inundacion",
   "descripcion": "Se está inundando la vía principal, el agua ya llega a las casas",
-  "latitud": 4.710989,
-  "longitud": -74.072092,
+  "latitud": null,
+  "longitud": null,
   "direccion": "Calle 123 #45-67",
   "municipio": "Bogotá",
   "urlFoto": "https://res.cloudinary.com/.../foto.jpg"
@@ -189,7 +204,9 @@ Alimenta el mapa y el dashboard.
 ]
 ```
 
-> `distanciaKm` solo viene si se mandaron `lat` y `lng`. Si no, llega en `null`.
+> `distanciaKm` solo viene si se mandaron `lat` y `lng` **y** el reporte tiene coordenadas GPS.
+> Si el reporte entró por WhatsApp/teléfono sin GPS, `latitud`/`longitud` y `distanciaKm` llegan en
+> `null` y ese reporte queda fuera de cualquier filtro por radio.
 
 ---
 
@@ -245,7 +262,32 @@ El detalle completo. **Alimenta la pantalla de seguimiento, que es el corazón d
 
 ### `GET /api/reportes/mios` 🔒
 
-Los reportes del usuario del token. Misma forma que el listado general.
+Los reportes del usuario del token. Misma forma que el listado general; `distanciaKm` siempre
+llega en `null` (no se calcula distancia en esta ruta).
+
+**Respuesta `200`**
+```json
+[
+  {
+    "codigo": "RPT-2026-08-15-0047",
+    "tipo": "Inundacion",
+    "descripcion": "Se está inundando la vía principal",
+    "latitud": 4.710989,
+    "longitud": -74.072092,
+    "direccion": "Calle 123 #45-67",
+    "municipio": "Bogotá",
+    "urlFoto": "https://res.cloudinary.com/.../foto.jpg",
+    "estado": "Reportado",
+    "prioridad": "Media",
+    "canal": "Web",
+    "distanciaKm": null,
+    "creadoEn": "2026-08-15T14:30:00Z"
+  }
+]
+```
+
+> `distanciaKm` llega en `null` por diseño: `/api/reportes/mios` no calcula distancia al usuario,
+> aunque el reporte tenga coordenadas.
 
 ---
 
@@ -291,13 +333,35 @@ Parámetros opcionales: `municipio`, `lat`, `lng`, `radioKm`.
 
 ## 4. Servicios de apoyo
 
-### `GET /api/verificacion/satelital?lat=&lng=&radioKm=` — público
-
-Consulta directa a NASA FIRMS. Útil para probar la integración por separado.
-
 ### `GET /api/transparencia/secop?municipio=` — público
 
-Contratos de prevención del municipio. Máximo 5, ordenados por valor.
+Contratos de prevención del municipio consultados en Datos Abiertos (SECOP). Máximo 5, ordenados
+por valor. Tope de 30 peticiones/minuto por IP.
+
+**Respuesta `200`**
+```json
+[
+  {
+    "objeto": "Obras de canalización quebrada La Vieja",
+    "valor": 450000000,
+    "anio": 2024,
+    "entidad": "Alcaldía de Bogotá"
+  },
+  {
+    "objeto": "Mantenimiento de alcantarillado sector norte",
+    "valor": 120000000,
+    "anio": 2023,
+    "entidad": "Alcaldía de Bogotá"
+  }
+]
+```
+
+> Devuelve `[]` (lista vacía, no error) cuando no hay contratos o SECOP no responde a tiempo.
+
+### `GET /api/verificacion/satelital` — **no implementado en v1**
+
+La verificación satelital solo llega embebida en `GET /api/reportes/{codigo}` cuando ya fue
+persistida en base de datos. Este endpoint standalone queda para una fase posterior.
 
 ---
 
@@ -444,6 +508,53 @@ cédula ya registrada en el mismo evento censal (mensaje genérico, sin repetir 
 
 **Respuesta `403`** — el teléfono no tiene `EsAcreditadoCenso`. No se crea nada.
 
+### `GET /api/ingesta/reportes/{codigo}` — público
+
+Consulta de seguimiento para el bot. **No usa JWT ni API key:** el código funciona como número de
+guía (igual que en la web). Responde `200` siempre; un código inexistente trae `estado`:
+`"No encontrado"` en lugar de `404`.
+
+**Respuesta `200`** — reporte encontrado
+```json
+{
+  "codigo": "RPT-2026-08-16-0001",
+  "estado": "EnAtencion",
+  "actualizado": "15:30 del 16/8",
+  "detalle": "📍 Soacha, Villa Mercedes, frente a la cancha\n\n*Cronología:*\n• Reportado — 14:20 del 16/8\n  Reporte recibido\n• EnAtencion — 15:30 del 16/8\n  Brigada en camino"
+}
+```
+
+> `actualizado` es **texto legible para WhatsApp** (`"15:30 del 16/8"`), no ISO-8601. No es un
+> error: el bot interpola el valor tal cual. Los demás endpoints sí usan `creadoEn`/`fecha` en UTC.
+
+**Respuesta `200`** — código inexistente (no es `404`)
+```json
+{
+  "codigo": "RPT-2026-08-16-9999",
+  "estado": "No encontrado",
+  "actualizado": "—",
+  "detalle": "No encontré un reporte con ese código.\n\nRevisa que esté completo."
+}
+```
+
+---
+
+## 7. Sistema
+
+### `GET /health` y `GET /api/health` — público
+
+Comprobación de vida. Misma respuesta en ambas rutas (`/health` para sondas de despliegue;
+`/api/health` mantiene la convención del prefijo `/api`).
+
+**Respuesta `200`**
+```json
+{
+  "estado": "ok",
+  "servicio": "ConectaRiesgoAI",
+  "fecha": "2026-08-16T04:00:00Z"
+}
+```
+
 ---
 
 ## Cómo trabajar con esto sin bloquearse
@@ -459,3 +570,18 @@ cédula ya registrada en el mismo evento censal (mensaje genérico, sin repetir 
 5. Todo lo demás
 
 **Avisen en el grupo cada vez que un endpoint quede funcionando en Swagger.** Un endpoint terminado del que nadie se entera es un endpoint que no existe.
+
+---
+
+## Estado del contrato
+
+| Criterio | Estado |
+|:---|:---|
+| Endpoints implementados documentados con ejemplo JSON | ✅ |
+| Nombres de campos en `camelCase` | ✅ |
+| Enums como texto (no número) | ✅ |
+| Forma de error unificada | ✅ |
+| Modelo de datos alineado | ✅ Ver [MODELO-DATOS.md](MODELO-DATOS.md) |
+
+**Regla:** cualquier cambio a nombres de campo o forma de respuesta se acuerda en el grupo **antes**
+de mergear. Este documento cierra el issue [#2](https://github.com/jasonfabian8/app-ungrd/issues/2).
