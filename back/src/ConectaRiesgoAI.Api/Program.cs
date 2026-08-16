@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using ConectaRiesgoAI.Api.Common.Auth;
 using ConectaRiesgoAI.Api.Common.Behaviors;
+using ConectaRiesgoAI.Api.Common.Configuracion;
 using ConectaRiesgoAI.Api.Common.Endpoints;
 using ConectaRiesgoAI.Api.Common.Errors;
 using ConectaRiesgoAI.Api.Common.Reportes;
@@ -87,12 +88,11 @@ builder.Services.AddExceptionHandler<ManejadorGlobalDeErrores>();
 builder.Services.AddProblemDetails();
 
 // --- CORS ----------------------------------------------------------------
-// Los origenes van en appsettings.json, no aqui. Si el frontend cambia de puerto
-// o de dominio y no se agrega alli, el navegador bloquea TODAS las llamadas y la
-// pantalla queda vacia sin decir por que: en la consola sale un error de CORS que
-// nadie mira. Paso justo eso al conectar el frontend con la API.
-var origenesPermitidos = builder.Configuration
-    .GetSection("Cors:Origenes").Get<string[]>() ?? ["http://localhost:5173"];
+// En produccion se define con la variable CORS_ORIGENES, separada por comas.
+// Si un origen no esta en la lista, el navegador bloquea TODAS las llamadas y la
+// pantalla queda vacia sin decir por que: el error solo sale en la consola del
+// navegador, donde nadie mira. Paso justo eso con el frontend en Vercel.
+string[] origenesPermitidos = OrigenesCors.Resolver(builder.Configuration);
 
 builder.Services.AddCors(o => o.AddPolicy(PoliticaCors, p => p
     .WithOrigins(origenesPermitidos)
