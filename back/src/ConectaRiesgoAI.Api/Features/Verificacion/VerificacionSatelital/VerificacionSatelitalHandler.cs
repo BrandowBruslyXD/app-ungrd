@@ -10,6 +10,7 @@ namespace ConectaRiesgoAI.Api.Features.Verificacion.VerificacionSatelital;
 public class VerificacionSatelitalHandler(INasaFirmsClient nasaFirmsClient)
     : IRequestHandler<VerificacionSatelitalQuery, VerificacionSatelitalResponse?>
 {
+    /// <inheritdoc />
     public async Task<VerificacionSatelitalResponse?> Handle(VerificacionSatelitalQuery query, CancellationToken cancellationToken)
     {
         ResultadoVerificacionSatelital? resultado = await nasaFirmsClient.ConsultarFocosDeCalorAsync(

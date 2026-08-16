@@ -5,15 +5,20 @@ using ConectaRiesgoAI.Api.Integrations.Secop;
 using ConectaRiesgoAI.Api.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace ConectaRiesgoAI.Api.Features.Reportes.ObtenerReporte;
 
 /// <summary>Detalle completo de un reporte: cronología, verificación satelital y transparencia.</summary>
-public class ObtenerReporteHandler(AppDbContext context, ISecopClient secopClient, INasaFirmsClient nasaFirmsClient)
+public class ObtenerReporteHandler(
+    AppDbContext context,
+    ISecopClient secopClient,
+    INasaFirmsClient nasaFirmsClient,
+    IOptions<NasaOptions> opcionesNasa,
+    ILogger<ObtenerReporteHandler> logger)
     : IRequestHandler<ObtenerReporteQuery, ObtenerReporteResponse>
 {
-    /// <summary>Radio de confirmación satelital para un reporte (issue #18); coincide con el ejemplo de CONTRATO-API.md.</summary>
-    private const double RadioConfirmacionSatelitalKm = 5;
+    private readonly NasaOptions _opcionesNasa = opcionesNasa.Value;
 
     /// <exception cref="KeyNotFoundException">No existe un reporte con ese código; el manejador global lo traduce a 404.</exception>
     public async Task<ObtenerReporteResponse> Handle(ObtenerReporteQuery query, CancellationToken cancellationToken)
@@ -77,7 +82,7 @@ public class ObtenerReporteHandler(AppDbContext context, ISecopClient secopClien
         }
 
         ResultadoVerificacionSatelital? resultado = await nasaFirmsClient.ConsultarFocosDeCalorAsync(
-            reporte.Latitud.Value, reporte.Longitud.Value, RadioConfirmacionSatelitalKm, cancellationToken);
+            reporte.Latitud.Value, reporte.Longitud.Value, _opcionesNasa.RadioConfirmacionKm, cancellationToken);
         if (resultado is null)
         {
             return null;
@@ -92,8 +97,19 @@ public class ObtenerReporteHandler(AppDbContext context, ISecopClient secopClien
             Detalle = resultado.Detalle
         };
 
-        context.VerificacionesSatelitales.Add(verificacion);
-        await context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            context.VerificacionesSatelitales.Add(verificacion);
+            await context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            // Un error transitorio de base de datos no puede tumbar la pantalla de seguimiento
+            // (CONTRATO-API.md, regla 3): se devuelve el resultado sin persistir y la próxima
+            // consulta del reporte lo reintentará.
+            logger.LogWarning(ex, "No se pudo persistir la verificación satelital del reporte {ReporteId}; se devuelve sin guardar", reporte.Id);
+            context.VerificacionesSatelitales.Remove(verificacion);
+        }
 
         return verificacion;
     }

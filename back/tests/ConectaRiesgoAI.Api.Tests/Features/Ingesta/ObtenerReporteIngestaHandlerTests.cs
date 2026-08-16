@@ -1,5 +1,6 @@
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Features.Ingesta.ObtenerReporte;
 using ConectaRiesgoAI.Api.Tests.Persistence;
 
@@ -25,6 +26,7 @@ public class ObtenerReporteIngestaHandlerTests
         Municipio = "Soacha",
         UbicacionTexto = "Soacha, Villa Mercedes, frente a la cancha",
         Canal = CanalOrigen.WhatsApp,
+        IdentificadorCanal = IdentificadorCanalReporte.ParaTelefono("573001234567"),
         UsuarioId = usuarioId,
         Estado = EstadoReporte.EnAtencion,
         ActualizadoEn = new DateTime(2026, 8, 16, 15, 30, 0, DateTimeKind.Utc)

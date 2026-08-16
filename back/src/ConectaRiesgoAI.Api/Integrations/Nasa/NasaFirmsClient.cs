@@ -65,7 +65,12 @@ public class NasaFirmsClient(HttpClient httpClient, IOptions<NasaOptions> opcion
     private string ConstruirUrl(double lat, double lng, double radioKm)
     {
         double deltaLat = radioKm / KmPorGradoLatitud;
-        double deltaLng = radioKm / (KmPorGradoLatitud * Math.Cos(GradosARadianes(lat)));
+        // En latitudes cercanas a los polos cos(lat) tiende a 0 y deltaLng desborda el rango
+        // válido de longitud; en ese caso el cuadro cubre todo el meridiano.
+        double cosLat = Math.Cos(GradosARadianes(lat));
+        double deltaLng = cosLat > 1e-10
+            ? radioKm / (KmPorGradoLatitud * cosLat)
+            : 180.0;
 
         string bbox = FormattableString.Invariant(
             $"{lng - deltaLng:F4},{lat - deltaLat:F4},{lng + deltaLng:F4},{lat + deltaLat:F4}");

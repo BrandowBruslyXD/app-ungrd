@@ -1,5 +1,6 @@
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,7 @@ public class CrearReporteIngestaHandler(AppDbContext db, ILogger<CrearReporteIng
                 Clase = clase,
                 Confianza = ConfianzaReporte.Autorreportado,
                 Canal = CanalOrigen.WhatsApp,
+                IdentificadorCanal = IdentificadorCanalReporte.ParaTelefono(telefono),
                 UsuarioId = usuario.Id
             };
             reporte.Cronologia.Add(new EventoCronologia

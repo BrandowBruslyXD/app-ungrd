@@ -4,15 +4,26 @@ using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Features.Reportes.ObtenerReporte;
 using ConectaRiesgoAI.Api.Integrations.Nasa;
 using ConectaRiesgoAI.Api.Integrations.Secop;
+using ConectaRiesgoAI.Api.Persistence;
 using ConectaRiesgoAI.Api.Tests.Integrations.Nasa;
 using ConectaRiesgoAI.Api.Tests.Integrations.Secop;
 using ConectaRiesgoAI.Api.Tests.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace ConectaRiesgoAI.Api.Tests.Features.Reportes;
 
 public class ObtenerReporteHandlerTests
 {
+    private static ObtenerReporteHandler NuevoHandler(AppDbContext contexto, INasaFirmsClient? nasa = null, ISecopClient? secop = null) =>
+        new(
+            contexto,
+            secop ?? new SecopClientFalso(),
+            nasa ?? new NasaFirmsClientFalso(),
+            Options.Create(new NasaOptions()),
+            NullLogger<ObtenerReporteHandler>.Instance);
+
     private static Usuario NuevoUsuario(int id, string nombre) => new()
     {
         Id = id,
@@ -57,7 +68,7 @@ public class ObtenerReporteHandlerTests
         });
         contexto.Reportes.Add(reporte);
         await contexto.SaveChangesAsync();
-        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso(), new NasaFirmsClientFalso());
+        var handler = NuevoHandler(contexto);
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0001"), CancellationToken.None);
 
@@ -70,7 +81,7 @@ public class ObtenerReporteHandlerTests
     public async Task Handle_CodigoInexistente_LanzaKeyNotFoundException()
     {
         using var contexto = AppDbContextPruebas.Crear();
-        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso(), new NasaFirmsClientFalso());
+        var handler = NuevoHandler(contexto);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(
             () => handler.Handle(new ObtenerReporteQuery("RPT-NO-EXISTE"), CancellationToken.None));
@@ -83,7 +94,7 @@ public class ObtenerReporteHandlerTests
         contexto.Usuarios.Add(NuevoUsuario(1, "María Rodríguez"));
         contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0002", 1));
         await contexto.SaveChangesAsync();
-        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso(), new NasaFirmsClientFalso());
+        var handler = NuevoHandler(contexto);
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0002"), CancellationToken.None);
 
@@ -97,7 +108,7 @@ public class ObtenerReporteHandlerTests
         contexto.Usuarios.Add(NuevoUsuario(1, "Ana Ciudadana"));
         contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0003", 1));
         await contexto.SaveChangesAsync();
-        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso(), new NasaFirmsClientFalso());
+        var handler = NuevoHandler(contexto);
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0003"), CancellationToken.None);
 
@@ -127,7 +138,7 @@ public class ObtenerReporteHandlerTests
         });
         contexto.Reportes.Add(reporte);
         await contexto.SaveChangesAsync();
-        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso(), new NasaFirmsClientFalso());
+        var handler = NuevoHandler(contexto);
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0004"), CancellationToken.None);
 
@@ -143,7 +154,7 @@ public class ObtenerReporteHandlerTests
         contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0005", 1));
         await contexto.SaveChangesAsync();
         var secopClient = new SecopClientFalso([new ContratoSecop("Obra de canalización", 450_000_000m, 2024, "Alcaldía de Bogotá")]);
-        var handler = new ObtenerReporteHandler(contexto, secopClient, new NasaFirmsClientFalso());
+        var handler = NuevoHandler(contexto, secop: secopClient);
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0005"), CancellationToken.None);
 
@@ -159,7 +170,7 @@ public class ObtenerReporteHandlerTests
         contexto.Usuarios.Add(NuevoUsuario(1, "Ana Ciudadana"));
         contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0006", 1));
         await contexto.SaveChangesAsync();
-        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso(), new NasaFirmsClientFalso());
+        var handler = NuevoHandler(contexto);
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0006"), CancellationToken.None);
 
@@ -178,7 +189,7 @@ public class ObtenerReporteHandlerTests
         await contexto.SaveChangesAsync();
         var resultado = new ResultadoVerificacionSatelital(true, 3, 2.1, "3 focos de calor detectados a menos de 5 km");
         var nasaFirmsClient = new NasaFirmsClientFalso(resultado);
-        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso(), nasaFirmsClient);
+        var handler = NuevoHandler(contexto, nasa: nasaFirmsClient);
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0007"), CancellationToken.None);
 
@@ -186,6 +197,7 @@ public class ObtenerReporteHandlerTests
         Assert.True(respuesta.VerificacionSatelital!.Confirmado);
         Assert.Equal("3 focos de calor detectados a menos de 5 km", respuesta.VerificacionSatelital.Detalle);
         Assert.Equal(1, nasaFirmsClient.VecesLlamado);
+        Assert.Equal(5, nasaFirmsClient.UltimoRadioKmConsultado);
         Assert.Single(await contexto.VerificacionesSatelitales.ToListAsync());
     }
 
@@ -206,7 +218,7 @@ public class ObtenerReporteHandlerTests
         contexto.Reportes.Add(reporte);
         await contexto.SaveChangesAsync();
         var nasaFirmsClient = new NasaFirmsClientFalso();
-        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso(), nasaFirmsClient);
+        var handler = NuevoHandler(contexto, nasa: nasaFirmsClient);
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0008"), CancellationToken.None);
 
@@ -222,7 +234,7 @@ public class ObtenerReporteHandlerTests
         contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0009", 1)); // Tipo por defecto: Inundacion
         await contexto.SaveChangesAsync();
         var nasaFirmsClient = new NasaFirmsClientFalso(new ResultadoVerificacionSatelital(true, 1, 1, "no debería usarse"));
-        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso(), nasaFirmsClient);
+        var handler = NuevoHandler(contexto, nasa: nasaFirmsClient);
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0009"), CancellationToken.None);
 
@@ -242,7 +254,7 @@ public class ObtenerReporteHandlerTests
         contexto.Reportes.Add(reporte);
         await contexto.SaveChangesAsync();
         var nasaFirmsClient = new NasaFirmsClientFalso(new ResultadoVerificacionSatelital(true, 1, 1, "no debería usarse"));
-        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso(), nasaFirmsClient);
+        var handler = NuevoHandler(contexto, nasa: nasaFirmsClient);
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0010"), CancellationToken.None);
 
@@ -259,7 +271,7 @@ public class ObtenerReporteHandlerTests
         reporte.Tipo = TipoReporte.Incendio;
         contexto.Reportes.Add(reporte);
         await contexto.SaveChangesAsync();
-        var handler = new ObtenerReporteHandler(contexto, new SecopClientFalso(), new NasaFirmsClientFalso());
+        var handler = NuevoHandler(contexto);
 
         var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0011"), CancellationToken.None);
 
