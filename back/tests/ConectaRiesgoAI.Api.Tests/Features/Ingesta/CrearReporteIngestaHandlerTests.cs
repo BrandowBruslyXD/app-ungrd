@@ -91,4 +91,63 @@ public class CrearReporteIngestaHandlerTests
         Assert.NotEqual(primero.Codigo, segundo.Codigo);
         Assert.Equal(2, await db.Reportes.CountAsync());
     }
+
+    [Fact]
+    public async Task Handle_AvisoEvento_MapeaLaClaseCorrectamente()
+    {
+        using var db = NuevoContexto();
+        var handler = NuevoHandler(db);
+
+        await handler.Handle(Comando() with { Clase = "aviso_evento" }, CancellationToken.None);
+
+        Reporte reporte = await db.Reportes.SingleAsync();
+        Assert.Equal(ClaseReporte.AvisoEvento, reporte.Clase);
+    }
+
+    [Fact]
+    public async Task Handle_SinUbicacionTexto_UsaMunicipioSinEspecificar()
+    {
+        using var db = NuevoContexto();
+        var handler = NuevoHandler(db);
+
+        await handler.Handle(Comando() with { UbicacionTexto = null }, CancellationToken.None);
+
+        Reporte reporte = await db.Reportes.SingleAsync();
+        Assert.Equal("Sin especificar", reporte.Municipio);
+    }
+
+    [Fact]
+    public async Task Handle_UbicacionLargaSinComas_TruncaElMunicipioA120Caracteres()
+    {
+        using var db = NuevoContexto();
+        var handler = NuevoHandler(db);
+        string ubicacionLarga = new('A', 150);
+
+        await handler.Handle(Comando() with { UbicacionTexto = ubicacionLarga }, CancellationToken.None);
+
+        Reporte reporte = await db.Reportes.SingleAsync();
+        Assert.Equal(120, reporte.Municipio.Length);
+    }
+
+    [Fact]
+    public async Task Handle_UbicacionConComaAlInicio_UsaMunicipioSinEspecificar()
+    {
+        using var db = NuevoContexto();
+        var handler = NuevoHandler(db);
+
+        await handler.Handle(Comando() with { UbicacionTexto = ", sin municipio" }, CancellationToken.None);
+
+        Reporte reporte = await db.Reportes.SingleAsync();
+        Assert.Equal("Sin especificar", reporte.Municipio);
+    }
+
+    [Fact]
+    public async Task Handle_ClaseInvalida_LanzaInvalidOperationException()
+    {
+        using var db = NuevoContexto();
+        var handler = NuevoHandler(db);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => handler.Handle(Comando() with { Clase = "clase_desconocida" }, CancellationToken.None));
+    }
 }

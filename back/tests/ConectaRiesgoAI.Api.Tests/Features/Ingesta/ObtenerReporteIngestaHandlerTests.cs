@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Common.Reportes;
