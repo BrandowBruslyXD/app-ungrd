@@ -320,8 +320,17 @@ en vez de subir directo a un proveedor de terceros desde el navegador.
 }
 ```
 
-> Si Azure Blob Storage no responde, la respuesta sigue siendo `201` con `"urlFoto": null` y
-> `"subida": false` — nunca un 500. Quien llama decide qué hacer (p. ej. crear el reporte sin
+**Respuesta `200`** — el blob no se pudo guardar (Azure no respondió). Nunca un 500: no es un
+error del servidor, es un fallo esperado de una integración externa.
+```json
+{
+  "urlFoto": null,
+  "subida": false
+}
+```
+
+> `201` solo cuando de verdad se creó el blob; `200` cuando la petición se procesó bien pero no
+> hubo nada que crear. Quien llama decide qué hacer (p. ej. crear el reporte sin
 > foto).
 
 **Respuesta `400`** — archivo mayor a 5 MB o tipo no permitido, con la forma estándar de error.

@@ -31,6 +31,11 @@ public class SubirEvidenciaEndpoint : IEndpoint
         SubirEvidenciaCommand comando = new(tipo, archivo.ContentType, archivo.Length, contenido);
 
         SubirEvidenciaResponse respuesta = await sender.Send(comando, cancellationToken);
-        return Results.Json(respuesta, statusCode: StatusCodes.Status201Created);
+
+        // 201 solo si de verdad se creó un blob. Si Azure no respondió, no es un error del
+        // servidor (nunca 500: issue #47, escenario "el blob no está disponible") — es un 200
+        // con Subida = false, para no afirmar una creación que no ocurrió.
+        int estado = respuesta.Subida ? StatusCodes.Status201Created : StatusCodes.Status200OK;
+        return Results.Json(respuesta, statusCode: estado);
     }
 }
