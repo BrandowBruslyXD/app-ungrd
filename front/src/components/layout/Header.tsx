@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  Shield,
   Menu,
   X,
   Home,
@@ -18,6 +17,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { RUTA_POR_ROL } from '@/lib/rutasPorRol';
+import Logotipo from '@/components/shared/Logotipo';
 import type { DemoView } from '@/types';
 
 interface HeaderProps {
@@ -100,11 +100,14 @@ export default function Header({ role, onRoleChange, reducido = false }: HeaderP
           : citizenLinks;
 
   const marca = (
-    <Link to="/" className="flex items-center gap-3 rounded-control py-2">
-      <span className="flex h-11 w-11 items-center justify-center rounded-control bg-oro-500">
-        <Shield className="h-6 w-6 text-azul-900" aria-hidden="true" />
-      </span>
-      <span className="text-xl font-bold text-white">
+    /*
+     * `whitespace-nowrap` y el salto de tamaño no son cosmética: a 430 px el
+     * nombre se partía en tres líneas y quedaba cortado contra el botón de
+     * entrar. La marca nunca se parte; si no cabe, se encoge.
+     */
+    <Link to="/" className="flex min-w-0 items-center gap-2.5 rounded-control py-2 sm:gap-3">
+      <Logotipo tamano="md" />
+      <span className="whitespace-nowrap text-lg font-bold text-white sm:text-xl">
         {t('brand.conecta')}
         <span className="text-oro-400">{t('brand.riesgo')}</span>
       </span>
@@ -119,11 +122,16 @@ export default function Header({ role, onRoleChange, reducido = false }: HeaderP
           {location.pathname !== '/entrar' && (
             <Link
               to="/entrar"
-              className="btn inline-flex min-h-[2.75rem] border-2 border-white/40 bg-white/10 px-4 text-base text-white hover:bg-white/20"
+              className="btn inline-flex min-h-[2.75rem] shrink-0 whitespace-nowrap border-2 border-white/40 bg-white/10 px-3 text-base text-white hover:bg-white/20 sm:px-4"
             >
-              <LogIn className="h-5 w-5" aria-hidden="true" />
+              <LogIn className="h-5 w-5 shrink-0" aria-hidden="true" />
+              {/*
+                La versión estrecha iba con `login.title` —«Elige con qué vista
+                quieres entrar»— que es más largo que el de escritorio: en móvil
+                el botón se comía la cabecera y tapaba la marca.
+              */}
               <span className="hidden sm:inline">{t('landing.staffEnter')}</span>
-              <span className="sm:hidden">{t('login.title')}</span>
+              <span className="sm:hidden">{t('landing.staffEnterShort')}</span>
             </Link>
           )}
         </div>
