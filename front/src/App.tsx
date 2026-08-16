@@ -18,6 +18,7 @@ const ReportDetail = lazy(() => import('@/features/reportes/pages/ReportDetail')
 const AidDirectory = lazy(() => import('@/features/reportes/pages/AidDirectory'));
 const Alerts = lazy(() => import('@/features/reportes/pages/Alerts'));
 const ManagerDashboard = lazy(() => import('@/features/gestor/pages/ManagerDashboard'));
+const ListaDesastres = lazy(() => import('@/features/ungrd/pages/ListaDesastres'));
 const PanelUngrd = lazy(() => import('@/features/ungrd/pages/PanelUngrd'));
 const PaqueteMinisterio = lazy(() => import('@/features/ungrd/pages/PaqueteMinisterio'));
 const RescuerDashboard = lazy(() => import('@/features/rescatista/pages/RescuerDashboard'));
@@ -114,8 +115,13 @@ function Estructura({ role, onRoleChange }: EstructuraProps) {
             <Route path="/ayudas" element={<AidDirectory />} />
             <Route path="/alertas" element={<Alerts />} />
             <Route path="/gestor" element={<ManagerDashboard />} />
-            <Route path="/gestor/reparto" element={<PanelUngrd />} />
-            <Route path="/gestor/reparto/:sector" element={<PaqueteMinisterio />} />
+            {/* El reparto sectorial va de lo general a lo particular: la lista
+                de desastres, el desastre y el informe de un ministerio dentro
+                de ese desastre. El código del evento es el identificador
+                público, igual que el del reporte ciudadano. */}
+            <Route path="/gestor/reparto" element={<ListaDesastres />} />
+            <Route path="/gestor/reparto/:evento" element={<PanelUngrd />} />
+            <Route path="/gestor/reparto/:evento/:sector" element={<PaqueteMinisterio />} />
             <Route path="/rescatista" element={<RescuerDashboard />} />
             <Route path="/rescatista/censo" element={<FieldCensusWizard />} />
             <Route path="/socorro" element={<SocorroDashboard />} />

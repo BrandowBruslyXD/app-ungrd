@@ -35,10 +35,22 @@ const SIN_FIRMA: readonly EstadoPaquete[] = ['Borrador', 'EnRevision'];
 interface RepartoPorSectorProps {
   danos: readonly DanoSectorizado[];
   paquetes: readonly PaqueteMinisterio[];
+  /**
+   * Código del desastre, tal como viaja en la URL.
+   *
+   * El informe de un ministerio no existe sin su emergencia: cuelga del evento
+   * y no de un sector suelto, o dos desastres distintos abrirían el mismo
+   * enlace.
+   */
+  codigoEvento: string;
 }
 
 /** Subpanel B · Reparto por sector: qué le toca a cada ministerio. */
-export default function RepartoPorSector({ danos, paquetes }: RepartoPorSectorProps) {
+export default function RepartoPorSector({
+  danos,
+  paquetes,
+  codigoEvento,
+}: RepartoPorSectorProps) {
   const { t } = useTranslation();
 
   /*
@@ -153,7 +165,7 @@ export default function RepartoPorSector({ danos, paquetes }: RepartoPorSectorPr
                       </span>
                     ) : (
                       <Link
-                        to={`/gestor/reparto/${resumen.sector}`}
+                        to={`/gestor/reparto/${codigoEvento}/${resumen.sector}`}
                         aria-label={t('ungrd.panel.abrirPaquete', { sector: nombre })}
                         className="inline-flex min-h-[2.75rem] items-center gap-2.5 rounded-control text-azul-700 hover:underline"
                       >

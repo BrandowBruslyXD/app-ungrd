@@ -40,6 +40,10 @@ describe('apiFetch', () => {
     });
 
     it('no intenta leer el cuerpo de un 204, que no lo trae', async () => {
+      /* Doble conversión a propósito: este doble solo trae lo que `apiFetch`
+         mira, y su `json` no devuelve nada nunca, así que TypeScript no lo ve
+         solaparse con `Response`. Completar las trece propiedades que faltan no
+         probaría nada más. */
       const sinCuerpo = {
         ok: true,
         status: 204,

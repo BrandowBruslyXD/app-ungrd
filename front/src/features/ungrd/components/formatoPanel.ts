@@ -1,3 +1,6 @@
+import type { TFunction } from 'i18next';
+import type { Evento } from '@/types/sectorial';
+
 /**
  * Formato de cifras y fechas del panel del reparto sectorial.
  *
@@ -70,6 +73,26 @@ export function formatearFecha(iso: string): string {
 /** Fecha con hora: «15 ago 2026, 09:07». Para la bitácora, donde el orden del día importa. */
 export function formatearFechaHora(iso: string): string {
   return FECHA_HORA.format(new Date(iso));
+}
+
+/**
+ * La declaratoria en una línea: «Desastre, ámbito departamental».
+ *
+ * La comparten la lista de desastres y el encabezado del evento. Cuando cada
+ * pantalla la componía por su cuenta, la misma emergencia salía con distinto
+ * rótulo según desde dónde se mirara, y ese rótulo es el que dice si el envío
+ * a un ministerio tiene amparo.
+ */
+export function lineaDeclaratoria(evento: Evento, t: TFunction): string {
+  if (evento.declaratoria === 'Ninguna') return t('ungrd.declaratoria.Ninguna');
+
+  return t('ungrd.panel.declaratoriaLinea', {
+    tipo: t(`ungrd.declaratoria.${evento.declaratoria}`),
+    nivel:
+      evento.nivelDeclaratoria === undefined
+        ? t('ungrd.panel.sinDato')
+        : t(`ungrd.nivelDeclaratoria.${evento.nivelDeclaratoria}`),
+  });
 }
 
 /**

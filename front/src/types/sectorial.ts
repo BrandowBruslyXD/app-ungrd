@@ -155,6 +155,16 @@ export interface Evento {
    * (vivienda, agua, energía) y sumarlo lo contaría tres veces.
    */
   personasAfectadas: number;
+  /**
+   * ISO-8601 en UTC del dato más reciente que llegó de cualquier municipio, o
+   * `null` si todavía no llegó ninguno.
+   *
+   * Es la cifra con la que la lista de desastres distingue el evento que sigue
+   * moviéndose del que lleva una semana congelado. Un evento sin datos nuevos
+   * no es un evento resuelto: es uno que dejó de reportar, y esa diferencia no
+   * se ve en ninguna otra columna.
+   */
+  ultimoDatoEn?: string | null;
 }
 
 /**

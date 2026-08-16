@@ -7,6 +7,9 @@
  * dos.
  */
 
+import type { TFunction } from 'i18next';
+import type { Evento } from '@/types/sectorial';
+
 const PESOS = new Intl.NumberFormat('es-CO', {
   style: 'currency',
   currency: 'COP',
@@ -59,4 +62,47 @@ export function formatearFechaHora(iso: string): string {
 /** Solo el día. Se usa para la fecha del decreto, que no tiene hora. */
 export function formatearDia(iso: string): string {
   return FECHA_CORTA.format(new Date(iso));
+}
+
+/** El amparo legal en dos renglones: qué declaratoria y qué decreto la fija. */
+export interface TextoAmparo {
+  /** «Calamidad pública, ámbito Departamental» o el aviso de que no hay ninguna. */
+  declaratoria: string;
+  /** El decreto con su fecha, o `null` cuando el evento no tiene ninguno citable. */
+  decreto: string | null;
+}
+
+/**
+ * Redacta el amparo legal del evento.
+ *
+ * Vive aquí, y no dentro de la ficha de pantalla, porque el mismo texto sale en
+ * el documento que se imprime. Si cada uno lo compusiera por su cuenta, el
+ * oficio en papel podría citar un decreto con distinta fecha que la pantalla
+ * desde la que se generó, y ese es exactamente el error que nadie revisa.
+ */
+export function textoAmparo(evento: Evento, t: TFunction): TextoAmparo {
+  const tipo = t(`ungrd.declaratoria.${evento.declaratoria}`);
+
+  const declaratoria =
+    evento.declaratoria === 'Ninguna'
+      ? t('ungrd.paquete.sinAmparo')
+      : evento.nivelDeclaratoria === undefined
+        ? tipo
+        : t('ungrd.paquete.amparoLinea', {
+            tipo,
+            nivel: t(`ungrd.nivelDeclaratoria.${evento.nivelDeclaratoria}`),
+          });
+
+  if (evento.numeroDecreto === undefined) return { declaratoria, decreto: null };
+
+  return {
+    declaratoria,
+    decreto:
+      evento.fechaDeclaratoria === undefined
+        ? evento.numeroDecreto
+        : t('ungrd.paquete.decretoConFecha', {
+            decreto: evento.numeroDecreto,
+            fecha: formatearDia(evento.fechaDeclaratoria),
+          }),
+  };
 }

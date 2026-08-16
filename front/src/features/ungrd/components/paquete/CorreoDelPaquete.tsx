@@ -14,6 +14,8 @@ interface CorreoDelPaqueteProps {
   envio: EstadoEnvio;
   entidad: string;
   totalDanos: number;
+  /** Sin declaratoria no hay decreto que citar y el oficio no se puede remitir. */
+  puedeRemitir: boolean;
   onAprobar: () => void;
 }
 
@@ -38,6 +40,10 @@ function Campo({ etiqueta, children }: { etiqueta: string; children: ReactNode }
  *    exige que un gobernador o un alcalde aprueben la remisión del EDAN; un
  *    documento oficial que se va sin que nadie lo mire es un riesgo
  *    institucional, no una comodidad.
+ * 3. **Sin declaratoria no se ofrece firmar.** El oficio cita el decreto que lo
+ *    ampara; si el evento no tiene ninguno, el botón no aparece y en su lugar se
+ *    explica qué falta. El panel del desastre ya lo advierte, y las dos
+ *    pantallas tienen que decir lo mismo.
  *
  * La confirmación va en la propia página y no en un `window.confirm`: ese
  * diálogo no se puede leer con lupa, no respeta el tamaño de letra del sistema
@@ -49,6 +55,7 @@ export default function CorreoDelPaquete({
   envio,
   entidad,
   totalDanos,
+  puedeRemitir,
   onAprobar,
 }: CorreoDelPaqueteProps) {
   const { t } = useTranslation();
@@ -64,7 +71,12 @@ export default function CorreoDelPaquete({
   }, [confirmando]);
 
   return (
-    <Ficha titulo={t('ungrd.paquete.correoTitulo')} icono={Mail} sinRelleno>
+    <Ficha
+      titulo={t('ungrd.paquete.correoTitulo')}
+      icono={Mail}
+      apunte={t('ungrd.paquete.pasoTresApunte')}
+      sinRelleno
+    >
       <div className="flex flex-wrap items-center gap-2 border-b border-papel-borde bg-papel-hueco px-4 py-3 sm:px-5">
         <span className="distintivo bg-espera-50 text-espera-700">
           <TestTube className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -108,6 +120,10 @@ export default function CorreoDelPaquete({
                     fecha: formatearFechaHora(envio.aprobadoEn),
                   })}
             </p>
+          </Aviso>
+        ) : !puedeRemitir ? (
+          <Aviso tono="espera" titulo={t('ungrd.paquete.sinDecretoTitulo')}>
+            <p>{t('ungrd.paquete.sinDecretoTexto')}</p>
           </Aviso>
         ) : confirmando ? (
           <div

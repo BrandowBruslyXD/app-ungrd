@@ -8,15 +8,22 @@ import { useTituloPagina } from '@/hooks/useTituloPagina';
 import { usePaqueteMinisterio } from '../hooks/usePaqueteMinisterio';
 import CorreoDelPaquete from '../components/paquete/CorreoDelPaquete';
 import DistintivoEstadoPaquete from '../components/DistintivoEstadoPaquete';
-import Entregables from '../components/paquete/Entregables';
 import FichaDelPaquete from '../components/paquete/FichaDelPaquete';
+import MembreteImpreso from '../components/paquete/MembreteImpreso';
+import PasosDelPaquete from '../components/paquete/PasosDelPaquete';
+import PieImpreso from '../components/paquete/PieImpreso';
 import ResumenPaquete from '../components/paquete/ResumenPaquete';
 import TablaDanos from '../components/paquete/TablaDanos';
 import TablaMunicipios from '../components/paquete/TablaMunicipios';
 import TablaNecesidades from '../components/paquete/TablaNecesidades';
 
-/** A dónde se vuelve desde el paquete: la tabla de reparto del evento. */
-const RUTA_PANEL = '/gestor/reparto';
+/** La lista de desastres. Es la salida cuando ni siquiera el evento existe. */
+const RUTA_LISTA = '/gestor/reparto';
+
+/** A dónde se vuelve desde el paquete: al reparto del desastre del que cuelga. */
+function rutaDelEvento(codigo: string | undefined): string {
+  return codigo === undefined ? RUTA_LISTA : `${RUTA_LISTA}/${encodeURIComponent(codigo)}`;
+}
 
 /**
  * Quién firma en la demostración.
@@ -28,10 +35,10 @@ const RUTA_PANEL = '/gestor/reparto';
  */
 const FIRMA_DEMO = 'ungrd.paquete.firmaDemo';
 
-function EnlaceVolver({ etiqueta }: { etiqueta: string }) {
+function EnlaceVolver({ a, etiqueta }: { a: string; etiqueta: string }) {
   return (
     <Link
-      to={RUTA_PANEL}
+      to={a}
       className="-ml-3 mb-3 inline-flex min-h-control items-center gap-2 rounded-control px-3 text-base font-semibold text-azul-600 hover:bg-azul-50"
     >
       <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden="true" />
@@ -47,14 +54,27 @@ function EnlaceVolver({ etiqueta }: { etiqueta: string }) {
  * —qué le corresponde a esta entidad, en qué municipios, con cuánta confianza y
  * qué cuesta— es lo que hoy tarda días en armarse a mano, y por eso el orden de
  * los bloques no es decorativo: se lee de arriba abajo como se toma la
- * decisión. Primero qué es y qué lo ampara, luego cuánto pesa, luego el
- * territorio —que es como el ministerio pide la información—, luego el detalle
- * con su nivel de confianza, y solo al final los archivos y la firma.
+ * decisión. Primero qué es y qué lo ampara, después los tres pasos de la
+ * remisión —para que nadie tenga que deducir el proceso—, luego cuánto pesa, el
+ * territorio —que es como el ministerio pide la información—, el detalle con su
+ * nivel de confianza, y solo al final el correo y la firma.
+ *
+ * **Esta pantalla también es un documento.** De ella sale el PDF, y sale por la
+ * impresión del navegador: lo que se ve en papel lo deciden `impresion.css` y
+ * las dos piezas que solo existen ahí —el membrete y el pie—. Por eso los
+ * bloques que son aplicación y no documento —la portada con foto, los pasos, el
+ * correo— van envueltos en `no-imprimir`: en la hoja estorban.
  */
 export default function PaqueteMinisterio() {
   const { t } = useTranslation();
-  const { sector } = useParams<{ sector: string }>();
-  const { datos, envio, aprobarYEnviar, descargarCsv } = usePaqueteMinisterio(sector);
+  /*
+   * Dos códigos, y el del desastre manda: el paquete de un ministerio cuelga de
+   * una emergencia concreta. Sin él, dos desastres distintos abrirían el mismo
+   * informe y a la entidad le llegarían los daños del que no era.
+   */
+  const { evento: codigoEvento, sector } = useParams<{ evento: string; sector: string }>();
+  const { datos, envio, informe, generarInforme, aprobarYEnviar, descargarCsv, descargarPdf } =
+    usePaqueteMinisterio(codigoEvento, sector);
 
   useTituloPagina(
     t('meta.paqueteMinisterio.title'),
@@ -70,14 +90,19 @@ export default function PaqueteMinisterio() {
   if (datos === null || envio === null) {
     return (
       <div className="animate-fade-in mx-auto w-full max-w-3xl px-4 py-8 lg:px-8 lg:py-10">
-        <EnlaceVolver etiqueta={t('ungrd.paquete.volver')} />
+        <EnlaceVolver a={RUTA_LISTA} etiqueta={t('ungrd.paquete.volverLista')} />
         <h1 className="text-2xl sm:text-3xl">{t('ungrd.paquete.noEncontradoTitulo')}</h1>
         <div className="mt-4">
           <Aviso tono="alerta" urgente>
             <p>{t('ungrd.paquete.noEncontradoTexto', { sector: sector ?? '' })}</p>
+            {/* El enlace pudo fallar por cualquiera de los dos códigos, así que
+                se nombran los dos en vez de acusar solo al sector. */}
+            <p className="mt-2">
+              {t('ungrd.paquete.noEncontradoEvento', { evento: codigoEvento ?? '' })}
+            </p>
           </Aviso>
         </div>
-        <Link to={RUTA_PANEL} className="btn-primary mt-6">
+        <Link to={RUTA_LISTA} className="btn-primary mt-6">
           <PackageSearch className="h-5 w-5 shrink-0" aria-hidden="true" />
           {t('ungrd.paquete.noEncontradoVolver')}
         </Link>
@@ -101,23 +126,63 @@ export default function PaqueteMinisterio() {
   } = datos;
 
   const sinDanos = danos.length === 0;
+  const generado = informe.generadoEn !== null && informe.generadoPor !== null;
+
+  /*
+   * El oficio cita el decreto que lo ampara. Un evento sin declaratoria no tiene
+   * ninguno, así que el tercer paso no procede: es la misma regla que el panel
+   * del desastre advierte antes de entrar aquí, y si esta pantalla la ignorara,
+   * el funcionario firmaría desde dentro lo que la anterior le dijo que no podía.
+   */
+  const puedeRemitir = evento.declaratoria !== 'Ninguna';
 
   return (
-    <div className="animate-fade-in mx-auto w-full max-w-6xl px-4 py-8 lg:px-8 lg:py-10">
-      <EnlaceVolver etiqueta={t('ungrd.paquete.volver')} />
+    <div className="hoja-impresa animate-fade-in mx-auto w-full max-w-6xl px-4 py-8 lg:px-8 lg:py-10">
+      <div className="no-imprimir">
+        <EnlaceVolver a={rutaDelEvento(codigoEvento)} etiqueta={t('ungrd.paquete.volver')} />
 
-      <BandaPortada
-        titulo={t('ungrd.paquete.titulo', { entidad: paquete.entidad })}
-        descripcion={t('ungrd.paquete.descripcion')}
-        foto={FOTOS.puebloJerico}
-        alt="Jericó, Antioquia: la iglesia del pueblo asomada sobre los tejados."
-        icono={ficha.icono}
-      >
-        <DistintivoEstadoPaquete estado={envio.estado} />
-      </BandaPortada>
+        <BandaPortada
+          titulo={t('ungrd.paquete.titulo', { entidad: paquete.entidad })}
+          descripcion={t('ungrd.paquete.descripcion')}
+          foto={FOTOS.puebloJerico}
+          alt="Jericó, Antioquia: la iglesia del pueblo asomada sobre los tejados."
+          icono={ficha.icono}
+        >
+          <DistintivoEstadoPaquete estado={envio.estado} />
+        </BandaPortada>
+      </div>
+
+      {informe.generadoEn !== null && informe.generadoPor !== null && (
+        <MembreteImpreso
+          paquete={paquete}
+          evento={evento}
+          generadoEn={informe.generadoEn}
+          generadoPor={informe.generadoPor}
+        />
+      )}
 
       <div className="mt-6 space-y-6">
-        <FichaDelPaquete paquete={paquete} evento={evento} envio={envio} />
+        {/* Con el informe generado, el membrete de arriba ya dice todo esto en
+            papel; repetirlo sería media hoja gastada en lo mismo. */}
+        <div className={generado ? 'no-imprimir' : undefined}>
+          <FichaDelPaquete paquete={paquete} evento={evento} envio={envio} />
+        </div>
+
+        {!sinDanos && (
+          <div className="no-imprimir">
+            <PasosDelPaquete
+              generadoEn={informe.generadoEn}
+              pdfAbiertoEn={informe.pdfAbiertoEn}
+              enviadoEn={envio.aprobadoEn ?? null}
+              enviado={envio.estado === 'Enviado'}
+              puedeRemitir={puedeRemitir}
+              nombreCsv={archivos[0]}
+              onGenerar={() => generarInforme(t(FIRMA_DEMO))}
+              onDescargarPdf={descargarPdf}
+              onDescargarCsv={descargarCsv}
+            />
+          </div>
+        )}
 
         <ResumenPaquete
           totalDanos={danos.length}
@@ -142,15 +207,20 @@ export default function PaqueteMinisterio() {
             <TablaMunicipios municipios={municipios} />
             <TablaDanos danos={danos} />
             <TablaNecesidades necesidades={necesidades} danosSinCosto={danosSinCosto} />
-            <Entregables nombreCsv={archivos[0]} onDescargarCsv={descargarCsv} />
-            <CorreoDelPaquete
-              correo={correo}
-              archivos={archivos}
-              envio={envio}
-              entidad={paquete.entidad}
-              totalDanos={danos.length}
-              onAprobar={() => aprobarYEnviar(t(FIRMA_DEMO))}
-            />
+
+            <div className="no-imprimir">
+              <CorreoDelPaquete
+                correo={correo}
+                archivos={archivos}
+                envio={envio}
+                entidad={paquete.entidad}
+                totalDanos={danos.length}
+                puedeRemitir={puedeRemitir}
+                onAprobar={() => aprobarYEnviar(t(FIRMA_DEMO))}
+              />
+            </div>
+
+            {generado && <PieImpreso paquete={paquete} evento={evento} />}
           </>
         )}
       </div>

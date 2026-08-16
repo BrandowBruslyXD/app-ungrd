@@ -6,11 +6,14 @@ import { renderWithI18n } from '@/test/render';
 import { armarNecesidades } from '../hooks/usePaqueteMinisterio';
 import PaqueteMinisterio from './PaqueteMinisterio';
 
-function montar(sector: string) {
+/** El desastre sembrado que usan casi todas las pruebas: el bajo San Jorge. */
+const EVENTO = 'EVT-2026-08-15-003';
+
+function montar(sector: string, evento: string = EVENTO) {
   return renderWithI18n(
-    <MemoryRouter initialEntries={[`/gestor/reparto/${sector}`]}>
+    <MemoryRouter initialEntries={[`/gestor/reparto/${evento}/${sector}`]}>
       <Routes>
-        <Route path="/gestor/reparto/:sector" element={<PaqueteMinisterio />} />
+        <Route path="/gestor/reparto/:evento/:sector" element={<PaqueteMinisterio />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -59,11 +62,28 @@ describe('PaqueteMinisterio', () => {
     ).toBeInTheDocument();
   });
 
-  it('anuncia el PDF como pendiente en vez de ofrecer un botón que no hace nada', () => {
+  /*
+   * El orden de los tres pasos no es decorativo: el PDF lleva la fecha y el
+   * responsable que fija el paso 1. Un oficio impreso sin eso es un papel sin
+   * autor ni corte de información.
+   */
+  it('no deja descargar el PDF antes de generar el informe, y dice por qué', () => {
     montar('Educacion');
 
     expect(screen.getByRole('button', { name: /descargar el oficio en pdf/i })).toBeDisabled();
     expect(screen.getByText(/todavía no se genera/i)).toBeInTheDocument();
+  });
+
+  it('avisa de que el PDF sale del diálogo de impresión, junto al botón', () => {
+    montar('Educacion');
+
+    expect(screen.getByText(/Guardar como PDF/)).toBeInTheDocument();
+  });
+
+  it('el CSV se puede descargar desde el principio, sin generar el informe', () => {
+    montar('Educacion');
+
+    expect(screen.getByRole('button', { name: /descargar el detalle en csv/i })).toBeEnabled();
   });
 
   it('deja ver el correo completo antes de aprobarlo', () => {
@@ -118,10 +138,104 @@ describe('PaqueteMinisterio', () => {
     montar('Turismo');
 
     expect(screen.getByRole('heading', { level: 1, name: /no encontramos ese paquete/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /ver el reparto del evento/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /ver la lista de desastres/i })).toHaveAttribute(
       'href',
       '/gestor/reparto',
     );
+  });
+
+  /*
+   * El paquete cuelga del desastre. Si el código del evento no existe, el sector
+   * puede ser válido y aun así no haber nada que abrir: se dice, en vez de
+   * enseñar el paquete del primer desastre sembrado como si fuera este.
+   */
+  it('un desastre que no existe no cae en el paquete de otro evento', () => {
+    montar('Educacion', 'EVT-2026-01-01-999');
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: /no encontramos ese paquete/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/EVT-2026-01-01-999/)).toBeInTheDocument();
+  });
+
+  it('abre el paquete del desastre que pide la URL, no el del primero sembrado', () => {
+    montar('Educacion', 'EVT-2026-08-14-007');
+
+    expect(screen.getAllByText(/Sismo de la cordillera Central/).length).toBeGreaterThan(0);
+  });
+
+  it('vuelve al reparto del desastre del que cuelga el paquete', () => {
+    montar('Educacion');
+
+    expect(screen.getByRole('link', { name: /volver al reparto del desastre/i })).toHaveAttribute(
+      'href',
+      `/gestor/reparto/${EVENTO}`,
+    );
+  });
+});
+
+/*
+ * El PDF no lo genera una librería: lo genera el navegador con la hoja
+ * `impresion.css` y «Guardar como PDF». Lo que estas pruebas sostienen es la
+ * secuencia y el contenido del documento; el aspecto en papel no se puede
+ * comprobar en jsdom, que no calcula estilos ni pagina.
+ */
+describe('el informe imprimible del paquete', () => {
+  async function generar() {
+    const usuario = userEvent.setup();
+    montar('Educacion');
+    await usuario.click(screen.getByRole('button', { name: /generar ahora/i }));
+    return usuario;
+  }
+
+  it('habilita el PDF al generar el informe y deja constancia de la fecha', async () => {
+    await generar();
+
+    expect(screen.getByRole('button', { name: /descargar el oficio en pdf/i })).toBeEnabled();
+    expect(screen.getByText(/Informe generado el/)).toBeInTheDocument();
+    expect(screen.queryByText(/todavía no se genera/i)).not.toBeInTheDocument();
+  });
+
+  it('abre el diálogo de impresión del navegador al pedir el PDF', async () => {
+    const imprimir = vi.spyOn(window, 'print').mockImplementation(() => {});
+    const usuario = await generar();
+
+    await usuario.click(screen.getByRole('button', { name: /descargar el oficio en pdf/i }));
+
+    expect(imprimir).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(/Se abrió el diálogo de impresión/)).toBeInTheDocument();
+
+    imprimir.mockRestore();
+  });
+
+  /*
+   * El membrete es lo único que el ministerio ve al recibir la hoja impresa: sin
+   * evento, decreto y responsable, el consolidado no se puede archivar ni citar.
+   */
+  it('el documento lleva membrete con el evento, el amparo legal y quién lo generó', async () => {
+    await generar();
+
+    expect(screen.getByText(/Consolidado sectorial de daños para remisión/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Decreto Departamental 0642 de 2026/).length).toBeGreaterThan(1);
+    expect(screen.getByText(/Por el funcionario de la sesión de demostración/)).toBeInTheDocument();
+  });
+
+  it('el documento cierra advirtiendo que los autorreportes no están verificados', async () => {
+    await generar();
+
+    expect(
+      screen.getByText(/Advertencia: los daños marcados como autorreportados/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/el envío por correo es simulado/i)).toBeInTheDocument();
+  });
+
+  it('marca el envío como último paso hecho cuando se firma la remisión', async () => {
+    const usuario = await generar();
+
+    await usuario.click(screen.getByRole('button', { name: /^aprobar y enviar$/i }));
+    await usuario.click(screen.getByRole('button', { name: /sí, aprobar y enviar/i }));
+
+    expect(screen.getByText(/Envío registrado el/)).toBeInTheDocument();
   });
 });
 

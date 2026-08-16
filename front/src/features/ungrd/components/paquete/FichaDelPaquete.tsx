@@ -5,7 +5,7 @@ import Ficha from '@/components/ui/Ficha';
 import type { EstadoEnvio } from '../../hooks/usePaqueteMinisterio';
 import type { Evento, PaqueteMinisterio } from '@/types/sectorial';
 import DistintivoEstadoPaquete from '../DistintivoEstadoPaquete';
-import { formatearDia, formatearFechaHora } from './formato';
+import { formatearFechaHora, textoAmparo } from './formato';
 
 interface FichaDelPaqueteProps {
   paquete: PaqueteMinisterio;
@@ -33,16 +33,7 @@ function Dato({ etiqueta, children }: { etiqueta: string; children: ReactNode })
 export default function FichaDelPaquete({ paquete, evento, envio }: FichaDelPaqueteProps) {
   const { t } = useTranslation();
 
-  const tipoDeclaratoria = t(`ungrd.declaratoria.${evento.declaratoria}`);
-  const declaratoria =
-    evento.declaratoria === 'Ninguna'
-      ? t('ungrd.paquete.sinAmparo')
-      : evento.nivelDeclaratoria === undefined
-        ? tipoDeclaratoria
-        : t('ungrd.paquete.amparoLinea', {
-            tipo: tipoDeclaratoria,
-            nivel: t(`ungrd.nivelDeclaratoria.${evento.nivelDeclaratoria}`),
-          });
+  const amparo = textoAmparo(evento, t);
 
   return (
     <Ficha
@@ -67,16 +58,9 @@ export default function FichaDelPaquete({ paquete, evento, envio }: FichaDelPaqu
         </Dato>
 
         <Dato etiqueta={t('ungrd.paquete.etiquetaAmparo')}>
-          {declaratoria}
-          {evento.numeroDecreto !== undefined && (
-            <span className="mt-0.5 block text-sm text-tinta-600">
-              {evento.fechaDeclaratoria === undefined
-                ? evento.numeroDecreto
-                : t('ungrd.paquete.decretoConFecha', {
-                    decreto: evento.numeroDecreto,
-                    fecha: formatearDia(evento.fechaDeclaratoria),
-                  })}
-            </span>
+          {amparo.declaratoria}
+          {amparo.decreto !== null && (
+            <span className="mt-0.5 block text-sm text-tinta-600">{amparo.decreto}</span>
           )}
         </Dato>
 
