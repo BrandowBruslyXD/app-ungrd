@@ -99,21 +99,18 @@ reviews:
 
     - path: "servicios/**"
       instructions: |
-        Microservicios .NET 10 que consumen APIs externas (NASA FIRMS, SECOP, redes
-        sociales): ms-satelital, ms-transparencia, ms-social. El destino final de estas
-        integraciones (si se quedan aqui o migran a back/.../Integrations/) esta
-        pendiente de decidir -- ver docs/ARQUITECTURA.md. Mientras tanto, revisa SOLO
-        esto y en espanol:
-        1. DEGRADACION: si la API externa falla (timeout, 4xx, 5xx, JSON invalido),
-           el servicio debe devolver null o una lista vacia y registrar el error,
-           NUNCA propagar la excepcion ni tumbar el endpoint.
-        2. TIMEOUT: todo HttpClient debe tener Timeout explicito (o CancellationToken
-           con tiempo limite). Un HttpClient sin timeout es un hallazgo.
-        3. SECRETOS: ninguna API key, MapKey de NASA FIRMS, token de SECOP ni
-           credencial de Bluesky/X puede aparecer en el codigo ni en appsettings*.json
-           versionado. Deben venir de configuracion o variables de entorno. CRITICO:
-           el repositorio es PUBLICO.
-        NO comentes estilo, nombres, orden de usings, XML docs, ni pidas tests.
+        ms-bot-api: puente Node.js temporal que da codigos de seguimiento reales al bot
+        de WhatsApp mientras el backend .NET no expone sus casos de uso. Corre aparte,
+        en un VPS -- ver servicios/ms-bot-api/README.md. Revisa SOLO esto y en espanol:
+        1. SECRETOS: ninguna credencial, token ni IP/host interno con valor real puede
+           aparecer commiteado. CRITICO: el repositorio es PUBLICO.
+        2. CONSENTIMIENTO: `POST /censo` debe seguir rechazando con 400 si falta el
+           consentimiento explicito (Ley 1581 de 2012) -- no relajar esa validacion.
+        3. Los cambios de contrato (rutas, forma de la respuesta) deben mantenerse
+           compatibles con lo que documenta servicios/ms-bot-api/README.md, o el README
+           debe actualizarse en el mismo cambio.
+        NO comentes estilo, nombres, arquitectura, patrones, XML docs ni cobertura de
+        tests.
 
     - path: "front/**"
       instructions: |

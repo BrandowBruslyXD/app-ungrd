@@ -7,9 +7,11 @@ Lo que nos diferencia es cerrar el ciclo: **reporte → verificación satelital 
 ## Estructura
 
 ```
-back/     API en .NET 10 (slice vertical + PostgreSQL)
-front/    Aplicación React 18 + Vite + TypeScript
-docs/     Documentación del proyecto
+back/       API en .NET 10 (slice vertical + PostgreSQL)
+front/      Aplicación React 18 + Vite + TypeScript
+servicios/  ms-bot-api: puente temporal del bot de WhatsApp, corre aparte en un VPS
+infra/      Scripts de aprovisionamiento de infraestructura
+docs/       Documentación del proyecto
 ```
 
 ## Requisitos
