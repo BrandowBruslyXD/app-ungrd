@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { renderWithI18n } from '@/test/render';
 import ManagerDashboard from '@/features/gestor/pages/ManagerDashboard';
@@ -100,7 +101,7 @@ describe('ManagerDashboard — observación satelital', () => {
     expect(await screen.findByText('USGS')).toBeInTheDocument();
     expect(screen.getByText('GDACS')).toBeInTheDocument();
     expect(screen.getByText('NASA GIBS')).toBeInTheDocument();
-    expect(screen.getByText('El más reciente, hace 2 horas')).toBeInTheDocument();
+    expect(screen.getByText(/El más reciente, hace 2 horas/)).toBeInTheDocument();
   });
 
   it('ManagerDashboard_enNingunTexto_apareceLaExpresionTiempoReal', async () => {
@@ -118,8 +119,18 @@ describe('ManagerDashboard — observación satelital', () => {
      * es, que la pantalla escribe al pie del mapa.
      */
     const apariciones = (container.textContent ?? '').match(/tiempo real/gi) ?? [];
-    expect(apariciones).toHaveLength(1);
-    expect(container.textContent).toContain('No es tiempo real');
+    expect(apariciones).toHaveLength(0);
+
+    /*
+     * Y al encender la capa satelital, que es cuando la advertencia hace falta:
+     * el pie dice «no es en vivo» a la vista, y el porqué completo —cada cuánto
+     * pasa el satélite y cuánto tarda la imagen— vive en el título del elemento,
+     * para no convertir la leyenda en un párrafo.
+     */
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Satélite' }));
+
+    expect(screen.getByText(/no es en vivo/)).toBeInTheDocument();
+    expect(screen.getByTitle(/no es tiempo real/i)).toBeInTheDocument();
   });
 
   it('ManagerDashboard_senalLejosDeTodoReporte_laAnunciaComoAlertaTemprana', async () => {
@@ -180,7 +191,7 @@ describe('ManagerDashboard — observación satelital', () => {
     }
   });
 
-  it('ManagerDashboard_mapa_arrancaEnSateliteYOfreceLasTresCapas', async () => {
+  it('ManagerDashboard_mapa_arrancaEnRelieveYOfreceLasTresCapas', async () => {
     simularFuentes({ usgs: null, gdacs: null });
 
     montar();
@@ -193,7 +204,12 @@ describe('ManagerDashboard — observación satelital', () => {
       'Relieve',
       'Calles',
     ]);
-    expect(screen.getByRole('button', { name: 'Satélite' })).toHaveAttribute(
+    /*
+     * Relieve y no satélite: la pasada del día trae las nubes reales y en
+     * temporada de lluvias tapa los marcadores que hay que mirar. El satélite
+     * sigue a un toque, que es donde tiene sentido.
+     */
+    expect(screen.getByRole('button', { name: 'Relieve' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -204,20 +220,36 @@ describe('ManagerDashboard — observación satelital', () => {
 
     montar();
 
-    expect(await screen.findByText('Reportes ciudadanos')).toBeInTheDocument();
-    expect(screen.getByText('Señales externas')).toBeInTheDocument();
+    /*
+     * La leyenda va en una sola fila y sin encabezados de sección: lo que tiene
+     * que estar es cada forma que se pinta sobre el mapa, no los rótulos que las
+     * agrupaban.
+     */
+    expect(await screen.findByText('Prioridad alta')).toBeInTheDocument();
+    expect(screen.getByText('Prioridad media')).toBeInTheDocument();
+    expect(screen.getByText('Prioridad baja')).toBeInTheDocument();
     expect(screen.getByText('Sismo, según su magnitud')).toBeInTheDocument();
     expect(screen.getByText('Alerta multiamenaza')).toBeInTheDocument();
     expect(screen.getByText('Corroborado por una fuente externa')).toBeInTheDocument();
   });
 
   it('ManagerDashboard_notaDeAusencia_aclaraQueSinSenalNoEsSospecha', async () => {
-    simularFuentes({ usgs: { features: [sismo(CERCA_DE_MOCOA, 'us-cerca')] }, gdacs: null });
+    simularFuentes({
+      usgs: {
+        features: [sismo(CERCA_DE_MOCOA, 'us-cerca'), sismo(LEJOS_DE_TODO, 'us-lejos')],
+      },
+      gdacs: null,
+    });
 
     montar();
 
-    // El error grave que esta pantalla no puede cometer: dar por dudoso un
-    // reporte porque ningún satélite lo vio.
-    expect(await screen.findByText(/no lo pone en duda/)).toBeInTheDocument();
+    /*
+     * El error grave que esta pantalla no puede cometer: dar por dudoso un
+     * reporte porque ningún satélite lo vio. La aclaración acompaña al aviso de
+     * señales sin reporte, que es el único sitio donde alguien podría sacar esa
+     * conclusión; ocupando dos líneas fijas solo era ruido.
+     */
+    const aviso = await screen.findByText(/sin ningún reporte ciudadano cerca/);
+    expect(aviso).toHaveAttribute('title', expect.stringMatching(/no lo pone en duda/));
   });
 });

@@ -1,8 +1,7 @@
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Activity, AlertTriangle, Clock, Globe2, Satellite } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { textoFechaImagen } from '@/lib/capasMapa';
 import { FUENTE_GDACS, FUENTE_USGS } from '@/lib/observacion';
 import type { AlertaMultiamenaza, SismoObservado } from '@/lib/observacion';
@@ -42,15 +41,10 @@ interface FranjaSenalesProps {
 /** Lo que se pinta en una ficha, ya resuelto en texto. */
 interface Ficha {
   readonly clave: string;
-  readonly icono: LucideIcon;
-  /** Clases del recuadro del icono. El oro nunca como color de texto sobre blanco. */
-  readonly clasesIcono: string;
   readonly fuente: string;
-  readonly queEs: string;
   readonly hallazgo: string;
   /** Hora de observación ya redactada. Vacía si no se pudo leer. */
   readonly cuando: string;
-  readonly estado: string;
   /** Cuántas de esas señales no tienen ningún reporte cerca. Cero no se muestra. */
   readonly sinReporte: number;
 }
@@ -65,48 +59,24 @@ function textoDesde(iso: string | null, t: TFunction): string {
   return relativo === null ? '' : t(relativo.clave, relativo.valores);
 }
 
-function TarjetaFuente({ ficha }: { ficha: Ficha }) {
-  const { t } = useTranslation();
-  const Icono = ficha.icono;
-
+/**
+ * Una fuente en una línea: quién observó, qué vio y cuándo.
+ *
+ * Antes era una tarjeta con icono en cuadro de color, la descripción
+ * institucional de la entidad y una insignia verde de «respondiendo». Nada de
+ * eso ayudaba a decidir: quién es el USGS no cambia lo que el gestor hace, y la
+ * insignia era información imposible —una fuente que no responde no tiene
+ * ficha—. Queda el dato y la hora, que es lo que se mira.
+ */
+function LineaFuente({ ficha }: { ficha: Ficha }) {
   return (
-    <article className="ficha flex min-w-0 flex-col p-4">
-      <header className="flex min-w-0 items-start gap-3">
-        <span
-          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${ficha.clasesIcono}`}
-        >
-          <Icono className="h-5 w-5" aria-hidden="true" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-bold text-tinta-900">{ficha.fuente}</p>
-          <p className="text-sm leading-snug text-tinta-600">{ficha.queEs}</p>
-        </div>
-        <span className="distintivo shrink-0 bg-seguro-50 text-seguro-700">
-          <span>{ficha.estado}</span>
-        </span>
-      </header>
-
-      <p className="mt-3 font-semibold leading-snug text-tinta-900">{ficha.hallazgo}</p>
-
+    <li className="flex min-w-0 items-baseline gap-2">
+      <span className="shrink-0 font-semibold text-tinta-900">{ficha.fuente}</span>
+      <span className="min-w-0 text-tinta-700">{ficha.hallazgo}</span>
       {ficha.cuando !== '' && (
-        <p className="mt-1 flex items-center gap-1.5 text-sm text-tinta-600">
-          <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
-          {ficha.cuando}
-        </p>
+        <span className="shrink-0 text-tinta-500">· {ficha.cuando}</span>
       )}
-
-      {/*
-       * La lectura inversa del cruce, y la que de verdad sirve: una señal sin
-       * ningún reporte cerca significa que algo pasó donde nadie ha reportado.
-       * Va a la vista, no escondida en un detalle plegado.
-       */}
-      {ficha.sinReporte > 0 && (
-        <p className="mt-3 flex items-start gap-2 rounded-control border border-espera-200 bg-espera-50 p-2.5 text-sm font-semibold leading-snug text-espera-700">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <span>{t('manager.observacion.sinReporte', { count: ficha.sinReporte })}</span>
-        </p>
-      )}
-    </article>
+    </li>
   );
 }
 
@@ -131,13 +101,9 @@ export default function FranjaSenales({
   if (sateliteVivo) {
     fichas.push({
       clave: 'gibs',
-      icono: Satellite,
-      clasesIcono: 'bg-azul-50 text-azul-700',
       fuente: t('manager.observacion.gibsFuente'),
-      queEs: t('manager.observacion.gibsQueEs'),
       hallazgo: t('manager.observacion.gibsHallazgo', { fecha: textoFechaImagen(fechaSatelite) }),
       cuando: t('manager.observacion.gibsCuando'),
-      estado: t('manager.observacion.estadoRespondiendo'),
       sinReporte: 0,
     });
   }
@@ -148,15 +114,11 @@ export default function FranjaSenales({
   if (!cargando && sismos.length > 0) {
     fichas.push({
       clave: 'usgs',
-      icono: Activity,
-      clasesIcono: 'bg-espera-50 text-espera-700',
       fuente: FUENTE_USGS,
-      queEs: t('manager.observacion.usgsQueEs'),
       hallazgo: t('manager.observacion.usgsHallazgo', { count: sismos.length }),
       cuando: t('manager.observacion.usgsCuando', {
         tiempo: textoDesde(observacionMasReciente(sismos), t),
       }),
-      estado: t('manager.observacion.estadoRespondiendo'),
       sinReporte: contarPorFuente(senalesSinReporte, FUENTE_USGS),
     });
   }
@@ -164,15 +126,11 @@ export default function FranjaSenales({
   if (!cargando && alertas.length > 0) {
     fichas.push({
       clave: 'gdacs',
-      icono: Globe2,
-      clasesIcono: 'bg-alerta-50 text-alerta-700',
       fuente: FUENTE_GDACS,
-      queEs: t('manager.observacion.gdacsQueEs'),
       hallazgo: t('manager.observacion.gdacsHallazgo', { count: alertas.length }),
       cuando: t('manager.observacion.gdacsCuando', {
         tiempo: textoDesde(observacionMasReciente(alertas), t),
       }),
-      estado: t('manager.observacion.estadoRespondiendo'),
       sinReporte: contarPorFuente(senalesSinReporte, FUENTE_GDACS),
     });
   }
@@ -181,27 +139,42 @@ export default function FranjaSenales({
     return null;
   }
 
+  const sinReporte = fichas.reduce((suma, ficha) => suma + ficha.sinReporte, 0);
+
   return (
     <section className="mt-6" aria-labelledby={idTitulo}>
-      <h2 id={idTitulo} className="mb-3 text-lg">
+      <h2 id={idTitulo} className="sr-only">
         {t('manager.observacion.franjaTitulo')}
       </h2>
 
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {fichas.map((ficha) => (
-          <TarjetaFuente key={ficha.clave} ficha={ficha} />
-        ))}
-      </div>
+      <div className="ficha flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 text-sm">
+        <ul className="flex min-w-0 flex-1 flex-wrap gap-x-5 gap-y-1.5">
+          {fichas.map((ficha) => (
+            <LineaFuente key={ficha.clave} ficha={ficha} />
+          ))}
+        </ul>
 
-      {/*
-       * La advertencia que evita el error grave: que una fuente externa no vea
-       * nada cerca de un reporte **no lo pone en duda**. Puede ser de noche, con
-       * nubes, o un deslizamiento de vereda que ningún satélite de este tipo
-       * observa. Se escribe para que nadie saque esa conclusión por su cuenta.
-       */}
-      <p className="mt-3 text-sm leading-snug text-tinta-600">
-        {t('manager.observacion.notaAusencia')}
-      </p>
+        {/*
+         * La lectura inversa del cruce, y la única accionable de toda la franja:
+         * una señal sin ningún reporte cerca significa que algo pasó donde nadie
+         * ha avisado. Por eso va destacada y sumada de todas las fuentes, en vez
+         * de repetida dentro de cada tarjeta.
+         *
+         * El matiz que evita el error grave —que la ausencia de señal NO pone en
+         * duda un reporte, porque puede ser de noche, con nubes, o un
+         * deslizamiento que estas fuentes no observan— vive en el título del
+         * aviso: hace falta al interpretarlo, no ocupando dos líneas siempre.
+         */}
+        {sinReporte > 0 && (
+          <p
+            className="flex shrink-0 items-center gap-1.5 font-semibold text-espera-700"
+            title={t('manager.observacion.notaAusencia')}
+          >
+            <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {t('manager.observacion.sinReporte', { count: sinReporte })}
+          </p>
+        )}
+      </div>
     </section>
   );
 }

@@ -153,8 +153,13 @@ describe('construirCapasBase', () => {
 });
 
 describe('capas por omisión', () => {
-  it('capasPorOmision_mapaDeLectura_arrancaEnSatelite', () => {
-    expect(CAPA_INICIAL_LECTURA).toBe('satelite');
+  it('capasPorOmision_mapaDeLectura_arrancaEnRelieveYNoEnSatelite', () => {
+    /*
+     * El satélite trae las nubes reales del día y en temporada de lluvias tapa
+     * medio país, incluidos los marcadores. El relieve muestra la montaña y el
+     * cauce, que es la geografía que explica dónde se inunda.
+     */
+    expect(CAPA_INICIAL_LECTURA).toBe('relieve');
   });
 
   it('capasPorOmision_mapaEditable_arrancaEnCallesParaNoTaparElPunto', () => {

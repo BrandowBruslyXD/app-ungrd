@@ -199,10 +199,18 @@ export function construirCapasBase(fechaSatelite: string): readonly CapaBase[] {
 }
 
 /**
- * Capa con la que arranca un mapa de solo lectura, como el del panel del gestor:
- * la imagen del satélite es la que cuenta algo que el mapa de calles no cuenta.
+ * Capa con la que arranca un mapa de solo lectura, como el del panel del gestor.
+ *
+ * El relieve y no el satélite, aunque la imagen satelital sea más vistosa: la
+ * pasada de VIIRS trae las nubes reales del día, y en Colombia en temporada de
+ * lluvias eso es precisamente medio país tapado — incluidos los marcadores que
+ * hay que mirar. El relieve muestra la montaña y el cauce, que es la geografía
+ * que explica por qué se inundó esa vereda y no la de al lado.
+ *
+ * El satélite queda a un toque en el conmutador, que es donde tiene sentido:
+ * cuando alguien quiere ver la nubosidad o comparar el antes y el después.
  */
-export const CAPA_INICIAL_LECTURA: ClaveCapaBase = 'satelite';
+export const CAPA_INICIAL_LECTURA: ClaveCapaBase = 'relieve';
 
 /**
  * Capa con la que arranca un mapa donde hay que marcar un punto.

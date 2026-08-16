@@ -13,20 +13,26 @@ import { fechaImagenGibs, textoFechaImagen } from '@/lib/capasMapa';
  */
 
 describe('MapaUbicacion — conmutador de capas', () => {
-  it('MapaUbicacion_soloLectura_arrancaEnSateliteYDiceLaFechaDeLaToma', () => {
+  it('MapaUbicacion_soloLectura_arrancaEnRelievePorqueLasNubesTapanElTerritorio', () => {
     renderWithI18n(<MapaUbicacion valor={null} />);
 
-    const satelite = screen.getByRole('button', { name: 'Satélite' });
-    expect(satelite).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Relieve' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    // Sin capa satelital activa no hay fecha de toma que anunciar.
+    expect(screen.queryByText(/Imagen VIIRS/)).not.toBeInTheDocument();
+  });
+
+  it('MapaUbicacion_alPasarASatelite_diceLaFechaDeLaTomaYQueNoEsEnVivo', async () => {
+    const usuario = userEvent.setup();
+    renderWithI18n(<MapaUbicacion valor={null} />);
+
+    await usuario.click(screen.getByRole('button', { name: 'Satélite' }));
 
     const fecha = textoFechaImagen(fechaImagenGibs());
     expect(screen.getByText(new RegExp(`Imagen VIIRS del ${fecha}`))).toBeInTheDocument();
-  });
-
-  it('MapaUbicacion_soloLectura_advierteQueNoEsTiempoReal', () => {
-    renderWithI18n(<MapaUbicacion valor={null} />);
-
-    expect(screen.getByText(/No es tiempo real/)).toBeInTheDocument();
+    expect(screen.getByText(/no es en vivo/)).toBeInTheDocument();
   });
 
   it('MapaUbicacion_editable_arrancaEnCallesParaNoTaparElPuntoQueSeMarca', () => {

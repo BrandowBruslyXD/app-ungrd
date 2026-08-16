@@ -1317,7 +1317,7 @@
       "satelite": "Satélite",
       "relieve": "Relieve",
       "calles": "Calles",
-      "pieSatelite": "Imagen VIIRS del {{fecha}} · NASA GIBS",
+      "pieSatelite": "Imagen VIIRS del {{fecha}} · no es en vivo",
       "avisoSatelite": "El satélite pasa dos veces al día y la imagen llega entre una y tres horas después. No es tiempo real.",
       "pieRelieve": "Relieve sombreado · OpenTopoMap, con datos de OpenStreetMap y SRTM",
       "pieCalles": "Mapa de calles · colaboradores de OpenStreetMap"

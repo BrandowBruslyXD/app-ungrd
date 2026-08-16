@@ -461,68 +461,55 @@ export default function MapaObservacion({
       </div>
 
       {/* ── Leyenda ────────────────────────────────────────────────────────
-          Tres geometrías distintas sobre la misma imagen no se entienden solas.
-          Va debajo del mapa y no encima para no tapar el territorio. */}
-      <div className="bg-papel-hueco p-3">
-        <div className="flex flex-wrap gap-x-6 gap-y-3">
-          <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-wide text-tinta-600">
-              {t('manager.observacion.leyendaReportes')}
-            </p>
-            <ul className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
-              {(['alta', 'media', 'baja'] as const).map((tono) => (
-                <li key={tono} className="flex items-center gap-1.5">
-                  <span
-                    className="h-3 w-3 shrink-0 rounded-full"
-                    style={{ backgroundColor: RELLENO_REPORTE[tono] }}
-                    aria-hidden="true"
-                  />
-                  {t(`manager.observacion.leyendaPrioridad.${tono}`)}
-                </li>
-              ))}
-              <li className="flex items-center gap-1.5">
-                <span
-                  className="h-3 w-3 shrink-0 rounded-full border-2 border-white bg-azul-600 ring-1 ring-azul-600"
-                  aria-hidden="true"
-                />
-                {t('manager.observacion.leyendaCorroborado')}
-              </li>
-            </ul>
-          </div>
+          Tres geometrías distintas sobre la misma imagen no se entienden solas,
+          pero una leyenda tampoco puede ser un párrafo: va en una sola fila, sin
+          encabezados de sección, y la fecha de la toma al final. La procedencia
+          completa de las fuentes está junto al título de la sección; repetirla
+          aquí solo añadía ruido. */}
+      <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 bg-papel-hueco px-3 py-2.5 text-sm text-tinta-700">
+        {(['alta', 'media', 'baja'] as const).map((tono) => (
+          <li key={tono} className="flex items-center gap-1.5">
+            <span
+              className="h-2.5 w-2.5 shrink-0 rounded-full"
+              style={{ backgroundColor: RELLENO_REPORTE[tono] }}
+              aria-hidden="true"
+            />
+            {t(`manager.observacion.leyendaPrioridad.${tono}`)}
+          </li>
+        ))}
+        <li className="flex items-center gap-1.5">
+          <span
+            className="h-2.5 w-2.5 shrink-0 rounded-full border-2 border-white bg-azul-600 ring-1 ring-azul-600"
+            aria-hidden="true"
+          />
+          {t('manager.observacion.leyendaCorroborado')}
+        </li>
 
-          <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-wide text-tinta-600">
-              {t('manager.observacion.leyendaSenales')}
-            </p>
-            <ul className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
-              <li className="flex items-center gap-1.5">
-                <span
-                  className="h-3.5 w-3.5 shrink-0 rounded-full border-2"
-                  style={{ borderColor: TRAZO_SISMO, backgroundColor: `${RELLENO_SISMO}59` }}
-                  aria-hidden="true"
-                />
-                {t('manager.observacion.leyendaSismo')}
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span
-                  className="h-3 w-3 shrink-0 rotate-45 bg-alerta-600"
-                  aria-hidden="true"
-                />
-                {t('manager.observacion.leyendaAlerta')}
-              </li>
-            </ul>
-          </div>
-        </div>
+        <li aria-hidden="true" className="h-4 w-px bg-papel-borde" />
 
-        {/*
-         * La honestidad del dato, escrita donde se toma la decisión: lo que se ve
-         * es la última pasada completa del satélite, no «tiempo real».
-         */}
-        <p className="mt-3 border-t border-papel-borde pt-3 text-sm text-tinta-600">
-          <span className="font-semibold text-tinta-800">{pieDeCapa}</span>
-          {capaActiva === 'satelite' && ` ${t('mapa.capas.avisoSatelite')}`}
-        </p>
-      </div>
+        <li className="flex items-center gap-1.5">
+          <span
+            className="h-3 w-3 shrink-0 rounded-full border-2"
+            style={{ borderColor: TRAZO_SISMO, backgroundColor: `${RELLENO_SISMO}59` }}
+            aria-hidden="true"
+          />
+          {t('manager.observacion.leyendaSismo')}
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 shrink-0 rotate-45 bg-alerta-600" aria-hidden="true" />
+          {t('manager.observacion.leyendaAlerta')}
+        </li>
+
+        {/* La honestidad del dato se queda, en corto: lo que se ve es la última
+            pasada completa del satélite, no «tiempo real». El detalle de cada
+            cuánto pasa vive en el título del elemento, para quien pregunte. */}
+        <li
+          className="ms-auto text-tinta-600"
+          title={capaActiva === 'satelite' ? t('mapa.capas.avisoSatelite') : undefined}
+        >
+          {pieDeCapa}
+        </li>
+      </ul>
     </div>
   );
 }
