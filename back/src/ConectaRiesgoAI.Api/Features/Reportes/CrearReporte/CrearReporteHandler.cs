@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ConectaRiesgoAI.Api.Features.Reportes.CrearReporte;
 
 /// <summary>Crea el reporte y arranca su cronología en <see cref="EstadoReporte.Reportado"/>.</summary>
-public class CrearReporteHandler(AppDbContext context) : IRequestHandler<CrearReporteCommand, CrearReporteResponse>
+public class CrearReporteHandler(AppDbContext context, ILogger<CrearReporteHandler> logger)
+    : IRequestHandler<CrearReporteCommand, CrearReporteResponse>
 {
     private const int MaxIntentos = 5;
 
@@ -17,7 +18,10 @@ public class CrearReporteHandler(AppDbContext context) : IRequestHandler<CrearRe
     /// consecutivo; el índice único en <c>Codigo</c> (<see cref="Persistence.Configurations.ReporteConfiguration"/>)
     /// lo detecta y aquí se reintenta en vez de perder el reporte de la emergencia con un 500.
     /// Cada intento suma su propio número al conteo (no solo 1), así que el candidato cambia
-    /// aunque el conteo en base de datos siga igual entre reintentos.
+    /// aunque el conteo en base de datos siga igual entre reintentos. Solo se reintenta si la
+    /// falla fue realmente esa colisión: cualquier otro <see cref="DbUpdateException"/> (por
+    /// ejemplo un <c>UsuarioId</c> que ya no existe) se relanza de inmediato en vez de insistir
+    /// 5 veces con un insert condenado a fallar igual.
     /// </summary>
     public async Task<CrearReporteResponse> Handle(CrearReporteCommand command, CancellationToken cancellationToken)
     {
@@ -35,15 +39,26 @@ public class CrearReporteHandler(AppDbContext context) : IRequestHandler<CrearRe
                 await context.SaveChangesAsync(cancellationToken);
                 return new CrearReporteResponse(reporte.Codigo, reporte.Estado, reporte.CreadoEn);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
                 DesvincularDelSeguimiento(reporte);
+
+                if (!await ExisteOtroReporteConEseCodigo(reporte.Codigo, cancellationToken))
+                {
+                    logger.LogWarning(ex,
+                        "No se pudo crear el reporte {Codigo}: el error no fue una colisión del código",
+                        reporte.Codigo);
+                    throw;
+                }
             }
         }
 
         throw new InvalidOperationException(
             "No se pudo generar un código único para el reporte tras varios reportes simultáneos. Intenta de nuevo.");
     }
+
+    private Task<bool> ExisteOtroReporteConEseCodigo(string codigo, CancellationToken cancellationToken) =>
+        context.Reportes.AsNoTracking().AnyAsync(r => r.Codigo == codigo, cancellationToken);
 
     private async Task<int> ContarReportesDeHoy(DateTime ahora, CancellationToken cancellationToken)
     {

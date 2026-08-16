@@ -3,6 +3,7 @@ using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Features.Reportes.CrearReporte;
 using ConectaRiesgoAI.Api.Tests.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ConectaRiesgoAI.Api.Tests.Features.Reportes;
 
@@ -22,7 +23,7 @@ public class CrearReporteHandlerTests
     public async Task Handle_ReporteValido_DevuelveCodigoDelDiaConEstadoReportado()
     {
         using var contexto = AppDbContextPruebas.Crear();
-        var handler = new CrearReporteHandler(contexto);
+        var handler = new CrearReporteHandler(contexto, NullLogger<CrearReporteHandler>.Instance);
 
         var respuesta = await handler.Handle(NuevoComando(), CancellationToken.None);
 
@@ -35,7 +36,7 @@ public class CrearReporteHandlerTests
     public async Task Handle_ReporteValido_RegistraElPrimerEventoDeCronologia()
     {
         using var contexto = AppDbContextPruebas.Crear();
-        var handler = new CrearReporteHandler(contexto);
+        var handler = new CrearReporteHandler(contexto, NullLogger<CrearReporteHandler>.Instance);
 
         var respuesta = await handler.Handle(NuevoComando(), CancellationToken.None);
 
@@ -51,7 +52,7 @@ public class CrearReporteHandlerTests
     public async Task Handle_UsuarioIdDelComando_QuedaAsociadoAlReporte()
     {
         using var contexto = AppDbContextPruebas.Crear();
-        var handler = new CrearReporteHandler(contexto);
+        var handler = new CrearReporteHandler(contexto, NullLogger<CrearReporteHandler>.Instance);
 
         var respuesta = await handler.Handle(NuevoComando(usuarioId: 7), CancellationToken.None);
 
@@ -63,7 +64,7 @@ public class CrearReporteHandlerTests
     public async Task Handle_DosReportesElMismoDia_IncrementaElConsecutivo()
     {
         using var contexto = AppDbContextPruebas.Crear();
-        var handler = new CrearReporteHandler(contexto);
+        var handler = new CrearReporteHandler(contexto, NullLogger<CrearReporteHandler>.Instance);
 
         await handler.Handle(NuevoComando(), CancellationToken.None);
         var segunda = await handler.Handle(NuevoComando(), CancellationToken.None);
@@ -100,9 +101,28 @@ public class CrearReporteHandlerTests
         });
         await contexto.SaveChangesAsync();
 
-        var handler = new CrearReporteHandler(contexto);
+        var handler = new CrearReporteHandler(contexto, NullLogger<CrearReporteHandler>.Instance);
         var respuesta = await handler.Handle(NuevoComando(), CancellationToken.None);
 
         Assert.Equal($"RPT-{hoy:yyyy-MM-dd}-0003", respuesta.Codigo);
+    }
+
+    /// <summary>
+    /// Un <see cref="DbUpdateException"/> que no sea la colisión del índice único de
+    /// <c>Codigo</c> —aquí, un <c>UsuarioId</c> que no existe— no debe tratarse como si lo
+    /// fuera: reintentar 5 veces un insert condenado a fallar igual solo demora un error real
+    /// y lo disfraza de "no se pudo generar un código único", que no es la causa.
+    /// </summary>
+    [Fact]
+    public async Task Handle_DbUpdateExceptionQueNoEsColisionDeCodigo_SeRelanzaSinReintentar()
+    {
+        var (contexto, conexion) = AppDbContextSqlitePruebas.Crear();
+        using var contextoDesechable = contexto;
+        using var conexionDesechable = conexion;
+
+        var handler = new CrearReporteHandler(contexto, NullLogger<CrearReporteHandler>.Instance);
+
+        await Assert.ThrowsAsync<DbUpdateException>(
+            () => handler.Handle(NuevoComando(usuarioId: 999_999), CancellationToken.None));
     }
 }
