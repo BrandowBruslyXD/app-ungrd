@@ -11,6 +11,7 @@ namespace ConectaRiesgoAI.Api.Features.Ingesta.RegistrarCenso;
 /// </summary>
 public static class MapeoNivelDanoVivienda
 {
+    /// <summary>Aproxima el <see cref="NivelDano"/> por palabras clave; sin ninguna reconocida, devuelve <see cref="NivelDano.Moderado"/>.</summary>
     public static NivelDano Aproximar(string? estadoVivienda)
     {
         string texto = estadoVivienda?.Trim().ToLowerInvariant() ?? string.Empty;

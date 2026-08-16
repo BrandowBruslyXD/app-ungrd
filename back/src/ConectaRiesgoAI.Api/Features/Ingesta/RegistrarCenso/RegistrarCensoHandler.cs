@@ -19,6 +19,13 @@ public class RegistrarCensoHandler(AppDbContext db, ILogger<RegistrarCensoHandle
 {
     private const int MaximoIntentos = 3;
 
+    /// <summary>
+    /// Verifica acreditación y consentimiento, resuelve la <see cref="OperacionCenso"/> del
+    /// brigadista y persiste la <see cref="PersonaAfectada"/> con su núcleo familiar y daño de
+    /// vivienda, si vienen en el comando.
+    /// </summary>
+    /// <exception cref="UnauthorizedAccessException">El teléfono no tiene <see cref="Usuario.EsAcreditadoCenso"/>.</exception>
+    /// <exception cref="InvalidOperationException">La cédula ya está registrada en el mismo evento censal.</exception>
     public async Task<RegistrarCensoResponse> Handle(RegistrarCensoCommand command, CancellationToken cancellationToken)
     {
         // El validador ya bloqueó Consentimiento == false con un 400 antes de llegar aquí
@@ -130,7 +137,7 @@ public class RegistrarCensoHandler(AppDbContext db, ILogger<RegistrarCensoHandle
                 await db.SaveChangesAsync(cancellationToken);
                 break;
             }
-            catch (DbUpdateException ex) when (ViolaIndiceUnicoDeCodigo(ex) && intento < MaximoIntentos)
+            catch (DbUpdateException ex) when (EsViolacionDeIndiceUnico(ex) && intento < MaximoIntentos)
             {
                 // Dos registros del mismo día calcularon el mismo consecutivo: se descarta el
                 // intento y se recalcula. Cualquier otro fallo sigue de largo hasta
@@ -146,8 +153,11 @@ public class RegistrarCensoHandler(AppDbContext db, ILogger<RegistrarCensoHandle
 
     /// <summary>
     /// Reutiliza la jornada de censo abierta del brigadista en ese municipio; si no hay una, abre
-    /// una nueva. Con el mismo reintento ante colisión de código único que se usa más abajo para
-    /// <see cref="PersonaAfectada"/>.
+    /// una nueva. El índice único filtrado de <see cref="Persistence.Configurations.OperacionCensoConfiguration"/>
+    /// garantiza que dos peticiones concurrentes no abran dos jornadas para el mismo par
+    /// brigadista/municipio: la que pierde la carrera choca en base de datos y este método, con el
+    /// mismo reintento que usa más abajo <see cref="PersonaAfectada"/>, termina reutilizando la que
+    /// sí quedó guardada.
     /// </summary>
     private async Task<OperacionCenso> ObtenerOAbrirOperacion(
         string municipio, string? barrioVereda, Usuario brigadista, CancellationToken cancellationToken)
@@ -185,7 +195,7 @@ public class RegistrarCensoHandler(AppDbContext db, ILogger<RegistrarCensoHandle
                 await db.SaveChangesAsync(cancellationToken);
                 return operacion;
             }
-            catch (DbUpdateException ex) when (ViolaIndiceUnicoDeCodigo(ex) && intento < MaximoIntentos)
+            catch (DbUpdateException ex) when (EsViolacionDeIndiceUnico(ex) && intento < MaximoIntentos)
             {
                 db.OperacionesCenso.Remove(operacion);
             }
@@ -198,6 +208,7 @@ public class RegistrarCensoHandler(AppDbContext db, ILogger<RegistrarCensoHandle
             cancellationToken);
     }
 
+    /// <summary>Junta el estado de vivienda en texto libre del bot con la necesidad declarada, si viene.</summary>
     private static string ArmarDescripcionDano(RegistrarCensoCommand command)
     {
         List<string> partes = [command.EstadoVivienda!.Trim()];
@@ -209,6 +220,13 @@ public class RegistrarCensoHandler(AppDbContext db, ILogger<RegistrarCensoHandle
         return string.Join(" | ", partes);
     }
 
-    private static bool ViolaIndiceUnicoDeCodigo(DbUpdateException ex) =>
+    /// <summary>
+    /// Cualquier violación de índice único de Postgres, sin distinguir cuál — sirve tanto para la
+    /// colisión de <c>Codigo</c> (se reintenta con un consecutivo nuevo) como para la de cédula
+    /// duplicada bajo carrera (el reintento vuelve a pasar por la comprobación de "ya registrada"
+    /// de arriba, que es quien la convierte en el 400 correcto) y para la de jornada duplicada en
+    /// <see cref="ObtenerOAbrirOperacion"/>.
+    /// </summary>
+    private static bool EsViolacionDeIndiceUnico(DbUpdateException ex) =>
         ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 }

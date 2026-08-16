@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ConectaRiesgoAI.Api.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260816050510_AgregaCensoBrigadista")]
+    [Migration("20260816053027_AgregaCensoBrigadista")]
     partial class AgregaCensoBrigadista
     {
         /// <inheritdoc />
@@ -194,12 +194,13 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BrigadistaId");
-
                     b.HasIndex("Codigo")
                         .IsUnique();
 
-                    b.HasIndex("Municipio", "BrigadistaId", "CerradaEn");
+                    b.HasIndex("BrigadistaId", "Municipio")
+                        .IsUnique()
+                        .HasDatabaseName("IX_operaciones_censo_BrigadistaId_Municipio_Abierta")
+                        .HasFilter("\"CerradaEn\" IS NULL");
 
                     b.ToTable("operaciones_censo", (string)null);
                 });

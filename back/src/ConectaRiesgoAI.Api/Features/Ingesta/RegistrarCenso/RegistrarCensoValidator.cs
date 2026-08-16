@@ -9,6 +9,7 @@ namespace ConectaRiesgoAI.Api.Features.Ingesta.RegistrarCenso;
 /// </summary>
 public class RegistrarCensoValidator : AbstractValidator<RegistrarCensoCommand>
 {
+    /// <summary>Registra las reglas de forma y las dos que no dependen de la base de datos.</summary>
     public RegistrarCensoValidator()
     {
         RuleFor(c => c.Telefono)
@@ -48,19 +49,5 @@ public class RegistrarCensoValidator : AbstractValidator<RegistrarCensoCommand>
             .Must(m => m is null || m.Count <= 20)
             .WithMessage("No puede haber más de 20 integrantes de núcleo familiar en un solo registro");
         RuleForEach(c => c.MiembrosNucleo).SetValidator(new MiembroNucleoFamiliarInputValidator());
-    }
-}
-
-/// <summary>Reglas de forma de cada integrante del núcleo familiar dentro del comando.</summary>
-public class MiembroNucleoFamiliarInputValidator : AbstractValidator<MiembroNucleoFamiliarInput>
-{
-    public MiembroNucleoFamiliarInputValidator()
-    {
-        RuleFor(m => m.Nombres).NotEmpty().MaximumLength(120);
-        RuleFor(m => m.Apellidos).NotEmpty().MaximumLength(120);
-        RuleFor(m => m.Parentesco).IsInEnum();
-        RuleFor(m => m.Edad).InclusiveBetween(0, 120);
-        RuleFor(m => m.NumeroDocumento).MaximumLength(30);
-        RuleFor(m => m.TipoDocumento).IsInEnum().When(m => m.TipoDocumento is not null);
     }
 }

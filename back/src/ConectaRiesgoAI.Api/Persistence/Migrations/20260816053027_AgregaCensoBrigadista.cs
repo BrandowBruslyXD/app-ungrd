@@ -165,20 +165,17 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                 column: "PersonaAfectadaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_operaciones_censo_BrigadistaId",
+                name: "IX_operaciones_censo_BrigadistaId_Municipio_Abierta",
                 table: "operaciones_censo",
-                column: "BrigadistaId");
+                columns: new[] { "BrigadistaId", "Municipio" },
+                unique: true,
+                filter: "\"CerradaEn\" IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_operaciones_censo_Codigo",
                 table: "operaciones_censo",
                 column: "Codigo",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_operaciones_censo_Municipio_BrigadistaId_CerradaEn",
-                table: "operaciones_censo",
-                columns: new[] { "Municipio", "BrigadistaId", "CerradaEn" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_personas_afectadas_Codigo",

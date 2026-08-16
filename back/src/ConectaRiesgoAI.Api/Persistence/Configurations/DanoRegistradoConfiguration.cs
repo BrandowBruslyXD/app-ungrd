@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ConectaRiesgoAI.Api.Persistence.Configurations;
 
+/// <inheritdoc />
 public class DanoRegistradoConfiguration : IEntityTypeConfiguration<DanoRegistrado>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<DanoRegistrado> builder)
     {
         builder.ToTable("danos_registrados");

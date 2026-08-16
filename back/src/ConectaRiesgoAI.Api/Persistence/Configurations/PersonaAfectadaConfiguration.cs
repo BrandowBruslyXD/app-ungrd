@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ConectaRiesgoAI.Api.Persistence.Configurations;
 
+/// <inheritdoc />
 public class PersonaAfectadaConfiguration : IEntityTypeConfiguration<PersonaAfectada>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<PersonaAfectada> builder)
     {
         builder.ToTable("personas_afectadas");

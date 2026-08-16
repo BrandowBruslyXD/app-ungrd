@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ConectaRiesgoAI.Api.Persistence.Configurations;
 
+/// <inheritdoc />
 public class OperacionCensoConfiguration : IEntityTypeConfiguration<OperacionCenso>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<OperacionCenso> builder)
     {
         builder.ToTable("operaciones_censo");
@@ -17,8 +19,16 @@ public class OperacionCensoConfiguration : IEntityTypeConfiguration<OperacionCen
 
         builder.HasIndex(o => o.Codigo).IsUnique();
 
-        // El handler busca por estas tres para reutilizar la jornada abierta del día.
-        builder.HasIndex(o => new { o.Municipio, o.BrigadistaId, o.CerradaEn });
+        // Único y filtrado por jornada abierta: sin esto, dos peticiones concurrentes del mismo
+        // brigadista para el mismo municipio pasan ambas la comprobación de "no hay una abierta"
+        // y crean dos OperacionCenso abiertas a la vez (cada una con un Codigo distinto, así que
+        // no chocan entre sí) — el siguiente SingleOrDefaultAsync del handler encontraría más de
+        // una fila y lanzaría InvalidOperationException. Este índice hace que la segunda inserción
+        // choque en base de datos, donde el handler ya sabe reintentar.
+        builder.HasIndex(o => new { o.BrigadistaId, o.Municipio })
+            .IsUnique()
+            .HasFilter("\"CerradaEn\" IS NULL")
+            .HasDatabaseName(IndicesPostgres.OperacionesCensoBrigadistaMunicipioAbierta);
 
         builder.HasOne(o => o.Brigadista)
             .WithMany()
