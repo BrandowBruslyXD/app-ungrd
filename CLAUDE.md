@@ -144,7 +144,6 @@ La pregunta de revisión no es "¿respeta las capas?" sino **"¿esta rebanada se
 ### TypeScript / React
 
 - TypeScript strict. **Nada de `any`.**
-- Ningún texto de UI hardcodeado: todo por i18n.
 - La lógica de negocio vive en hooks, no en componentes.
 - Todo estado de carga y de error de una llamada a API se maneja explícitamente y se le muestra al
   usuario en lenguaje comprensible — sin jerga ni códigos.
@@ -179,7 +178,7 @@ La pregunta de revisión no es "¿respeta las capas?" sino **"¿esta rebanada se
 | Skill | Para qué |
 |---|---|
 | `audit-backend` | Auditar una rebanada o todo el backend: arquitectura, caminos de fallo, seguridad, tests |
-| `audit-frontend` | Auditar el frontend: tipado, estado, datos, i18n, seguridad, accesibilidad, performance |
+| `audit-frontend` | Auditar el frontend: tipado, estado, datos, seguridad, accesibilidad, performance |
 | `auditar-feature` | Verificar que lo que un issue declara corresponde con el código real |
 | `crear-epica` | Entrevista guiada para convertir un requerimiento en issue épica |
 | `consultar-issues` | Consultar y agrupar issues por categoría, estado, milestone |
