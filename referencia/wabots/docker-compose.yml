@@ -1,0 +1,43 @@
+# Infraestructura local para desarrollo.
+# Levanta Postgres + Redis. Evolution API la administras tú aparte,
+# pero dejamos el servicio comentado por si quieres correrla aquí mismo.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: wabots_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: wabots
+      POSTGRES_PASSWORD: wabots_dev_pass
+      POSTGRES_DB: wabots
+    ports:
+      - "5432:5432"
+    volumes:
+      - wabots_pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: wabots_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - wabots_redisdata:/data
+
+  # Descomenta si quieres correr Evolution API localmente con este stack.
+  # evolution-api:
+  #   image: atendai/evolution-api:latest
+  #   container_name: wabots_evolution
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - AUTHENTICATION_API_KEY=cambia_esta_api_key
+  #     - DATABASE_ENABLED=false
+  #   volumes:
+  #     - wabots_evolution:/evolution/instances
+
+volumes:
+  wabots_pgdata:
+  wabots_redisdata:
+  # wabots_evolution:

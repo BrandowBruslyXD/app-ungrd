@@ -7,16 +7,18 @@ Lo que nos diferencia es cerrar el ciclo: **reporte → verificación satelital 
 ## Estructura
 
 ```
-back/     API en .NET 10 (slice vertical + PostgreSQL)
-front/    Aplicación React 18 + Vite + TypeScript
-docs/     Documentación del proyecto
+back/       API en .NET 10 (slice vertical + PostgreSQL)
+front/      Aplicación React 18 + Vite + TypeScript
+servicios/  ms-bot-api: puente temporal del bot de WhatsApp, corre aparte en un VPS
+infra/      Scripts de aprovisionamiento de infraestructura
+docs/       Documentación del proyecto
 ```
 
 ## Requisitos
 
 - .NET 10 SDK
 - Node 20+
-- Docker (para PostgreSQL en local)
+- Docker (para PostgreSQL y Azurite en local)
 
 ## Cómo correr
 
@@ -25,7 +27,7 @@ docs/     Documentación del proyecto
 cp back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json \
    back/src/ConectaRiesgoAI.Api/appsettings.Development.json
 
-docker compose up -d                                   # base de datos
+docker compose up -d                    # base de datos + Azurite (emulador de Azure Blob Storage)
 dotnet ef database update --project back/src/ConectaRiesgoAI.Api
 dotnet run --project back/src/ConectaRiesgoAI.Api      # API  → localhost:5000
 npm install --prefix front && npm run dev --prefix front  # web → localhost:5173
@@ -38,7 +40,7 @@ Para confirmar que la API quedó arriba: `curl http://localhost:5000/health` deb
 | Ambiente | URL |
 |:---|:---|
 | Backend (producción) | https://conectariesgoai-api.delightfulsand-f3f95f4d.brazilsouth.azurecontainerapps.io |
-| Frontend (producción) | `conectariesgoai.vercel.app` — el issue #33 (front sin inicializar) está **cerrado**; el front ya tiene siete features construidas (`auth`, `reportes`, `gestor`, `rescatista`, `socorro`, `ungrd`, `publico`). Ver [docs/EXPERIENCIAS-FRONTEND.md](docs/EXPERIENCIAS-FRONTEND.md#despliegue) |
+| Frontend (producción) | **[conectariesgoai.vercel.app](https://conectariesgoai.vercel.app)** — el issue #33 (front sin inicializar) está **cerrado**; el front ya tiene siete features construidas (`auth`, `reportes`, `gestor`, `rescatista`, `socorro`, `ungrd`, `publico`). Ver [docs/EXPERIENCIAS-FRONTEND.md](docs/EXPERIENCIAS-FRONTEND.md#despliegue) |
 
 El backend corre en Azure Container Apps (`conectariesgoai-rg`, región `brazilsouth`) con
 PostgreSQL en Azure Database for PostgreSQL Flexible Server. Cada push a `main` que toque `back/`

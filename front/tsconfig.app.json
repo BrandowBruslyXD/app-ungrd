@@ -18,7 +18,8 @@
     /* Path alias — depth-invariant imports for src (@/foo === src/foo from any file) */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "remotion": ["node_modules/remotion"]
     },
 
     /* Linting */

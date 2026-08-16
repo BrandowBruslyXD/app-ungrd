@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Isotipo WA Bots: cuadrado redondeado con gradiente de marca + W trazada -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#25d366"/>
+      <stop offset="1" stop-color="#1eae57"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="url(#g)"/>
+  <!-- W -->
+  <path d="M14 21 L23 44 L32 27 L41 44 L50 21"
+        fill="none" stroke="#07110a" stroke-width="6"
+        stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  <!-- punto de "en línea" (guiño al estado del chat) -->
+  <circle cx="50" cy="15" r="6" fill="#ffffff"/>
+  <circle cx="50" cy="15" r="3.4" fill="#22d3ee"/>
+</svg>

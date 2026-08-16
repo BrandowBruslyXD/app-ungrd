@@ -8,6 +8,7 @@ name: Verificar backend
 
 on:
   pull_request:
+    branches: [main]
     paths:
       - "back/**"
       - ".github/workflows/verificar-backend.yml"
@@ -29,7 +30,7 @@ jobs:
   verificar:
     name: Compilación y pruebas
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Descargar código
@@ -47,5 +48,58 @@ jobs:
       - name: Compilar
         run: dotnet build back/ConectaRiesgoAI.slnx --no-restore --configuration Release
 
-      - name: Correr pruebas
-        run: dotnet test back/ConectaRiesgoAI.slnx --no-build --configuration Release --verbosity minimal
+      - name: Correr pruebas con cobertura
+        run: dotnet test back/ConectaRiesgoAI.slnx --no-build --configuration Release --verbosity minimal --settings back/tests/ConectaRiesgoAI.Api.Tests/coverlet.runsettings --collect:"XPlat Code Coverage"
+
+      - name: Validar umbral de cobertura (90%)
+        run: |
+          set -e
+          # Usa el XML de cobertura generado por coverlet directamente (no depende de reportgenerator).
+          COVERAGE_XML=$(find back/tests/ConectaRiesgoAI.Api.Tests/TestResults -name "coverage.cobertura.xml" | head -1)
+          if [ -z "$COVERAGE_XML" ]; then
+            echo "::error::No se encontró coverage.cobertura.xml — coverlet no generó el archivo de cobertura"
+            exit 1
+          fi
+
+          LINE_RATE=$(grep -oP 'line-rate="\K[^"]+' "$COVERAGE_XML" | head -1)
+          if [ -z "$LINE_RATE" ]; then
+            echo "::error::No se pudo extraer line-rate del XML de cobertura — XML corrupto o atributo ausente"
+            exit 1
+          fi
+
+          LINE_PCT=$(echo "$LINE_RATE * 100" | bc)
+          THRESHOLD=90
+
+          echo "Cobertura de línea: ${LINE_PCT}%"
+          echo "Umbral requerido: ${THRESHOLD}%"
+
+          if awk "BEGIN {exit !($LINE_PCT < $THRESHOLD)}"; then
+            echo "::error::La cobertura de línea (${LINE_PCT}%) está por debajo del umbral requerido (${THRESHOLD}%)"
+            exit 1
+          fi
+
+      - name: Instalar ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Generar reporte de cobertura
+        run: |
+          reportgenerator "-reports:back/tests/ConectaRiesgoAI.Api.Tests/TestResults/**/coverage.cobertura.xml" "-targetdir:coverage-report" "-reporttypes:MarkdownSummary" -verbosity:Verbose
+          if [ ! -f coverage-report/Summary.md ]; then
+            echo "::error::No se generó Summary.md — reportgenerator falló o no encontró archivos de entrada"
+            exit 1
+          fi
+
+      - name: Publicar resumen de cobertura
+        if: always()
+        run: |
+          echo "## 📊 Cobertura de Tests del Backend" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat coverage-report/Summary.md >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "No se pudo generar el resumen de cobertura" >> $GITHUB_STEP_SUMMARY
+
+      - name: Subir artefacto de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report/
+          retention-days: 30

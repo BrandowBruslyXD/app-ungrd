@@ -1,0 +1,127 @@
+# Despliegue AISLADO en el servidor del amigo (sin tocar sus proyectos).
+# - Postgres propio (volumen propio).
+# - Backend en la red 'edge' para hablar con evolution-api por DNS interno
+#   y recibir sus webhooks internamente (sin ngrok ni Traefik).
+# - Frontend (nginx) publicado SOLO en localhost del server → acceso por túnel SSH.
+services:
+  wabots-postgres:
+    image: postgres:16-alpine
+    container_name: wabots-postgres
+    restart: unless-stopped
+    env_file: ./deploy/.env.server
+    volumes:
+      - wabots_pgdata:/var/lib/postgresql/data
+    networks: [wabots-internal]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backup diario de NUESTRA BD (pg_dump comprimido + retención 14 días).
+  # Los dumps quedan en ./data/backups del host (dentro de /opt/wabots, nada
+  # fuera de nuestro directorio). Ver deploy/pg-backup.sh para restaurar.
+  wabots-backup:
+    image: postgres:16-alpine
+    container_name: wabots-backup
+    restart: unless-stopped
+    env_file: ./deploy/.env.server
+    depends_on:
+      wabots-postgres:
+        condition: service_healthy
+    networks: [wabots-internal]
+    volumes:
+      - ./data/backups:/backups
+      - ./deploy/pg-backup.sh:/pg-backup.sh:ro
+    entrypoint: ['sh', '/pg-backup.sh']
+
+  wabots-backend:
+    build: ./backend
+    container_name: wabots-backend
+    restart: unless-stopped
+    env_file: ./deploy/.env.server
+    environment:
+      # Zona horaria del servidor para fechas relativas (hoy/mañana) y agendamiento.
+      TZ: America/Bogota
+    depends_on:
+      wabots-postgres:
+        condition: service_healthy
+    networks: [wabots-internal, edge]
+    # Salud real (proceso vivo + BD contestando) vía GET /api/health. Si las
+    # migraciones fallan o la BD se cae, el contenedor queda 'unhealthy' y se
+    # ve en `docker ps` en lugar de fallar en silencio.
+    healthcheck:
+      test: ['CMD-SHELL', "node -e \"fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 90s # da tiempo a migraciones + precarga de Whisper
+    # Tope de memoria: si el backend se descontrola no se come la RAM del
+    # server del amigo (los demás proyectos no se enteran).
+    mem_limit: 2g
+    volumes:
+      # Modelos offline (Whisper STT + datos de idioma Tesseract OCR): persisten
+      # entre redeploys → no se vuelven a descargar y funciona sin internet.
+      - wabots_models:/opt/models
+      # Media archivada (auditoría): pruebas del editor Y adjuntos reales de las
+      # conversaciones (audios de clientes → OGG, imágenes), organizados en
+      # empresas/<tenant>/<flujo>/<teléfono>. Son datos de usuarios finales.
+      # Carpeta del host, limpiable a mano (rm -rf data/preview-media/*) o vía
+      # DELETE /api/admin/preview-media; además se auto-depura a los 7 días.
+      - ./data/preview-media:/app/media
+
+  # Daemon de sesión DeepSeek-web: SIEMPRE corriendo, SEPARADO del backend (sus
+  # redeploys no lo tocan). Reusa el perfil YA logueado (montado en
+  # ./data/deepseek-profiles/<label>), refresca el bearer+cookies headless y los
+  # escribe CIFRADOS en la BD (tabla deepseek_accounts). El backend solo LEE de
+  # ahí. Login inicial: `node index.mjs login <label>` en una máquina con pantalla
+  # (el WAF de DeepSeek no pasa headless) y se copia el perfil a ese volumen.
+  wabots-deepseek-daemon:
+    build: ./deepseek-daemon
+    container_name: wabots-deepseek-daemon
+    restart: unless-stopped
+    env_file: ./deploy/.env.server # aporta DATABASE_URL + ENCRYPTION_KEY
+    depends_on:
+      wabots-postgres:
+        condition: service_healthy
+    networks: [wabots-internal]
+    mem_limit: 1g # Chromium headless para el refresh
+    shm_size: 512m # margen para el navegador (login interactivo)
+    # VNC del login interactivo, SOLO en localhost del server → acceso por túnel SSH.
+    ports:
+      - '127.0.0.1:5900:5900'
+    volumes:
+      - ./data/deepseek-profiles:/profiles
+
+  wabots-frontend:
+    build: ./frontend
+    container_name: wabots-frontend
+    restart: unless-stopped
+    depends_on: [wabots-backend]
+    ports:
+      - '127.0.0.1:8090:80' # respaldo local (túnel SSH); el acceso normal es por dominio/Traefik
+    networks: [wabots-internal, edge] # edge: para que Traefik enrute el dominio
+
+  # Datos de demostración (forma de Shopify y Melonn) para probar flujos completos.
+  # Solo en la red interna: no expone puertos ni pasa por Traefik.
+  demo-api:
+    build: ./demo-api
+    container_name: wabots-demo-api
+    restart: unless-stopped
+    environment:
+      # Protege solo la ESCRITURA (crear pedidos). La lectura del catalogo queda abierta:
+      # esos precios ya son publicos en la tienda.
+      DEMO_API_KEY: ${DEMO_API_KEY:-}
+    # edge: para que Traefik la publique. Las plataformas externas (LETY es SaaS) no
+    # pueden alcanzar la red interna de Docker.
+    networks: [wabots-internal, edge]
+
+networks:
+  edge:
+    external: true # red compartida existente donde vive evolution-api
+  wabots-internal:
+    driver: bridge
+
+volumes:
+  wabots_pgdata:
+  wabots_models:

@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* Fondo claro con tintes suaves de marca (60-30-10: neutro claro dominante,
+   verde/teal de marca como secundario, acento índigo puntual). */
+body {
+  @apply bg-[#f0f4fa] text-slate-800 antialiased;
+  font-family: theme('fontFamily.sans');
+  background-image:
+    radial-gradient(50rem 50rem at 12% -10%, rgba(37, 211, 102, 0.07), transparent 55%),
+    radial-gradient(44rem 44rem at 100% 0%, rgba(129, 140, 248, 0.07), transparent 50%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(37, 211, 102, 0.25);
+  color: #0f172a;
+}
+
+@layer components {
+  /* ── Botones ── */
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold
+           outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-offset-2
+           focus-visible:ring-offset-white active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-brand-gradient text-ink-950 shadow-soft hover:shadow-glow-brand hover:brightness-105
+           focus-visible:ring-brand/60;
+  }
+  .btn-ghost {
+    @apply btn border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50
+           focus-visible:ring-slate-300;
+  }
+  /* ── Superficies (tarjetas claras) ── */
+  .card {
+    @apply rounded-2xl border border-slate-200/80 bg-white/85 p-5 shadow-soft backdrop-blur-xl;
+  }
+  .card-hover {
+    @apply transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lift;
+  }
+  .glass {
+    @apply border border-slate-200/70 bg-white/70 backdrop-blur-xl;
+  }
+
+  /* ── Formularios ── */
+  .input {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900
+           placeholder:text-slate-400 outline-none transition-colors duration-200
+           focus:border-brand focus:ring-2 focus:ring-brand/25;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500;
+  }
+
+  /* ── Variantes de la zona pública (landing + login), mismas que el panel ── */
+  .input-light {
+    @apply input bg-white/80;
+  }
+  .btn-primary-light {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-xl bg-brand-gradient px-5 py-2.5
+           text-sm font-semibold text-ink-950 shadow-[0_14px_34px_-10px_rgba(37,211,102,0.65)]
+           outline-none transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105
+           focus-visible:ring-2 focus-visible:ring-brand/60 active:scale-[0.98]
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-ghost-light {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-xl border border-slate-300/70
+           bg-white/70 px-5 py-2.5 text-sm font-semibold text-slate-700 backdrop-blur
+           outline-none transition-all duration-200 hover:-translate-y-0.5 hover:bg-white
+           focus-visible:ring-2 focus-visible:ring-slate-300 active:scale-[0.98]
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  /* ── Chips / badges ── */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-100/80 px-2 py-0.5 text-xs text-slate-600;
+  }
+
+  /* ── Carga (shimmer) ── */
+  .skeleton {
+    @apply rounded-lg bg-slate-200/70;
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.7) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+}
+
+@layer utilities {
+  /* Contenedor con scroll horizontal suave (tablas anchas en móvil). */
+  .scroll-x {
+    @apply overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ── Scrollbars finos y discretos (webkit + firefox) ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.35);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.55);
+  background-clip: content-box;
+}
+
+/* ── Controles nativos (select, date, time) en tema claro ── */
+select.input,
+select.input-light {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+}
+select.input option,
+select.input-light option {
+  background: #ffffff;
+  color: #0f172a;
+}
+input[type='date'],
+input[type='time'],
+input[type='datetime-local'],
+input[type='number'] {
+  color-scheme: light;
+}
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='time']::-webkit-calendar-picker-indicator,
+input[type='datetime-local']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.2s;
+}
+input[type='date']::-webkit-calendar-picker-indicator:hover,
+input[type='time']::-webkit-calendar-picker-indicator:hover,
+input[type='datetime-local']::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* ── React Flow: tema claro para lienzo, controles, minimapa y aristas ── */
+.react-flow__attribution {
+  display: none;
+}
+.react-flow__controls {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 8px 24px -12px rgba(15, 23, 42, 0.18);
+}
+.react-flow__controls-button {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+  color: #475569 !important;
+  backdrop-filter: blur(8px);
+  transition: background 0.15s;
+}
+.react-flow__controls-button:hover {
+  background: rgba(241, 245, 249, 1) !important;
+}
+.react-flow__controls-button svg {
+  fill: currentColor;
+}
+.react-flow__minimap {
+  background: rgba(248, 250, 252, 0.9) !important;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+.react-flow__edge-path {
+  stroke: #94a3b8;
+  stroke-width: 2;
+}
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: #1eae57;
+}
+.react-flow__connection-path {
+  stroke: #1eae57;
+  stroke-width: 2;
+}
+.react-flow__handle {
+  transition: box-shadow 0.15s;
+}
+
+/* Respeta usuarios con reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -17,6 +17,50 @@
 
 ---
 
+## Diagrama de despliegue
+
+```mermaid
+graph LR
+    subgraph Usuarios
+        Browser["Navegador\nmóvil / desktop"]
+        WA["WhatsApp"]
+    end
+
+    subgraph Vercel
+        Front["Frontend\nReact + Vite"]
+    end
+
+    subgraph Azure["Azure — brazilsouth"]
+        Back["Backend .NET 10\nAzure Container Apps"]
+        DB[("PostgreSQL\nAzure Database\nFlexible Server")]
+        Blob["Azure Blob Storage\nevidencias / censo"]
+    end
+
+    subgraph Bizz["VPS Bizz — temporal"]
+        wabots["wabots\nplataforma WhatsApp"]
+        BotAPI["ms-bot-api\npuente del bot"]
+    end
+
+    subgraph Externas["APIs externas"]
+        NASA["NASA FIRMS"]
+        SECOP["SECOP\ndatos.gov.co"]
+    end
+
+    Browser -->|HTTPS| Front
+    WA -->|webhook| wabots
+    Front -->|"HTTPS /api/* — JWT"| Back
+    wabots --> BotAPI
+    BotAPI -->|"X-Api-Key — /api/ingesta/*"| Back
+    Back --- DB
+    Back --- Blob
+    Back -->|"HTTP — timeout 5 s"| NASA
+    Back -->|"HTTP — timeout 5 s"| SECOP
+```
+
+> El bloque «VPS Bizz» es temporal: cuando el backend quede verificado en Azure, `ms-bot-api` se apaga y `wabots` apuntará directo al backend. Ver [INTEGRACION-BOT-BACKEND.md](INTEGRACION-BOT-BACKEND.md).
+
+---
+
 ## Estructura general
 
 ```
@@ -280,15 +324,14 @@ commit**. Ver [`README.md`](../README.md#ambientes) para la URL del backend en p
 ## Pendientes de este documento
 
 - **Nombre del producto (cerrado):** la app se llama **ConectaRiesgo** (UI y documentación). Los namespaces del backend usan `ConectaRiesgoAI`. `RespondeYA` quedó solo en documentos históricos de exploración (`docs/idea-negocio/`).
-- **`servicios/` vs `Integrations/` (parcialmente resuelto):** `back/src/ConectaRiesgoAI.Api/Integrations/`
-  **ya tiene código real y en uso** — `Integrations/Nasa`, `Integrations/Secop` e
-  `Integrations/Storage` existen y `ObtenerReporteHandler` los consume para componer
-  `GET /api/reportes/{codigo}`. Lo que sigue sin resolverse es la relación con `servicios/`: en este
-  repositorio, `ms-satelital`, `ms-transparencia` y `ms-social` solo contienen su
-  `appsettings.Example.json` — sin código fuente propio versionado aquí —, así que **la
-  implementación real y verificable hoy es la de `Integrations/`**, no la de `servicios/`. Falta que
-  el equipo confirme si esos tres microservicios corren desde otro repositorio/despliegue o si son
-  scaffolding sin terminar, y actualice `CONTROL.md` (decisión D3) en consecuencia.
+- **`servicios/` vs `Integrations/` (resuelto):** `back/src/ConectaRiesgoAI.Api/Integrations/`
+  **es el único camino vigente** — `Integrations/Nasa`, `Integrations/Secop` e
+  `Integrations/Storage` tienen código real y en uso, y `ObtenerReporteHandler` los consume para
+  componer `GET /api/reportes/{codigo}`. Los antiguos `ms-satelital`, `ms-transparencia` y
+  `ms-social` en `servicios/` nunca tuvieron código propio versionado (solo su
+  `appsettings.Example.json`) y se dieron de baja del repositorio. `servicios/` hoy solo contiene
+  `ms-bot-api`, que sí corre en producción como puente temporal del bot de WhatsApp — no compite
+  con `Integrations/`, resuelve un problema distinto.
 - Los enums de este documento siguen `CONTRATO-API.md` (`Incendio`, `Inundacion`, …), que difiere de las categorías de `idea-negocio/investigacion-uno.md` (`vivienda_albergue`, …). **Manda el contrato**, porque es lo que frontend y backend ya acordaron.
 - Falta definir el despliegue (`docker-compose.yml` solo cubre la base de datos local). El backend en
   producción sí está definido — Azure Container Apps, ver más abajo.

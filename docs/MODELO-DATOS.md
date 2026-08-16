@@ -8,15 +8,80 @@
 
 ## Vista general
 
-```
-Usuario ──< Reporte ──< EventoReporte          (quién reporta y cómo avanza)
-   │            │
-   │            ├──< Evidencia                  (fotos)
-   │            └──── VerificacionSatelital     (NASA FIRMS)
-   │
-   └──< OperacionCenso ──< PersonaAfectada ──< MiembroNucleoFamiliar
-        (jornada del brigadista)   │
-                                   └──< DanoRegistrado
+```mermaid
+erDiagram
+    Usuario {
+        int Id PK
+        string Nombre
+        string Email UK
+        string Rol
+        string Telefono UK
+        bool EsAcreditadoCenso
+        string OrigenRegistro
+        datetime CreadoEn
+    }
+    Reporte {
+        int Id PK
+        string Codigo UK
+        int UsuarioId FK
+        string Tipo
+        string Estado
+        string Canal
+        string Municipio
+        datetime CreadoEn
+    }
+    EventoReporte {
+        int Id PK
+        int ReporteId FK
+        string Estado
+        string Nota
+        int UsuarioId FK
+        datetime CreadoEn
+    }
+    VerificacionSatelital {
+        int Id PK
+        int ReporteId FK
+        bool Confirmado
+        int FocosDetectados
+        datetime ConsultadoEn
+    }
+    OperacionCenso {
+        int Id PK
+        string Codigo UK
+        int BrigadistaId FK
+        string Municipio
+        datetime AbiertaEn
+    }
+    PersonaAfectada {
+        int Id PK
+        string Codigo UK
+        int ReporteId FK
+        int RegistradoPorId FK
+        int OperacionCensoId FK
+        bool ConsentimientoDatos
+        string Estado
+    }
+    MiembroNucleoFamiliar {
+        int Id PK
+        int PersonaAfectadaId FK
+        string Parentesco
+        int Edad
+    }
+    DanoRegistrado {
+        int Id PK
+        int PersonaAfectadaId FK
+        string Categoria
+        string Nivel
+    }
+
+    Usuario ||--o{ Reporte : "reporta"
+    Reporte ||--o{ EventoReporte : "cronología"
+    Reporte ||--o| VerificacionSatelital : "verificación NASA"
+    Usuario ||--o{ OperacionCenso : "brigada"
+    OperacionCenso ||--o{ PersonaAfectada : "agrupa"
+    Reporte ||--o{ PersonaAfectada : "afectados"
+    PersonaAfectada ||--o{ MiembroNucleoFamiliar : "núcleo familiar"
+    PersonaAfectada ||--o{ DanoRegistrado : "daños"
 ```
 
 `PersonaAfectada.ReporteId` es opcional: puede colgar de un `Reporte` concreto o quedar suelta
@@ -101,6 +166,22 @@ La emergencia. Es el centro del sistema.
 > `AvenidaTorrencial` va **sin espacio**: es una creciente súbita que arrastra lodo, distinta de una inundación lenta.
 
 **Estado:** `Reportado` → `Verificado` → `Asignado` → `EnAtencion` → `Atendido` → `Cerrado`
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Reportado : ciudadano / bot crea reporte
+    Reportado --> Verificado : gestor verifica
+    Verificado --> Asignado : gestor asigna entidad
+    Asignado --> EnAtencion : entidad inicia atención
+    EnAtencion --> Atendido : trabajo completado
+    Atendido --> Cerrado : cierre formal
+
+    note right of Reportado
+        Se puede saltar etapas hacia adelante.
+        Nunca se regresa a un estado anterior.
+    end note
+```
 
 > Se puede saltar hacia adelante, **nunca hacia atrás**. Sin tildes ni eñes en los valores de enum, para que viajen igual entre C# y JavaScript.
 

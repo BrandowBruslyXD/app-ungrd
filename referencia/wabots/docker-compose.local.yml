@@ -1,0 +1,77 @@
+# Stack COMPLETO en local: Postgres + Backend (NestJS) + Frontend (nginx).
+# Derivado de docker-compose.server.yml, sin la red externa 'edge', sin backups
+# y sin el daemon de DeepSeek (requiere un perfil de navegador ya logueado).
+#
+#   docker compose -f docker-compose.local.yml up -d --build
+#
+# Puertos publicados en el host:
+#   8090 → panel (nginx, proxya /api y /socket.io al backend)
+#   3000 → backend directo (útil para consumir la API sin pasar por nginx)
+#   5434 → Postgres (no 5432/5433: ya ocupados por otros contenedores locales)
+services:
+  wabots-postgres:
+    image: postgres:16-alpine
+    container_name: wabots-postgres
+    restart: unless-stopped
+    env_file: ./deploy/.env.local
+    ports:
+      - '127.0.0.1:5434:5432'
+    volumes:
+      - wabots_local_pgdata:/var/lib/postgresql/data
+    networks: [wabots-local]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  wabots-backend:
+    build: ./backend
+    container_name: wabots-backend
+    restart: unless-stopped
+    env_file: ./deploy/.env.local
+    environment:
+      TZ: America/Bogota
+    depends_on:
+      wabots-postgres:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:3000:3000'
+    networks: [wabots-local]
+    healthcheck:
+      test: ['CMD-SHELL', "node -e \"fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 90s # migraciones + precarga del modelo Whisper
+    mem_limit: 2g
+    volumes:
+      # Modelos offline (Whisper STT / Tesseract OCR): persisten entre rebuilds.
+      - wabots_local_models:/opt/models
+      # Media archivada de pruebas y conversaciones.
+      - ./data/preview-media:/app/media
+
+  wabots-frontend:
+    build: ./frontend
+    container_name: wabots-frontend
+    restart: unless-stopped
+    depends_on: [wabots-backend]
+    ports:
+      - '127.0.0.1:8090:80'
+    networks: [wabots-local]
+
+  # Datos de demostración con la forma de Shopify y Melonn, para probar flujos completos
+  # sin depender de autorizaciones del cliente. Solo en la red interna.
+  demo-api:
+    build: ./demo-api
+    container_name: wabots-demo-api
+    restart: unless-stopped
+    networks: [wabots-local]
+
+networks:
+  wabots-local:
+    driver: bridge
+
+volumes:
+  wabots_local_pgdata:
+  wabots_local_models:

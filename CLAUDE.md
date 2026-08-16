@@ -56,11 +56,14 @@ El endpoint que compone la respuesta las llama con timeout corto; si una falla, 
 bloque** y sigue respondiendo — nunca propaga el error. Detalle en
 [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
-> ⚠️ **Esto describe el diseño, no el código actual.** Hoy las integraciones ya existen y funcionan
-> como microservicios independientes en `servicios/` (`ms-satelital`, `ms-transparencia`,
-> `ms-social`), y `back/.../Integrations/` todavía no tiene código. Falta que el equipo decida si
-> `servicios/` se migra a `Integrations/` o si este documento se ajusta a `servicios/` como destino
-> final — ver `docs/ARQUITECTURA.md`.
+`Integrations/Nasa`, `Integrations/Secop` e `Integrations/Storage` ya tienen código real y en uso.
+Los antiguos `servicios/ms-satelital`, `ms-transparencia` y `ms-social` eran un diseño alternativo
+que nunca llegó a tener código propio (solo un `appsettings.Example.json` cada uno) y se dieron de
+baja del repositorio: `Integrations/` es el único camino vigente para estas integraciones.
+
+`servicios/ms-bot-api` es distinto: sí tiene código y corre en producción en un VPS aparte, como
+puente temporal del bot de WhatsApp mientras el backend no expone sus casos de uso. Detalle en
+[servicios/ms-bot-api/README.md](servicios/ms-bot-api/README.md).
 
 **Documentación de referencia:**
 
@@ -71,6 +74,7 @@ bloque** y sigue respondiendo — nunca propaga el error. Detalle en
 | [docs/FASES.md](docs/FASES.md) | Qué se construye, en qué orden, qué se corta |
 | [docs/CONTROL.md](docs/CONTROL.md) | Bloqueantes, decisiones, riesgos, credenciales |
 | [docs/EXPERIENCIAS-FRONTEND.md](docs/EXPERIENCIAS-FRONTEND.md) | Cómo se organiza el frontend por experiencia de usuario (Terreno / Sala de crisis) y el plan para llegar ahí |
+| [docs/CANALES-CONVERSACIONALES.md](docs/CANALES-CONVERSACIONALES.md) | Qué plataformas reciben WhatsApp y las llamadas, qué API consume cada una y dónde escriben |
 
 Esta tabla es un resumen. El índice completo — catorce documentos, con una fila por cada uno y a
 quién le sirve — vive en [docs/README.md](docs/README.md).
