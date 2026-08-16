@@ -21,6 +21,7 @@ public class Usuario
     /// </summary>
     public bool EsAcreditadoCenso { get; set; }
 
+    /// <summary>Canal por el que se dio de alta el usuario: web con registro, o WhatsApp al escribir por primera vez.</summary>
     public CanalOrigen OrigenRegistro { get; set; } = CanalOrigen.Web;
 
     public ICollection<Reporte> Reportes { get; set; } = new List<Reporte>();

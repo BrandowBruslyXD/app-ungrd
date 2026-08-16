@@ -78,15 +78,23 @@ public class ReporteCamposWhatsappTests
         Assert.Equal(-74.072092, guardado.Longitud);
     }
 
+    /// <summary>
+    /// InMemory no hace cumplir <c>HasIndex(...).IsUnique()</c> (ver RegistroHandlerTests), así que
+    /// esto no ejerce el rechazo real de Postgres del escenario del issue #44 — solo blinda que la
+    /// configuración de EF siga declarando el índice como único.
+    /// </summary>
     [Fact]
-    public void ElIndiceDeTelefonoEsUnico()
+    public void Configure_TelefonoDeUsuario_QuedaConIndiceUnico()
     {
+        // Arrange
         using var db = NuevoContexto();
 
+        // Act
         var indice = db.Model.FindEntityType(typeof(Usuario))!
             .GetIndexes()
             .Single(i => i.Properties.Single().Name == nameof(Usuario.Telefono));
 
+        // Assert
         Assert.True(indice.IsUnique);
     }
 }

@@ -42,11 +42,13 @@ Quien entra al sistema.
 | `PasswordHash` | string | ✅ | BCrypt. **Nunca en texto plano** |
 | `Rol` | enum | ✅ | Ver abajo |
 | `Municipio` | string(80) | ❌ | Su zona por defecto |
-| `Telefono` | string(20) | ❌ | |
+| `Telefono` | string(20) | ❌ | Único. Es la identidad del usuario en WhatsApp |
 | `CodigoBrigadista` | string(20) | ❌ | Solo si `Rol = Brigadista`. Ej: `BR-2024-0156` |
 | `EntidadId` | int? | ❌ | A qué alcaldía o entidad pertenece |
 | `Activo` | bool | ✅ | Por defecto `true` |
 | `CreadoEn` | datetime | ✅ | UTC |
+| `EsAcreditadoCenso` | bool | ✅ | Si puede registrar damnificados. Por defecto `false`. **No se pregunta: se acredita** (art. 7, Res. 1110 de 2022) |
+| `OrigenRegistro` | enum | ✅ | `Web` · `WhatsApp`. Por defecto `Web` |
 
 **Rol:** `Ciudadano` · `Brigadista` · `Gestor` · `Admin`
 
@@ -65,12 +67,16 @@ La emergencia. Es el centro del sistema.
 | `UsuarioId` | int | ✅ | Quién lo reportó |
 | `Tipo` | enum | ✅ | Ver abajo |
 | `Descripcion` | string(1000) | ✅ | |
-| `Latitud` | double | ✅ | |
-| `Longitud` | double | ✅ | |
+| `Latitud` | double? | ❌ | Nula cuando el reporte entra por WhatsApp: ahí solo hay `UbicacionTexto` |
+| `Longitud` | double? | ❌ | Ídem |
 | `Direccion` | string(200) | ❌ | Texto libre |
 | `Departamento` | string(80) | ❌ | |
 | `Municipio` | string(80) | ✅ | Se usa para consultar SECOP |
 | `Comuna` | string(80) | ❌ | |
+| `UbicacionTexto` | string(300) | ❌ | Ubicación en texto libre, tal como la escribe el ciudadano por WhatsApp |
+| `Clase` | enum | ✅ | `AvisoEvento` · `AfectacionPropia`. Por defecto `AfectacionPropia` |
+| `Confianza` | enum | ✅ | `Autorreportado` · `Verificado` · `Censado` · `Avalado`. Por defecto `Autorreportado` |
+| `Canal` | enum | ✅ | `Web` · `WhatsApp`. Por defecto `Web` |
 | `Estado` | enum | ✅ | Arranca en `Reportado` |
 | `Prioridad` | enum | ✅ | `Baja` · `Media` · `Alta` |
 | `PersonasAfectadas` | int | ❌ | Estimado rápido |
@@ -83,6 +89,8 @@ La emergencia. Es el centro del sistema.
 **Estado:** `Reportado` → `Verificado` → `Asignado` → `EnAtencion` → `Atendido` → `Cerrado`
 
 > Se puede saltar hacia adelante, **nunca hacia atrás**. Sin tildes ni eñes en los valores de enum, para que viajen igual entre C# y JavaScript.
+
+> **Clase** distingue un aviso sobre un evento de una afectación que el ciudadano vive en carne propia — mezclarlos produce datos inutilizables para la alcaldía. **Confianza** es el nivel de respaldo del dato: reportar no es lo mismo que ser censado (ver `docs/INTEGRACION-BOT-BACKEND.md`, sección 5).
 
 ---
 

@@ -108,6 +108,12 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
         }
 
         /// <inheritdoc />
+        /// <remarks>
+        /// Revertir con reportes de WhatsApp ya guardados (Latitud/Longitud nulas) falla en Postgres:
+        /// vuelven a NOT NULL sin backfill. No es un problema hoy porque el Down() de este proyecto
+        /// no se ejecuta en producción, pero si algún día se automatiza el rollback, hay que decidir
+        /// primero qué coordenada poner en esas filas.
+        /// </remarks>
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(

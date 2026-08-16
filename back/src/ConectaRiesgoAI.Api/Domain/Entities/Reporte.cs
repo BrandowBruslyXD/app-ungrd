@@ -30,6 +30,7 @@ public class Reporte
     /// <summary>Nivel de respaldo del dato: no es lo mismo autorreportado que censado.</summary>
     public ConfianzaReporte Confianza { get; set; } = ConfianzaReporte.Autorreportado;
 
+    /// <summary>Canal por el que entró el reporte: web con GPS, o WhatsApp con ubicación en texto.</summary>
     public CanalOrigen Canal { get; set; } = CanalOrigen.Web;
 
     public EstadoReporte Estado { get; set; } = EstadoReporte.Reportado;
