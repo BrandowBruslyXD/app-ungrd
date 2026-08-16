@@ -10,6 +10,8 @@ Cuatro documentos, cada uno responde una pregunta distinta.
 | **[MODELO-DATOS.md](MODELO-DATOS.md)** | ¿Qué datos guarda el sistema? | Backend |
 | **[AGENTE-WHATSAPP.md](AGENTE-WHATSAPP.md)** | ¿Cómo debe comportarse el agente de IA y qué nunca hace? | Quien construya el bot |
 | **[CONTRATO-API.md](CONTRATO-API.md)** | ¿Qué endpoints hay y qué devuelven? | Backend y frontend |
+| **[REPARTO-SECTORIAL.md](REPARTO-SECTORIAL.md)** | ¿Cómo llega a cada ministerio lo que le toca? | Quien construya el panel de la UNGRD |
+| **[EXPERIENCIAS-FRONTEND.md](EXPERIENCIAS-FRONTEND.md)** | ¿Una app o dos? ¿Dónde vive cada pantalla y cada rol? | **Frontend — antes de mover un archivo** |
 
 Y sobre cómo trabajamos, todo está en **[`CLAUDE.md`](../CLAUDE.md)** en la raíz: convenciones de
 código, arquitectura del backend, reglas de seguridad y flujo de Pull Requests.
