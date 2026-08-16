@@ -55,6 +55,7 @@ public class RegistroHandler(AppDbContext db, IGeneradorTokenJwt generadorToken,
         return new RegistroResponse(token, UsuarioDto.DeEntidad(usuario));
     }
 
+    /// <summary>Distingue la carrera de dos registros con el mismo correo de cualquier otro fallo de guardado.</summary>
     private static bool ViolaElIndiceUnicoDeEmail(DbUpdateException ex) =>
         ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 }
