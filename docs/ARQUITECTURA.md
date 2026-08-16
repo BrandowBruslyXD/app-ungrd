@@ -17,6 +17,50 @@
 
 ---
 
+## Diagrama de despliegue
+
+```mermaid
+graph LR
+    subgraph Usuarios
+        Browser["Navegador\nmóvil / desktop"]
+        WA["WhatsApp"]
+    end
+
+    subgraph Vercel
+        Front["Frontend\nReact + Vite"]
+    end
+
+    subgraph Azure["Azure — brazilsouth"]
+        Back["Backend .NET 10\nAzure Container Apps"]
+        DB[("PostgreSQL\nAzure Database\nFlexible Server")]
+        Blob["Azure Blob Storage\nevidencias / censo"]
+    end
+
+    subgraph Bizz["VPS Bizz — temporal"]
+        wabots["wabots\nplataforma WhatsApp"]
+        BotAPI["ms-bot-api\npuente del bot"]
+    end
+
+    subgraph Externas["APIs externas"]
+        NASA["NASA FIRMS"]
+        SECOP["SECOP\ndatos.gov.co"]
+    end
+
+    Browser -->|HTTPS| Front
+    WA -->|webhook| wabots
+    Front -->|"HTTPS /api/* — JWT"| Back
+    wabots --> BotAPI
+    BotAPI -->|"X-Api-Key — /api/ingesta/*"| Back
+    Back --- DB
+    Back --- Blob
+    Back -->|"HTTP — timeout 5 s"| NASA
+    Back -->|"HTTP — timeout 5 s"| SECOP
+```
+
+> El bloque «VPS Bizz» es temporal: cuando el backend quede verificado en Azure, `ms-bot-api` se apaga y `wabots` apuntará directo al backend. Ver [INTEGRACION-BOT-BACKEND.md](INTEGRACION-BOT-BACKEND.md).
+
+---
+
 ## Estructura general
 
 ```
