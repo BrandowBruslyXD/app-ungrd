@@ -16,5 +16,15 @@ services:
       timeout: 3s
       retries: 10
 
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: conectariesgoai-azurite
+    command: "azurite-blob --blobHost 0.0.0.0 --location /data"
+    ports:
+      - "10000:10000"
+    volumes:
+      - conectariesgoai_blobdata:/data
+
 volumes:
   conectariesgoai_pgdata:
+  conectariesgoai_blobdata:
