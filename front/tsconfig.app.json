@@ -15,10 +15,12 @@
     "jsx": "react-jsx",
     "resolveJsonModule": true,
 
-    /* Path alias — depth-invariant imports for src (@/foo === src/foo from any file) */
-    "baseUrl": ".",
+    /* Atajo de importación: `@/loquesea` resuelve a `src/loquesea` desde cualquier profundidad.
+       Sin `baseUrl`: está obsoleto y deja de funcionar en TypeScript 7. Las rutas de `paths` van
+       relativas a este archivo, con `./`, que es lo que lo reemplaza. El mismo alias está en
+       vite.config.ts y vitest.config.ts, que son quienes resuelven en tiempo de ejecución. */
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
 
     /* Linting */
