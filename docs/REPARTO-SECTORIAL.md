@@ -3,7 +3,7 @@
 > El módulo que convierte la información dispersa de una emergencia en **el paquete que le toca a
 > cada ministerio**, listo para enviar.
 >
-> Fuente del problema: [Gestion_Riesgo_Desastres.md](Gestion_Riesgo_Desastres.md) (transcripción de
+> Fuente del problema: [GESTION-RIESGO-DESASTRES.md](GESTION-RIESGO-DESASTRES.md) (transcripción de
 > los audios con la ingeniera de la UNGRD) y
 > [SISTEMA-REPORTES-COLOMBIA.md](SISTEMA-REPORTES-COLOMBIA.md) (investigación del EDAN y el PAE).
 

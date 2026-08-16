@@ -1,3 +1,7 @@
+> **Documento de exploración inicial, no vigente.** Describe el producto como un asistente por
+> WhatsApp exclusivamente. Hoy **ConectaRiesgo es una app web** con WhatsApp como un canal más
+> — ver [`CLAUDE.md`](../../CLAUDE.md) en la raíz del repo. Se conserva como contexto histórico.
+
 # ConectaRiesgo AI
 
 ## Nombre

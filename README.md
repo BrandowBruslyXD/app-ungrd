@@ -18,7 +18,7 @@ docs/       Documentación del proyecto
 
 - .NET 10 SDK
 - Node 20+
-- Docker (para PostgreSQL en local)
+- Docker (para PostgreSQL y Azurite en local)
 
 ## Cómo correr
 
@@ -27,7 +27,7 @@ docs/       Documentación del proyecto
 cp back/src/ConectaRiesgoAI.Api/appsettings.Development.example.json \
    back/src/ConectaRiesgoAI.Api/appsettings.Development.json
 
-docker compose up -d                                   # base de datos
+docker compose up -d                    # base de datos + Azurite (emulador de Azure Blob Storage)
 dotnet ef database update --project back/src/ConectaRiesgoAI.Api
 dotnet run --project back/src/ConectaRiesgoAI.Api      # API  → localhost:5000
 npm install --prefix front && npm run dev --prefix front  # web → localhost:5173
