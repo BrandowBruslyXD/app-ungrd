@@ -82,8 +82,8 @@ con `dotnet test --collect:"XPlat Code Coverage"` y lee el `line-rate` del `cove
 
 **Pásate el espejo del auditor.** Quien audite este PR contrastará el diff contra la tabla de señales
 del skill [`auditar-feature`](../auditar-feature/SKILL.md): caminos de fallo sin prueba, centinelas en
-campos de identidad, `catch` más estrecho que la garantía que promete, niveles de registro, textos de
-UI sin i18n, `any` en TypeScript. Recórrela tú primero — cuesta menos que una iteración de revisión.
+campos de identidad, `catch` más estrecho que la garantía que promete, niveles de registro, `any` en
+TypeScript. Recórrela tú primero — cuesta menos que una iteración de revisión.
 Incluye la doc XML, que el build no exige en tipos `internal` ni miembros `private` (ver Trampas):
 saca los archivos con `git diff --name-only main...HEAD -- '*.cs'` y léelos.
 
