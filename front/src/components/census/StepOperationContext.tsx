@@ -1,6 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle, CheckCircle2, MapPin } from 'lucide-react';
 import type { CensusWizardState, EdanEventType } from '@/types/edan';
-import { EDAN_EVENT_TYPES, EVENT_TYPE_LABELS } from '@/types/edan';
+import { EDAN_EVENT_TYPES } from '@/types/edan';
 import {
   COLOMBIAN_DEPARTMENTS,
   MUNICIPALITIES_BY_DEPT,
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function StepOperationContext({ data, update }: Props) {
+  const { t } = useTranslation();
   const municipalities = data.departamento
     ? MUNICIPALITIES_BY_DEPT[data.departamento] ?? []
     : [];
@@ -28,33 +30,33 @@ export default function StepOperationContext({ data, update }: Props) {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-slate-900">Contexto de la operación</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Evento, fecha y ubicación del censo EDAN.
-        </p>
+        <h2 className="text-lg font-bold text-slate-900">{t('census.operation.title')}</h2>
+        <p className="mt-1 text-sm text-slate-500">{t('census.operation.subtitle')}</p>
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-slate-700">
-          Tipo de evento <span className="text-red-500">*</span>
+        <label htmlFor="census-event-type" className="mb-1.5 block text-sm font-medium text-slate-700">
+          {t('census.operation.eventType')} <span className="text-red-500">{t('census.requiredMark')}</span>
         </label>
         <select
+          id="census-event-type"
           value={data.eventType}
           onChange={(e) => update({ eventType: e.target.value as EdanEventType })}
           className={selectClass}
         >
-          <option value="">-- Seleccionar tipo de evento --</option>
-          {EDAN_EVENT_TYPES.map((t) => (
-            <option key={t} value={t}>{EVENT_TYPE_LABELS[t]}</option>
+          <option value="">{t('census.operation.eventTypePlaceholder')}</option>
+          {EDAN_EVENT_TYPES.map((eventType) => (
+            <option key={eventType} value={eventType}>{t(`census.eventTypes.${eventType}`)}</option>
           ))}
         </select>
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-slate-700">
-          Fecha del evento <span className="text-red-500">*</span>
+        <label htmlFor="census-event-date" className="mb-1.5 block text-sm font-medium text-slate-700">
+          {t('census.operation.eventDate')} <span className="text-red-500">{t('census.requiredMark')}</span>
         </label>
         <input
+          id="census-event-date"
           type="date"
           value={data.eventDate}
           onChange={(e) => update({ eventDate: e.target.value })}
@@ -64,31 +66,33 @@ export default function StepOperationContext({ data, update }: Props) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Departamento <span className="text-red-500">*</span>
+          <label htmlFor="census-departamento" className="mb-1.5 block text-sm font-medium text-slate-700">
+            {t('census.operation.departamento')} <span className="text-red-500">{t('census.requiredMark')}</span>
           </label>
           <select
+            id="census-departamento"
             value={data.departamento}
             onChange={(e) => update({ departamento: e.target.value, municipio: '' })}
             className={selectClass}
           >
-            <option value="">-- Departamento --</option>
+            <option value="">{t('census.operation.departamentoPlaceholder')}</option>
             {COLOMBIAN_DEPARTMENTS.map((d) => (
               <option key={d} value={d}>{d}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Municipio <span className="text-red-500">*</span>
+          <label htmlFor="census-municipio" className="mb-1.5 block text-sm font-medium text-slate-700">
+            {t('census.operation.municipio')} <span className="text-red-500">{t('census.requiredMark')}</span>
           </label>
           <select
+            id="census-municipio"
             value={data.municipio}
             onChange={(e) => update({ municipio: e.target.value })}
             disabled={!data.departamento}
             className={`${selectClass} disabled:cursor-not-allowed disabled:bg-slate-100`}
           >
-            <option value="">-- Municipio --</option>
+            <option value="">{t('census.operation.municipioPlaceholder')}</option>
             {municipalities.map((m) => (
               <option key={m} value={m}>{m}</option>
             ))}
@@ -105,18 +109,21 @@ export default function StepOperationContext({ data, update }: Props) {
           }`}
         >
           {activeCalamity ? (
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
           ) : (
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden="true" />
           )}
           <div>
             <p className={`text-sm font-semibold ${activeCalamity ? 'text-emerald-800' : 'text-amber-800'}`}>
-              {activeCalamity ? 'Declaratoria de calamidad activa' : 'Sin declaratoria de calamidad'}
+              {activeCalamity ? t('census.operation.calamityActive') : t('census.operation.calamityNone')}
             </p>
             <p className={`mt-0.5 text-xs ${activeCalamity ? 'text-emerald-600' : 'text-amber-600'}`}>
               {activeCalamity
-                ? `${activeCalamity.decretoNumber} — vigente hasta ${new Date(activeCalamity.expiryDate).toLocaleDateString('es-CO')}`
-                : `El censo se puede realizar pero la distribución de AHE puede requerir autorización adicional.`}
+                ? t('census.operation.calamityUntil', {
+                    decreto: activeCalamity.decretoNumber,
+                    date: new Date(activeCalamity.expiryDate).toLocaleDateString('es-CO'),
+                  })
+                : t('census.operation.calamityHint')}
             </p>
           </div>
         </div>
@@ -124,7 +131,9 @@ export default function StepOperationContext({ data, update }: Props) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Zona <span className="text-red-500">*</span></label>
+          <p className="mb-1.5 block text-sm font-medium text-slate-700">
+            {t('census.operation.zone')} <span className="text-red-500">{t('census.requiredMark')}</span>
+          </p>
           <div className="flex gap-3">
             {(['urbano', 'rural'] as const).map((z) => (
               <button
@@ -137,21 +146,23 @@ export default function StepOperationContext({ data, update }: Props) {
                     : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                 }`}
               >
-                <MapPin className="h-4 w-4" />
-                {z === 'urbano' ? 'Urbano' : 'Rural'}
+                <MapPin className="h-4 w-4" aria-hidden="true" />
+                {z === 'urbano' ? t('census.operation.zoneUrban') : t('census.operation.zoneRural')}
               </button>
             ))}
           </div>
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            {data.zone === 'urbano' ? 'Barrio' : 'Vereda / Corregimiento'} <span className="text-red-500">*</span>
+          <label htmlFor="census-zone-name" className="mb-1.5 block text-sm font-medium text-slate-700">
+            {data.zone === 'urbano' ? t('census.operation.zoneNameUrban') : t('census.operation.zoneNameRural')}{' '}
+            <span className="text-red-500">{t('census.requiredMark')}</span>
           </label>
           <input
+            id="census-zone-name"
             type="text"
             value={data.zoneName}
             onChange={(e) => update({ zoneName: e.target.value })}
-            placeholder={data.zone === 'urbano' ? 'Ej: Barrio Los Pinos' : 'Ej: Vereda El Carmen'}
+            placeholder={data.zone === 'urbano' ? t('census.operation.zoneNameUrbanPlaceholder') : t('census.operation.zoneNameRuralPlaceholder')}
             className={inputClass}
           />
         </div>
