@@ -37,8 +37,6 @@ export default function ReportWizard() {
     reportType,
     setReportType,
     step,
-    submitted,
-    reportId,
     disclaimerAccepted,
     setDisclaimerAccepted,
     form,
@@ -50,49 +48,10 @@ export default function ReportWizard() {
     goBack,
     goNext,
     handleSubmit,
-    goToMyReports,
-    goHome,
   } = wizard;
 
-  if (submitted) {
-    return (
-      <div className="mx-auto max-w-lg px-4 py-16 text-center animate-scale-in">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100">
-          <Check className="h-10 w-10 text-emerald-600" />
-        </div>
-        <h1 className="text-2xl font-bold text-slate-800">
-          {isAfectado ? t('wizard.submitted.affectedTitle') : t('wizard.submitted.witnessTitle')}
-        </h1>
-        <p className="mt-3 text-base text-slate-500 leading-relaxed">
-          {isAfectado ? t('wizard.submitted.affectedBody') : t('wizard.submitted.witnessBody')}
-        </p>
-        <div className="mt-6 card p-5">
-          <p className="text-sm text-slate-500">{t('wizard.submitted.trackingNumber')}</p>
-          <p className="mt-1 text-2xl font-bold text-ungrd-600 tracking-wide">{reportId}</p>
-          <p className="mt-2 text-xs text-slate-400">{t('wizard.submitted.saveNumber')}</p>
-          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 ring-1 ring-amber-200">
-            <ShieldAlert className="h-3 w-3" />
-            {t('wizard.submitted.selfReported')}
-          </div>
-        </div>
-        {isAfectado && (
-          <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-left">
-            <p className="text-sm font-semibold text-blue-800">{t('wizard.submitted.remember')}</p>
-            <p className="mt-1 text-sm text-blue-700 leading-relaxed">{t('wizard.submitted.rememberBody')}</p>
-          </div>
-        )}
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <button type="button" onClick={goToMyReports} className="btn-primary">
-            {t('wizard.submitted.seeMyReports')}
-          </button>
-          <button type="button" onClick={goHome} className="btn-secondary">
-            {t('wizard.submitted.backHome')}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+  // Al enviar no hay pantalla de confirmación: el asistente lleva directo al seguimiento del
+  // reporte, que es donde el ciudadano ve avanzar su caso.
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 lg:py-12 animate-fade-in">
       {step > 0 && (

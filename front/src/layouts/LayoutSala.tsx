@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Shield, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, PackageCheck, Shield, type LucideIcon } from 'lucide-react';
 import { useSesionDemo } from '@/shared/hooks/useSesionDemo';
 import SelectorRolDemo from '@/shared/components/SelectorRolDemo';
 
@@ -24,8 +24,20 @@ export default function LayoutSala() {
   const { t } = useTranslation();
   const { rol } = useSesionDemo();
 
+  /**
+   * El código va escrito aquí a propósito: mientras no exista la lista de eventos (A1),
+   * el menú entra directo al paquete sembrado. Importar el mock desde el armazón lo
+   * metería en el paquete base que descarga todo el mundo, y esta pantalla debe seguir
+   * viajando en su propio archivo.
+   */
   const destinos: DestinoSala[] = [
     { to: '/panel', label: t('nav.triagePanel'), icon: LayoutDashboard },
+    {
+      to: '/panel/paquetes/PQT-2026-08-15-0007',
+      label: t('nav.paqueteMinisterio'),
+      icon: PackageCheck,
+      soloUngrd: true,
+    },
   ];
 
   const visibles = destinos.filter((destino) => !destino.soloUngrd || rol === 'Admin');

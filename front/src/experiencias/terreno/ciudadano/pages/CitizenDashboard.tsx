@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -12,7 +13,9 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import type { TFunction } from 'i18next';
-import { listAlertas, listReportes } from '@/shared/api/reportes';
+import { listAlertas } from '@/shared/api/reportes';
+import { useReportesDemo } from '@/shared/hooks/useReportesDemo';
+import { aReporteLegado } from '@/shared/hooks/reporteLegado';
 import { SeverityBadge, StatusBadge } from '@/shared/components/StatusBadge';
 import EmergencyIcon from '@/shared/components/EmergencyIcon';
 
@@ -27,9 +30,21 @@ function formatTimeAgo(iso: string, t: TFunction): string {
 
 export default function CitizenDashboard() {
   const { t } = useTranslation();
-  const mockReports = listReportes();
+  const { reportes, obtenerExtras } = useReportesDemo();
   const mockAlerts = listAlertas();
-  const activeReports = mockReports.filter((r) => r.status !== 'Cerrado');
+
+  /**
+   * Los mismos reportes que ve «Mis reportes» y que atiende el gestor: sale del estado compartido
+   * para que el inicio no muestre un estado viejo después de que la sala de crisis lo cambió.
+   */
+  const misReportes = useMemo(
+    () =>
+      [...reportes]
+        .sort((uno, otro) => new Date(otro.creadoEn).getTime() - new Date(uno.creadoEn).getTime())
+        .map((detalle) => aReporteLegado(detalle, t, obtenerExtras(detalle.codigo))),
+    [reportes, obtenerExtras, t],
+  );
+  const activeReports = misReportes.filter((r) => r.status !== 'Cerrado');
 
   const quickActions = [
     {
@@ -89,7 +104,7 @@ export default function CitizenDashboard() {
           <div className="mt-4 flex flex-col gap-2 text-sm text-ungrd-300 sm:flex-row sm:gap-4">
             <span className="flex items-center gap-1.5">
               <TrendingUp className="h-4 w-4 shrink-0 text-gold-400" />
-              {t('citizen.activeReports', { count: mockReports.length })}
+              {t('citizen.activeReports', { count: misReportes.length })}
             </span>
             <span className="flex items-center gap-1.5">
               <Clock className="h-4 w-4 shrink-0 text-gold-400" />
@@ -166,7 +181,7 @@ export default function CitizenDashboard() {
               {activeReports.map((report) => (
                 <Link
                   key={report.id}
-                  to={`/reporte/${report.id}`}
+                  to={`/reportes/${report.id}`}
                   className="card-hover flex items-start gap-3 p-3 group sm:p-4"
                 >
                   <EmergencyIcon type={report.type} size="sm" />

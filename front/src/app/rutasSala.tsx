@@ -10,6 +10,9 @@ import RutaPorRol from '@/app/RutaPorRol';
  */
 
 const ManagerDashboard = lazy(() => import('@/experiencias/sala/gestor/pages/ManagerDashboard'));
+const PaqueteMinisterio = lazy(
+  () => import('@/experiencias/sala/ungrd/pages/PaqueteMinisterio'),
+);
 
 export const rutasSala = (
   <Route
@@ -21,5 +24,13 @@ export const rutasSala = (
     }
   >
     <Route index element={<ManagerDashboard />} />
+    <Route
+      path="paquetes/:codigo"
+      element={
+        <RutaPorRol permitidos={['Admin']}>
+          <PaqueteMinisterio />
+        </RutaPorRol>
+      }
+    />
   </Route>
 );

@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, MapPin, Clock, Plus, Satellite, FileText, Eye, Home } from 'lucide-react';
-import { listMisReportes } from '@/shared/api/reportes';
+import { useReportesDemo } from '@/shared/hooks/useReportesDemo';
+import { aReporteLegado } from '@/shared/hooks/reporteLegado';
 import { StatusBadge, SeverityBadge } from '@/shared/components/StatusBadge';
 import EmergencyIcon from '@/shared/components/EmergencyIcon';
 import TrustBadge from '@/shared/components/TrustBadge';
@@ -16,12 +18,24 @@ function formatDate(iso: string): string {
 
 export default function MyReports() {
   const { t } = useTranslation();
-  const mockReports = listMisReportes();
+  const { reportes, obtenerExtras } = useReportesDemo();
+
+  /**
+   * Sale del estado compartido, no de los mocks: así el reporte que el ciudadano acaba de enviar
+   * aparece aquí, y los avances del gestor se ven sin recargar. Lo más reciente va primero.
+   */
+  const misReportes = useMemo(
+    () =>
+      [...reportes]
+        .sort((uno, otro) => new Date(otro.creadoEn).getTime() - new Date(uno.creadoEn).getTime())
+        .map((detalle) => aReporteLegado(detalle, t, obtenerExtras(detalle.codigo))),
+    [reportes, obtenerExtras, t],
+  );
 
   const stats = [
-    { value: mockReports.length, label: t('myReports.total'), icon: FileText, color: 'text-ungrd-600 bg-ungrd-50' },
-    { value: mockReports.filter((r) => r.status !== 'Cerrado').length, label: t('myReports.active'), icon: Clock, color: 'text-gold-700 bg-gold-50' },
-    { value: mockReports.filter((r) => r.satelliteVerified).length, label: t('myReports.verified'), icon: Satellite, color: 'text-emerald-600 bg-emerald-50' },
+    { value: misReportes.length, label: t('myReports.total'), icon: FileText, color: 'text-ungrd-600 bg-ungrd-50' },
+    { value: misReportes.filter((r) => r.status !== 'Cerrado').length, label: t('myReports.active'), icon: Clock, color: 'text-gold-700 bg-gold-50' },
+    { value: misReportes.filter((r) => r.satelliteVerified).length, label: t('myReports.verified'), icon: Satellite, color: 'text-emerald-600 bg-emerald-50' },
   ];
 
   return (
@@ -48,10 +62,10 @@ export default function MyReports() {
       </div>
 
       <div className="space-y-3">
-        {mockReports.map((report) => (
+        {misReportes.map((report) => (
           <Link
             key={report.id}
-            to={`/reporte/${report.id}`}
+            to={`/reportes/${report.id}`}
             className="card-hover flex items-center gap-4 p-4 group"
           >
             <EmergencyIcon type={report.type} />

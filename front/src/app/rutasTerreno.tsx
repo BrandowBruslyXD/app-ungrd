@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { Navigate, Route } from 'react-router-dom';
+import { Navigate, Route, useParams } from 'react-router-dom';
 import LayoutTerreno from '@/layouts/LayoutTerreno';
 
 /**
@@ -45,8 +45,13 @@ export const rutasTerreno = (
   </Route>
 );
 
-/** `/reporte/:id` era la ruta vieja; el contrato usa `codigo` y plural. */
+/**
+ * `/reporte/:codigo` era la ruta vieja; el contrato usa `codigo` y plural.
+ *
+ * El código sale del parámetro de la ruta y no de `window.location`: así el redirección funciona
+ * igual bajo cualquier router y no depende de la URL real del navegador.
+ */
 function RedireccionSeguimiento() {
-  const codigo = window.location.pathname.split('/').pop() ?? '';
-  return <Navigate to={`/reportes/${codigo}`} replace />;
+  const { codigo } = useParams<{ codigo: string }>();
+  return <Navigate to={`/reportes/${codigo ?? ''}`} replace />;
 }

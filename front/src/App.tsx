@@ -7,6 +7,7 @@ import {
   rolesDeSala,
   useSesionDemo,
 } from '@/shared/hooks/useSesionDemo';
+import { ProveedorReportesDemo } from '@/shared/hooks/useReportesDemo';
 import { rutasTerreno } from '@/app/rutasTerreno';
 import { rutasSala } from '@/app/rutasSala';
 
@@ -14,20 +15,25 @@ import { rutasSala } from '@/app/rutasSala';
  * Dos experiencias en una sola aplicación: terreno (celular, en la emergencia) y
  * sala de crisis (escritorio, coordinando). Comparten datos, tipos y marca;
  * cambian de armazón. Detalle en docs/EXPERIENCIAS-FRONTEND.md.
+ *
+ * El proveedor de reportes envuelve a las dos: mientras no haya backend, es el único lugar donde
+ * vive el estado de un reporte, y por eso el gestor puede cambiarlo y el ciudadano verlo avanzar.
  */
 export default function App() {
   return (
     <ProveedorSesionDemo>
-      <BrowserRouter>
-        <Suspense fallback={<PantallaCargando />}>
-          <Routes>
-            <Route path="/inicio-rol" element={<InicioSegunRol />} />
-            {rutasTerreno}
-            {rutasSala}
-            <Route path="*" element={<NoEncontrado />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
+      <ProveedorReportesDemo>
+        <BrowserRouter>
+          <Suspense fallback={<PantallaCargando />}>
+            <Routes>
+              <Route path="/inicio-rol" element={<InicioSegunRol />} />
+              {rutasTerreno}
+              {rutasSala}
+              <Route path="*" element={<NoEncontrado />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </ProveedorReportesDemo>
     </ProveedorSesionDemo>
   );
 }

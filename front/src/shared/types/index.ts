@@ -1,5 +1,6 @@
-/** Roles del contrato API (JWT). */
-export type Rol = 'Ciudadano' | 'Gestor' | 'Admin';
+import type { EstadoReporte, Prioridad, Rol, TipoEmergencia } from './contrato';
+
+export * from './contrato';
 
 /**
  * Vistas de demo en el header. Brigadista y Socorro no están en el contrato JWT aún.
@@ -18,30 +19,19 @@ export const TRUST_LEVEL_LABELS: Record<TrustLevel, string> = {
   avalado: 'Avalado por CMGRD',
 };
 
-/** Valores de enum del contrato API para tipo de emergencia. */
-export type EmergencyType =
-  | 'Incendio'
-  | 'Inundacion'
-  | 'Deslizamiento'
-  | 'ViaAfectada'
-  | 'ColapsoEstructural'
-  | 'Otro';
+/** @deprecated Usar `TipoEmergencia` de `./contrato`. */
+export type EmergencyType = TipoEmergencia;
 
-/** Flujo de estados del contrato API. */
-export type ReportStatus =
-  | 'Reportado'
-  | 'Verificado'
-  | 'Asignado'
-  | 'EnAtencion'
-  | 'Atendido'
-  | 'Cerrado';
+/** @deprecated Usar `EstadoReporte` de `./contrato`. */
+export type ReportStatus = EstadoReporte;
 
-/** Prioridad del contrato API. */
-export type Prioridad = 'Baja' | 'Media' | 'Alta';
+/** @deprecated Usar `Prioridad` de `./contrato`. */
+export type SeverityLevel = 'Baja' | 'Media' | 'Alta';
 
-/** @deprecated Usar Prioridad. */
-export type SeverityLevel = Prioridad;
-
+/**
+ * @deprecated Forma antigua, anterior al contrato de API. Usar `ReporteResumen` para listados y
+ * `ReporteDetalle` para la pantalla de seguimiento. Se mantiene mientras se migran las pantallas.
+ */
 export interface Report {
   id: string;
   type: EmergencyType;
@@ -65,6 +55,7 @@ export interface Report {
   urgentNeed?: string;
 }
 
+/** @deprecated Usar `EventoCronologia` de `./contrato`. */
 export interface TimelineEvent {
   id: string;
   date: string;
