@@ -81,4 +81,34 @@ public class AlmacenamientoDeArchivosAzureTests
         Assert.False(resultado.Exitoso);
         Assert.Null(resultado.UrlFirmada);
     }
+
+    [Fact]
+    public async Task SubirAsync_TokenCanceladoConClienteNoConfigurado_DevuelveExitosoFalso()
+    {
+        var almacenamiento = Crear(connectionString: null);
+        using CancellationTokenSource cts = new();
+        cts.Cancel();
+
+        var resultado = await almacenamiento.SubirAsync(
+            Contenedor.Evidencias, Stream.Null, "image/jpeg", cts.Token);
+
+        Assert.False(resultado.Exitoso);
+        Assert.Null(resultado.UrlFirmada);
+    }
+
+    [Theory]
+    [InlineData("image/jpeg", ".jpg")]
+    [InlineData("image/png", ".png")]
+    [InlineData("image/webp", ".webp")]
+    [InlineData("application/pdf", "")]
+    public void ExtensionPara_TipoMime_DevuelveExtensionEsperada(string mime, string extensionEsperada)
+    {
+        System.Reflection.MethodInfo? metodo = typeof(AlmacenamientoDeArchivosAzure).GetMethod(
+            "ExtensionPara",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        string extension = (string)metodo!.Invoke(null, [mime])!;
+
+        Assert.Equal(extensionEsperada, extension);
+    }
 }
