@@ -464,6 +464,9 @@ guía (igual que en la web). Responde `200` siempre; un código inexistente trae
 }
 ```
 
+> `actualizado` es **texto legible para WhatsApp** (`"15:30 del 16/8"`), no ISO-8601. No es un
+> error: el bot interpola el valor tal cual. Los demás endpoints sí usan `creadoEn`/`fecha` en UTC.
+
 **Respuesta `200`** — código inexistente (no es `404`)
 ```json
 {
