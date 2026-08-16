@@ -1,4 +1,4 @@
-# Copilot Instructions — ConectaRiesgoAI
+# Copilot Instructions — ConectaRiesgo
 
 ## El proyecto
 

@@ -1,4 +1,4 @@
-# CLAUDE.md — ConectaRiesgoAI
+# CLAUDE.md — ConectaRiesgo
 
 ## Qué es este proyecto
 
@@ -22,7 +22,7 @@ suelta.
 
 Contexto original del problema: [docs/idea-negocio/](docs/idea-negocio/). Ojo: esos documentos son
 de la exploración inicial, cuando el producto se pensaba **solo** como asistente por WhatsApp y con
-otro nombre. **El producto se llama ConectaRiesgoAI**: es una app web, y WhatsApp es un canal más
+otro nombre. **El producto es una app web y se llama ConectaRiesgo.** WhatsApp es un canal más
 para reportar y consultar, no el único.
 
 Es un proyecto de **hackatón**: prioriza lo que se puede demostrar funcionando. Pragmatismo por

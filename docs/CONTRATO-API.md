@@ -1,4 +1,4 @@
-# Contrato de API — ConectaRiesgoAI
+# Contrato de API — ConectaRiesgo
 
 > **Este documento es la fuente de verdad entre el backend (.NET) y el frontend (React).**
 > Si algo aquí cambia, se avisa en el grupo **antes** de cambiarlo. Un campo renombrado en silencio rompe la demo y nadie sabe por qué.
