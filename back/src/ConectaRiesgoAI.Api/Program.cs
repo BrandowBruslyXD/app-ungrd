@@ -3,7 +3,9 @@ using ConectaRiesgoAI.Api.Common.Auth;
 using ConectaRiesgoAI.Api.Common.Behaviors;
 using ConectaRiesgoAI.Api.Common.Endpoints;
 using ConectaRiesgoAI.Api.Common.Errors;
+using ConectaRiesgoAI.Api.Integrations.Secop;
 using ConectaRiesgoAI.Api.Persistence;
+using Microsoft.AspNetCore.RateLimiting;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -32,6 +34,30 @@ builder.Services.AddMediatR(cfg =>
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
+// --- Integraciones externas -----------------------------------------------
+// Timeout corto (5s, exigido por CONTRATO-API.md): un SECOP caído o lento no puede tumbar
+// la pantalla de detalle. IMemoryCache evita repetir la consulta por el mismo municipio.
+// SizeLimit (junto con el Size=1 de cada entrada en SecopClient) topa cuántos municipios
+// distintos se cachean a la vez: el endpoint de transparencia es público y sin eso un abuso
+// con municipios inventados haría crecer la memoria del proceso sin límite.
+builder.Services.AddMemoryCache(o => o.SizeLimit = 500);
+builder.Services.Configure<SecopOptions>(builder.Configuration.GetSection(SecopOptions.Seccion));
+builder.Services.AddHttpClient<ISecopClient, SecopClient>(c =>
+{
+    c.BaseAddress = new Uri("https://www.datos.gov.co/");
+    c.Timeout = TimeSpan.FromSeconds(5);
+});
+
+// Único endpoint público que dispara una llamada saliente por petición sin autenticación:
+// sin tope de tasa, cualquiera podría usarlo para hacer flood a la API de Datos Abiertos de
+// Colombia (y agotar la cuota del AppToken) desde nuestra infraestructura.
+builder.Services.AddRateLimiter(o => o.AddFixedWindowLimiter("secop", opt =>
+{
+    opt.PermitLimit = 30;
+    opt.Window = TimeSpan.FromMinutes(1);
+    opt.QueueLimit = 0;
+}));
 
 // --- Autenticación -------------------------------------------------------
 builder.Services.AgregarAutenticacion(builder.Configuration);
@@ -80,6 +106,7 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseCors(PoliticaCors);
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
