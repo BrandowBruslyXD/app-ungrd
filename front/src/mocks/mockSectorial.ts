@@ -1,0 +1,1283 @@
+import { CATALOGO_SECTORES } from '@/lib/catalogoSectores';
+import { agruparPorSector, componerCorreo, nombreArchivoCsv } from '@/lib/sectorial';
+import { SECTORES } from '@/types/sectorial';
+import type {
+  CoberturaMunicipio,
+  DanoSectorizado,
+  EnvioRegistrado,
+  EstadoPaquete,
+  Evento,
+  PaqueteMinisterio,
+  Sector,
+} from '@/types/sectorial';
+
+/**
+ * Datos sembrados del reparto sectorial.
+ *
+ * Todo es inventado: los municipios existen —son de Córdoba y Sucre— pero el
+ * evento, el decreto, las cifras y los nombres de los funcionarios no. No hay
+ * un solo documento de identidad, ni siquiera de prueba: el repositorio es
+ * público y una cédula subida aquí queda en el historial de Git para siempre
+ * (`CLAUDE.md`, Ley 1581).
+ *
+ * Las cifras del panel no se escriben a mano en ningún sitio: salen de contar
+ * estos daños con las funciones de `@/lib/sectorial`. Sembrar totales aparte es
+ * la forma segura de que un día dejen de coincidir con el detalle que los
+ * sustenta, y aquí el detalle es lo que se le manda a un ministerio.
+ */
+
+const EVENTO_ID = 'EVT-2026-08-15-003';
+
+/** La emergencia sobre la que trabaja todo el panel. */
+export const mockEvento: Evento = {
+  id: EVENTO_ID,
+  codigo: EVENTO_ID,
+  nombre: 'Inundaciones del bajo San Jorge, agosto 2026',
+  tipoEvento: 'inundacion',
+  declaratoria: 'Desastre',
+  nivelDeclaratoria: 'Departamental',
+  numeroDecreto: 'Decreto Departamental 0642 de 2026',
+  fechaDeclaratoria: '2026-08-08T15:00:00Z',
+  fechaEvento: '2026-08-07T04:20:00Z',
+  departamentos: ['Córdoba', 'Sucre'],
+  estado: 'Activo',
+  personasAfectadas: 18450,
+};
+
+/*
+ * Coherencia territorial que sostiene el panel entero, y que la prueba de
+ * `sectorial.test.ts` vigila:
+ *
+ *   · Un municipio `EnSilencio` no tiene ni un daño. Si tuviera, no estaría en
+ *     silencio, y el subpanel de cobertura estaría mintiendo justo en lo único
+ *     que ningún otro sistema muestra.
+ *   · Un municipio `SoloAutorreportes` solo aporta daños `Autorreportado`. En
+ *     cuanto alguien verifica en terreno, deja de ser autorreporte.
+ *   · Los daños `Verificado` y `Censado` salen únicamente de municipios que ya
+ *     mandaron su EDAN o recibieron brigada.
+ *
+ * Y la proporción es la del problema real: trece municipios callados contra
+ * cuatro con formato completo.
+ */
+export const mockCobertura: CoberturaMunicipio[] = [
+  {
+    municipio: 'Montería',
+    departamento: 'Córdoba',
+    estado: 'ConEdan',
+    reportesRecibidos: 46,
+    ultimoDatoEn: '2026-08-15T13:10:00Z',
+  },
+  {
+    municipio: 'Cereté',
+    departamento: 'Córdoba',
+    estado: 'ConEdan',
+    reportesRecibidos: 31,
+    ultimoDatoEn: '2026-08-15T11:40:00Z',
+  },
+  {
+    municipio: 'Lorica',
+    departamento: 'Córdoba',
+    estado: 'ConEdan',
+    reportesRecibidos: 27,
+    ultimoDatoEn: '2026-08-14T22:05:00Z',
+  },
+  {
+    municipio: 'San Marcos',
+    departamento: 'Sucre',
+    estado: 'ConEdan',
+    reportesRecibidos: 19,
+    ultimoDatoEn: '2026-08-15T09:25:00Z',
+  },
+  {
+    municipio: 'Ciénaga de Oro',
+    departamento: 'Córdoba',
+    estado: 'SoloAutorreportes',
+    reportesRecibidos: 14,
+    ultimoDatoEn: '2026-08-15T08:50:00Z',
+  },
+  {
+    municipio: 'Ayapel',
+    departamento: 'Córdoba',
+    estado: 'SoloAutorreportes',
+    reportesRecibidos: 22,
+    ultimoDatoEn: '2026-08-15T12:15:00Z',
+  },
+  {
+    municipio: 'Montelíbano',
+    departamento: 'Córdoba',
+    estado: 'SoloAutorreportes',
+    reportesRecibidos: 11,
+    ultimoDatoEn: '2026-08-14T19:30:00Z',
+  },
+  {
+    municipio: 'Planeta Rica',
+    departamento: 'Córdoba',
+    estado: 'SoloAutorreportes',
+    reportesRecibidos: 9,
+    ultimoDatoEn: '2026-08-14T17:45:00Z',
+  },
+  {
+    municipio: 'Tierralta',
+    departamento: 'Córdoba',
+    estado: 'SoloAutorreportes',
+    reportesRecibidos: 7,
+    ultimoDatoEn: '2026-08-14T16:00:00Z',
+  },
+  {
+    municipio: 'Majagual',
+    departamento: 'Sucre',
+    estado: 'SoloAutorreportes',
+    reportesRecibidos: 13,
+    ultimoDatoEn: '2026-08-15T07:20:00Z',
+  },
+  {
+    municipio: 'Caimito',
+    departamento: 'Sucre',
+    estado: 'SoloAutorreportes',
+    reportesRecibidos: 6,
+    ultimoDatoEn: '2026-08-14T14:10:00Z',
+  },
+  {
+    municipio: 'San Pelayo',
+    departamento: 'Córdoba',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'Momil',
+    departamento: 'Córdoba',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'Purísima',
+    departamento: 'Córdoba',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'Chimá',
+    departamento: 'Córdoba',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'Cotorra',
+    departamento: 'Córdoba',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'Pueblo Nuevo',
+    departamento: 'Córdoba',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'Buenavista',
+    departamento: 'Córdoba',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'La Apartada',
+    departamento: 'Córdoba',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'Valencia',
+    departamento: 'Córdoba',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'San Bernardo del Viento',
+    departamento: 'Córdoba',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'Guaranda',
+    departamento: 'Sucre',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'Sucre',
+    departamento: 'Sucre',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+  {
+    municipio: 'Sincé',
+    departamento: 'Sucre',
+    estado: 'EnSilencio',
+    reportesRecibidos: 0,
+    ultimoDatoEn: null,
+  },
+];
+
+/** Coordenadas aproximadas de las cabeceras, para los mapas de las dos pantallas. */
+const COORDENADAS: Record<string, { lat: number; lng: number }> = {
+  Montería: { lat: 8.7479, lng: -75.8814 },
+  Cereté: { lat: 8.8853, lng: -75.7911 },
+  Lorica: { lat: 9.2397, lng: -75.814 },
+  'San Marcos': { lat: 8.6614, lng: -75.1319 },
+  'Ciénaga de Oro': { lat: 8.8783, lng: -75.6222 },
+  Ayapel: { lat: 8.3131, lng: -75.1394 },
+  Montelíbano: { lat: 7.9744, lng: -75.4181 },
+  'Planeta Rica': { lat: 8.4083, lng: -75.5844 },
+  Tierralta: { lat: 8.1719, lng: -76.0594 },
+  Majagual: { lat: 8.5386, lng: -74.6244 },
+  Caimito: { lat: 8.7906, lng: -75.1156 },
+};
+
+/** Departamento de cada municipio con información, para no repetirlo en cada daño. */
+const DEPARTAMENTOS: Record<string, string> = {
+  Montería: 'Córdoba',
+  Cereté: 'Córdoba',
+  Lorica: 'Córdoba',
+  'San Marcos': 'Sucre',
+  'Ciénaga de Oro': 'Córdoba',
+  Ayapel: 'Córdoba',
+  Montelíbano: 'Córdoba',
+  'Planeta Rica': 'Córdoba',
+  Tierralta: 'Córdoba',
+  Majagual: 'Sucre',
+  Caimito: 'Sucre',
+};
+
+/** Lo que cambia de un daño a otro. El resto se completa igual para todos. */
+type SemillaDano = Omit<DanoSectorizado, 'id' | 'eventoId' | 'departamento' | 'coordenadas'>;
+
+function construirDanos(semillas: readonly SemillaDano[]): DanoSectorizado[] {
+  return semillas.map((semilla, indice) => ({
+    ...semilla,
+    id: `DS-${String(indice + 1).padStart(3, '0')}`,
+    eventoId: EVENTO_ID,
+    departamento: DEPARTAMENTOS[semilla.municipio] ?? 'Córdoba',
+    coordenadas: COORDENADAS[semilla.municipio],
+  }));
+}
+
+/**
+ * Los daños ya etiquetados con su sector.
+ *
+ * Cubren doce de los trece sectores: **Deporte no tiene ni uno**, y es a
+ * propósito. Que al Ministerio del Deporte no le toque nada de esta emergencia
+ * es información, y la pantalla tiene que poder decirlo en lugar de esconder la
+ * fila.
+ */
+export const mockDanos: DanoSectorizado[] = construirDanos([
+  // ── Vivienda ────────────────────────────────────────────────────────────
+  {
+    sector: 'Vivienda',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-MON-014',
+    nivelConfianza: 'Verificado',
+    municipio: 'Montería',
+    descripcion: 'Viviendas destruidas por creciente del río Sinú en el barrio Cantaclaro',
+    cantidad: 64,
+    unidad: 'viviendas',
+    nivel: 'DestruccionTotal',
+    costoEstimado: 2_880_000_000,
+    personasAfectadas: 241,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-08T21:25:00Z',
+  },
+  {
+    sector: 'Vivienda',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-MON-015',
+    nivelConfianza: 'Verificado',
+    municipio: 'Montería',
+    descripcion: 'Viviendas averiadas con afectación de techos y pisos en Mocarí',
+    cantidad: 187,
+    unidad: 'viviendas',
+    nivel: 'Moderado',
+    costoEstimado: 1_310_000_000,
+    personasAfectadas: 702,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-08T20:25:00Z',
+  },
+  {
+    sector: 'Vivienda',
+    origen: 'RegistroDamnificado',
+    origenId: 'CEN-CER-0031',
+    nivelConfianza: 'Censado',
+    municipio: 'Cereté',
+    descripcion: 'Viviendas de la vereda Retiro de los Indios con lámina de agua sobre el piso',
+    cantidad: 42,
+    unidad: 'viviendas',
+    nivel: 'Grave',
+    costoEstimado: 640_000_000,
+    personasAfectadas: 158,
+    clasificadoPor: 'Regla',
+    revisadoPor: 'Marcela Ibáñez Rueda',
+    registradoEn: '2026-08-08T06:55:00Z',
+  },
+  {
+    sector: 'Vivienda',
+    origen: 'RegistroDamnificado',
+    origenId: 'CEN-LOR-0012',
+    nivelConfianza: 'Censado',
+    municipio: 'Lorica',
+    descripcion: 'Viviendas palafíticas colapsadas en la ciénaga grande del bajo Sinú',
+    cantidad: 23,
+    unidad: 'viviendas',
+    nivel: 'DestruccionTotal',
+    costoEstimado: 810_000_000,
+    personasAfectadas: 96,
+    clasificadoPor: 'Regla',
+    revisadoPor: 'Marcela Ibáñez Rueda',
+    registradoEn: '2026-08-08T17:55:00Z',
+  },
+  {
+    sector: 'Vivienda',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-SMA-006',
+    nivelConfianza: 'Verificado',
+    municipio: 'San Marcos',
+    descripcion: 'Viviendas averiadas en el casco urbano por desbordamiento del San Jorge',
+    cantidad: 118,
+    unidad: 'viviendas',
+    nivel: 'Moderado',
+    costoEstimado: 720_000_000,
+    personasAfectadas: 430,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-08T18:15:00Z',
+  },
+  {
+    sector: 'Vivienda',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-AYA-7X4K',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Ayapel',
+    descripcion: 'Casas inundadas hasta la mitad de la pared en el barrio La Esperanza',
+    cantidad: 30,
+    unidad: 'viviendas',
+    nivel: 'Grave',
+    personasAfectadas: 110,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-08T17:35:00Z',
+  },
+  {
+    sector: 'Vivienda',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-MAJ-3TQP',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Majagual',
+    descripcion: 'Viviendas de la vereda Las Palmas rodeadas de agua, familias en la carretera',
+    cantidad: 26,
+    unidad: 'viviendas',
+    nivel: 'Grave',
+    personasAfectadas: 94,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-09T16:35:00Z',
+  },
+  {
+    sector: 'Vivienda',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-CDO-9WHR',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Ciénaga de Oro',
+    descripcion: 'Techos levantados por el vendaval que acompañó la creciente',
+    cantidad: 17,
+    unidad: 'viviendas',
+    nivel: 'Moderado',
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-09T18:15:00Z',
+  },
+
+  // ── Agua y saneamiento ──────────────────────────────────────────────────
+  {
+    sector: 'AguaYSaneamiento',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-MON-021',
+    nivelConfianza: 'Verificado',
+    municipio: 'Montería',
+    descripcion: 'Bocatoma del acueducto de la margen izquierda colmatada de sedimentos',
+    cantidad: 1,
+    unidad: 'bocatoma',
+    nivel: 'Grave',
+    costoEstimado: 1_450_000_000,
+    personasAfectadas: 6200,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-09T07:15:00Z',
+  },
+  {
+    sector: 'AguaYSaneamiento',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-LOR-009',
+    nivelConfianza: 'Verificado',
+    municipio: 'Lorica',
+    descripcion: 'Red de alcantarillado del centro con reflujo por taponamiento',
+    cantidad: 4,
+    unidad: 'km de red',
+    nivel: 'Moderado',
+    costoEstimado: 520_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-09T10:35:00Z',
+  },
+  {
+    sector: 'AguaYSaneamiento',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-SMA-011',
+    nivelConfianza: 'Verificado',
+    municipio: 'San Marcos',
+    descripcion: 'Planta de tratamiento fuera de servicio por inundación de la sala de bombas',
+    cantidad: 1,
+    unidad: 'planta',
+    nivel: 'Grave',
+    costoEstimado: 890_000_000,
+    personasAfectadas: 4100,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-09T11:55:00Z',
+  },
+  {
+    sector: 'AguaYSaneamiento',
+    origen: 'RegistroDamnificado',
+    origenId: 'CEN-CER-0044',
+    nivelConfianza: 'Censado',
+    municipio: 'Cereté',
+    descripcion: 'Pozos sépticos rebosados en cuatro veredas, riesgo sanitario inmediato',
+    cantidad: 61,
+    unidad: 'pozos',
+    nivel: 'Grave',
+    costoEstimado: 183_000_000,
+    clasificadoPor: 'Funcionario',
+    revisadoPor: 'Julián Ospina Cárdenas',
+    registradoEn: '2026-08-09T17:25:00Z',
+  },
+  {
+    sector: 'AguaYSaneamiento',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-CAI-6MDF',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Caimito',
+    descripcion: 'El pueblo lleva tres días sin agua potable, están repartiendo en carrotanque',
+    cantidad: 1,
+    unidad: 'acueducto',
+    nivel: 'Grave',
+    clasificadoPor: 'Sugerencia',
+    revisadoPor: 'Julián Ospina Cárdenas',
+    registradoEn: '2026-08-09T19:05:00Z',
+  },
+
+  // ── Transporte ──────────────────────────────────────────────────────────
+  {
+    sector: 'Transporte',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-MON-030',
+    nivelConfianza: 'Verificado',
+    municipio: 'Montería',
+    descripcion: 'Puente vehicular sobre el caño Bugre con estribo socavado',
+    cantidad: 1,
+    unidad: 'puente',
+    nivel: 'Grave',
+    costoEstimado: 3_400_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-09T10:05:00Z',
+  },
+  {
+    sector: 'Transporte',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-SMA-015',
+    nivelConfianza: 'Verificado',
+    municipio: 'San Marcos',
+    descripcion: 'Vía secundaria San Marcos – Caimito con banca perdida en tres tramos',
+    cantidad: 9,
+    unidad: 'km de vía',
+    nivel: 'Grave',
+    costoEstimado: 2_150_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-09T14:25:00Z',
+  },
+  {
+    sector: 'Transporte',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-CER-008',
+    nivelConfianza: 'Verificado',
+    municipio: 'Cereté',
+    descripcion: 'Vías terciarias veredales intransitables por lodo y socavación',
+    cantidad: 22,
+    unidad: 'km de vía',
+    nivel: 'Moderado',
+    costoEstimado: 1_760_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-09T07:55:00Z',
+  },
+  {
+    sector: 'Transporte',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-TIE-2KJC',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Tierralta',
+    descripcion: 'Se llevó el pontón de la vereda Palmira, no pasa ni una moto',
+    cantidad: 1,
+    unidad: 'pontón',
+    nivel: 'DestruccionTotal',
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-09T11:25:00Z',
+  },
+  {
+    sector: 'Transporte',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-AYA-5NBT',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Ayapel',
+    descripcion: 'Carretera al corregimiento Cecilia bajo el agua desde el martes',
+    cantidad: 6,
+    unidad: 'km de vía',
+    nivel: 'Grave',
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-10T07:45:00Z',
+  },
+  {
+    sector: 'Transporte',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-MLB-8QRA',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Montelíbano',
+    descripcion: 'Muelle de paso del río San Jorge inservible, las canoas no pueden atracar',
+    cantidad: 1,
+    unidad: 'muelle',
+    nivel: 'Moderado',
+    clasificadoPor: 'Sugerencia',
+    revisadoPor: 'Julián Ospina Cárdenas',
+    registradoEn: '2026-08-10T12:05:00Z',
+  },
+
+  // ── Educación ───────────────────────────────────────────────────────────
+  {
+    sector: 'Educacion',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-MON-042',
+    nivelConfianza: 'Verificado',
+    municipio: 'Montería',
+    descripcion: 'Institución educativa con dos bloques de aulas anegados y sin mobiliario',
+    cantidad: 2,
+    unidad: 'sedes educativas',
+    nivel: 'Grave',
+    costoEstimado: 940_000_000,
+    personasAfectadas: 1180,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-10T07:45:00Z',
+  },
+  {
+    sector: 'Educacion',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-CER-014',
+    nivelConfianza: 'Verificado',
+    municipio: 'Cereté',
+    descripcion: 'Sedes rurales usadas como alojamiento temporal, sin clases desde el 12 de agosto',
+    cantidad: 5,
+    unidad: 'sedes educativas',
+    nivel: 'Moderado',
+    costoEstimado: 410_000_000,
+    personasAfectadas: 860,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-10T18:25:00Z',
+  },
+  {
+    sector: 'Educacion',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-LOR-017',
+    nivelConfianza: 'Verificado',
+    municipio: 'Lorica',
+    descripcion: 'Cubierta de la sede principal levantada, aulas expuestas a la lluvia',
+    cantidad: 1,
+    unidad: 'sede educativa',
+    nivel: 'Grave',
+    costoEstimado: 275_000_000,
+    personasAfectadas: 540,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-10T12:35:00Z',
+  },
+  {
+    sector: 'Educacion',
+    origen: 'RegistroDamnificado',
+    origenId: 'CEN-SMA-0022',
+    nivelConfianza: 'Censado',
+    municipio: 'San Marcos',
+    descripcion: 'Comedor escolar fuera de servicio: se perdieron la dotación y los alimentos',
+    cantidad: 1,
+    unidad: 'comedor escolar',
+    nivel: 'Moderado',
+    costoEstimado: 68_000_000,
+    personasAfectadas: 320,
+    clasificadoPor: 'Funcionario',
+    revisadoPor: 'Marcela Ibáñez Rueda',
+    registradoEn: '2026-08-10T15:45:00Z',
+  },
+  {
+    sector: 'Educacion',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-PLR-4HFD',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Planeta Rica',
+    descripcion: 'La escuela del corregimiento Marañonal quedó sin techo y los niños no han vuelto',
+    cantidad: 1,
+    unidad: 'sede educativa',
+    nivel: 'Grave',
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-10T17:15:00Z',
+  },
+  {
+    sector: 'Educacion',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-CAI-1PLZ',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Caimito',
+    descripcion: 'El colegio está lleno de barro, los profesores lo están sacando con palas',
+    cantidad: 1,
+    unidad: 'sede educativa',
+    nivel: 'Moderado',
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-10T06:45:00Z',
+  },
+
+  // ── Salud ───────────────────────────────────────────────────────────────
+  {
+    sector: 'Salud',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-MON-051',
+    nivelConfianza: 'Verificado',
+    municipio: 'Montería',
+    descripcion: 'Centro de salud del barrio Sucre con uso restringido: urgencias fuera de servicio',
+    cantidad: 1,
+    unidad: 'centro de salud',
+    nivel: 'Grave',
+    costoEstimado: 1_120_000_000,
+    personasAfectadas: 3400,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-10T13:45:00Z',
+  },
+  {
+    sector: 'Salud',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-LOR-023',
+    nivelConfianza: 'Verificado',
+    municipio: 'Lorica',
+    descripcion: 'Puesto de salud rural anegado, se perdió la cadena de frío de vacunas',
+    cantidad: 1,
+    unidad: 'puesto de salud',
+    nivel: 'Moderado',
+    costoEstimado: 145_000_000,
+    personasAfectadas: 820,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-10T07:45:00Z',
+  },
+  {
+    sector: 'Salud',
+    origen: 'RegistroDamnificado',
+    origenId: 'CEN-CER-0058',
+    nivelConfianza: 'Censado',
+    municipio: 'Cereté',
+    descripcion: 'Brote de enfermedad diarreica aguda en alojamientos temporales',
+    cantidad: 74,
+    unidad: 'personas atendidas',
+    nivel: 'Moderado',
+    personasAfectadas: 74,
+    clasificadoPor: 'Funcionario',
+    revisadoPor: 'Marcela Ibáñez Rueda',
+    registradoEn: '2026-08-10T17:05:00Z',
+  },
+  {
+    sector: 'Salud',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-MAJ-7CVN',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Majagual',
+    descripcion: 'No hay ambulancia que entre al corregimiento, hay una señora embarazada aislada',
+    cantidad: 1,
+    unidad: 'corregimiento sin acceso',
+    nivel: 'Grave',
+    clasificadoPor: 'Sugerencia',
+    revisadoPor: 'Julián Ospina Cárdenas',
+    registradoEn: '2026-08-10T13:05:00Z',
+  },
+
+  // ── Energía ─────────────────────────────────────────────────────────────
+  {
+    sector: 'Energia',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-SMA-019',
+    nivelConfianza: 'Verificado',
+    municipio: 'San Marcos',
+    descripcion: 'Subestación eléctrica inundada, cuatro circuitos fuera de servicio',
+    cantidad: 1,
+    unidad: 'subestación',
+    nivel: 'Grave',
+    costoEstimado: 1_980_000_000,
+    personasAfectadas: 5200,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-10T10:55:00Z',
+  },
+  {
+    sector: 'Energia',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-MON-060',
+    nivelConfianza: 'Verificado',
+    municipio: 'Montería',
+    descripcion: 'Postes de media tensión caídos sobre la vía a Tres Palmas',
+    cantidad: 38,
+    unidad: 'postes',
+    nivel: 'Moderado',
+    costoEstimado: 456_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-10T21:15:00Z',
+  },
+  {
+    sector: 'Energia',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-AYA-9DKM',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Ayapel',
+    descripcion: 'Cuatro días sin luz en todo el barrio, la comida se dañó',
+    cantidad: 1,
+    unidad: 'barrio sin servicio',
+    nivel: 'Grave',
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-11T08:05:00Z',
+  },
+  {
+    sector: 'Energia',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-TIE-3XBS',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Tierralta',
+    descripcion: 'Transformador de la vereda estalló cuando subió el agua',
+    cantidad: 1,
+    unidad: 'transformador',
+    nivel: 'Grave',
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-11T12:35:00Z',
+  },
+
+  // ── Telecomunicaciones ──────────────────────────────────────────────────
+  {
+    sector: 'Telecomunicaciones',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-SMA-024',
+    nivelConfianza: 'Verificado',
+    municipio: 'San Marcos',
+    descripcion: 'Torre de telefonía móvil sin energía de respaldo desde el 12 de agosto',
+    cantidad: 1,
+    unidad: 'estación base',
+    nivel: 'Moderado',
+    costoEstimado: 310_000_000,
+    personasAfectadas: 7800,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-11T18:15:00Z',
+  },
+  {
+    sector: 'Telecomunicaciones',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-LOR-028',
+    nivelConfianza: 'Verificado',
+    municipio: 'Lorica',
+    descripcion: 'Emisora comunitaria fuera del aire: se inundó la cabina y el transmisor',
+    cantidad: 1,
+    unidad: 'emisora',
+    nivel: 'Grave',
+    costoEstimado: 96_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-11T13:15:00Z',
+  },
+  {
+    sector: 'Telecomunicaciones',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-MAJ-5RTW',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Majagual',
+    descripcion: 'No hay señal de celular en el corregimiento, hay que salir en canoa para llamar',
+    cantidad: 1,
+    unidad: 'corregimiento sin señal',
+    nivel: 'Grave',
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-11T07:25:00Z',
+  },
+
+  // ── Agropecuario ────────────────────────────────────────────────────────
+  {
+    sector: 'Agropecuario',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-CER-021',
+    nivelConfianza: 'Verificado',
+    municipio: 'Cereté',
+    descripcion: 'Hectáreas de maíz y algodón perdidas por permanencia de la lámina de agua',
+    cantidad: 1240,
+    unidad: 'hectáreas',
+    nivel: 'DestruccionTotal',
+    costoEstimado: 4_960_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-11T21:05:00Z',
+  },
+  {
+    sector: 'Agropecuario',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-SMA-031',
+    nivelConfianza: 'Verificado',
+    municipio: 'San Marcos',
+    descripcion: 'Semovientes bovinos muertos o desplazados sin pastura disponible',
+    cantidad: 860,
+    unidad: 'cabezas de ganado',
+    nivel: 'Grave',
+    costoEstimado: 2_580_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-11T14:45:00Z',
+  },
+  {
+    sector: 'Agropecuario',
+    origen: 'RegistroDamnificado',
+    origenId: 'CEN-LOR-0037',
+    nivelConfianza: 'Censado',
+    municipio: 'Lorica',
+    descripcion: 'Estanques piscícolas desbordados: se perdió la cosecha de cachama',
+    cantidad: 46,
+    unidad: 'estanques',
+    nivel: 'Grave',
+    costoEstimado: 322_000_000,
+    clasificadoPor: 'Regla',
+    revisadoPor: 'Marcela Ibáñez Rueda',
+    registradoEn: '2026-08-11T13:25:00Z',
+  },
+  {
+    sector: 'Agropecuario',
+    origen: 'RegistroDamnificado',
+    origenId: 'CEN-MON-0064',
+    nivelConfianza: 'Censado',
+    municipio: 'Montería',
+    descripcion: 'Galpones avícolas familiares destruidos en zona rural',
+    cantidad: 19,
+    unidad: 'galpones',
+    nivel: 'DestruccionTotal',
+    costoEstimado: 152_000_000,
+    clasificadoPor: 'Regla',
+    revisadoPor: 'Marcela Ibáñez Rueda',
+    registradoEn: '2026-08-11T10:35:00Z',
+  },
+  {
+    sector: 'Agropecuario',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-AYA-2FGH',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Ayapel',
+    descripcion: 'Se ahogó el ganado de varias fincas, están sacando los que quedan en planchón',
+    cantidad: 140,
+    unidad: 'cabezas de ganado',
+    nivel: 'Grave',
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-11T15:05:00Z',
+  },
+  {
+    sector: 'Agropecuario',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-MLB-6JYN',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Montelíbano',
+    descripcion: 'Los cultivos de yuca y plátano de la vereda quedaron debajo del agua',
+    cantidad: 85,
+    unidad: 'hectáreas',
+    nivel: 'Grave',
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-11T21:05:00Z',
+  },
+
+  // ── Comercio e industria ────────────────────────────────────────────────
+  {
+    sector: 'ComercioIndustria',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-MON-072',
+    nivelConfianza: 'Verificado',
+    municipio: 'Montería',
+    descripcion: 'Locales del mercado público con mercancía perdida por la creciente',
+    cantidad: 96,
+    unidad: 'locales',
+    nivel: 'Grave',
+    costoEstimado: 768_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-11T16:55:00Z',
+  },
+  {
+    sector: 'ComercioIndustria',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-CER-027',
+    nivelConfianza: 'Verificado',
+    municipio: 'Cereté',
+    descripcion: 'Planta procesadora de arroz con maquinaria sumergida',
+    cantidad: 1,
+    unidad: 'planta',
+    nivel: 'Grave',
+    costoEstimado: 1_240_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-12T15:25:00Z',
+  },
+  {
+    sector: 'ComercioIndustria',
+    origen: 'RegistroDamnificado',
+    origenId: 'CEN-LOR-0049',
+    nivelConfianza: 'Censado',
+    municipio: 'Lorica',
+    descripcion: 'Puestos de venta informal del malecón arrastrados por el agua',
+    cantidad: 54,
+    unidad: 'puestos',
+    nivel: 'DestruccionTotal',
+    costoEstimado: 81_000_000,
+    clasificadoPor: 'Funcionario',
+    revisadoPor: 'Julián Ospina Cárdenas',
+    registradoEn: '2026-08-12T08:55:00Z',
+  },
+  {
+    sector: 'ComercioIndustria',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-PLR-8SDQ',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Planeta Rica',
+    descripcion: 'Se dañó toda la nevera de la tienda del barrio con los cuatro días sin luz',
+    cantidad: 12,
+    unidad: 'establecimientos',
+    nivel: 'Moderado',
+    clasificadoPor: 'Sugerencia',
+    revisadoPor: 'Julián Ospina Cárdenas',
+    registradoEn: '2026-08-12T08:25:00Z',
+  },
+
+  // ── Cultura ─────────────────────────────────────────────────────────────
+  {
+    sector: 'Cultura',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-LOR-033',
+    nivelConfianza: 'Verificado',
+    municipio: 'Lorica',
+    descripcion: 'Casa de la cultura del centro histórico con humedad estructural en muros',
+    cantidad: 1,
+    unidad: 'edificación patrimonial',
+    nivel: 'Grave',
+    costoEstimado: 640_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-12T16:05:00Z',
+  },
+  {
+    sector: 'Cultura',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-CDO-4BNM',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Ciénaga de Oro',
+    descripcion: 'La iglesia del corregimiento se llenó de agua y se dañaron las bancas',
+    cantidad: 1,
+    unidad: 'iglesia',
+    nivel: 'Moderado',
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-12T11:45:00Z',
+  },
+
+  // ── Inclusión social ────────────────────────────────────────────────────
+  {
+    sector: 'InclusionSocial',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-MON-081',
+    nivelConfianza: 'Verificado',
+    municipio: 'Montería',
+    descripcion: 'Centros de desarrollo infantil cerrados por inundación de aulas y cocina',
+    cantidad: 3,
+    unidad: 'centros del ICBF',
+    nivel: 'Moderado',
+    costoEstimado: 218_000_000,
+    personasAfectadas: 410,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-12T18:25:00Z',
+  },
+  {
+    sector: 'InclusionSocial',
+    origen: 'RegistroDamnificado',
+    origenId: 'CEN-SMA-0041',
+    nivelConfianza: 'Censado',
+    municipio: 'San Marcos',
+    descripcion: 'Hogares comunitarios sin dotación tras el paso del agua',
+    cantidad: 7,
+    unidad: 'hogares comunitarios',
+    nivel: 'Moderado',
+    costoEstimado: 63_000_000,
+    personasAfectadas: 112,
+    clasificadoPor: 'Funcionario',
+    revisadoPor: 'Marcela Ibáñez Rueda',
+    registradoEn: '2026-08-12T09:15:00Z',
+  },
+  {
+    sector: 'InclusionSocial',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-CAI-7ZQK',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Caimito',
+    descripcion: 'En el albergue hay adultos mayores durmiendo en el piso, no alcanzan las colchonetas',
+    cantidad: 1,
+    unidad: 'alojamiento temporal',
+    nivel: 'Grave',
+    personasAfectadas: 86,
+    clasificadoPor: 'Sugerencia',
+    revisadoPor: 'Julián Ospina Cárdenas',
+    registradoEn: '2026-08-12T08:55:00Z',
+  },
+
+  // ── Gobierno ────────────────────────────────────────────────────────────
+  {
+    sector: 'Gobierno',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-SMA-038',
+    nivelConfianza: 'Verificado',
+    municipio: 'San Marcos',
+    descripcion: 'Primer piso de la alcaldía inundado: archivo y equipos de cómputo perdidos',
+    cantidad: 1,
+    unidad: 'edificación pública',
+    nivel: 'Grave',
+    costoEstimado: 385_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-13T15:25:00Z',
+  },
+  {
+    sector: 'Gobierno',
+    origen: 'CargaEdan',
+    origenId: 'EDAN-CER-034',
+    nivelConfianza: 'Verificado',
+    municipio: 'Cereté',
+    descripcion: 'Sede de la inspección de policía con daño en cubierta y instalación eléctrica',
+    cantidad: 1,
+    unidad: 'edificación pública',
+    nivel: 'Moderado',
+    costoEstimado: 97_000_000,
+    clasificadoPor: 'Regla',
+    registradoEn: '2026-08-13T10:45:00Z',
+  },
+  {
+    sector: 'Gobierno',
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-MLB-9WXE',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Montelíbano',
+    descripcion: 'La registraduría no está atendiendo, dicen que se les mojaron los papeles',
+    cantidad: 1,
+    unidad: 'edificación pública',
+    nivel: 'Moderado',
+    clasificadoPor: 'Sugerencia',
+    registradoEn: '2026-08-13T16:35:00Z',
+  },
+
+  // ── Sin clasificar ──────────────────────────────────────────────────────
+  // Texto libre de reportes ciudadanos que ninguna regla pudo asignar. Casi
+  // todos tocan dos sectores a la vez, y por eso los resuelve una persona: un
+  // dato mal enviado a un ministerio cuesta más que una bandeja pendiente.
+  {
+    sector: null,
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-TIE-8HKV',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Tierralta',
+    descripcion: 'Se cayó el puente de la vereda y el colegio quedó sin techo',
+    cantidad: 1,
+    unidad: 'reporte',
+    clasificadoPor: 'Sugerencia',
+    sectoresSugeridos: ['Transporte', 'Educacion'],
+    registradoEn: '2026-08-13T15:05:00Z',
+  },
+  {
+    sector: null,
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-AYA-1QRD',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Ayapel',
+    descripcion: 'El centro de acopio del pueblo se inundó y ahí guardaban la comida del albergue',
+    cantidad: 1,
+    unidad: 'reporte',
+    clasificadoPor: 'Sugerencia',
+    sectoresSugeridos: ['ComercioIndustria', 'InclusionSocial'],
+    registradoEn: '2026-08-13T07:15:00Z',
+  },
+  {
+    sector: null,
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-MAJ-2LWC',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Majagual',
+    descripcion: 'La cancha del barrio quedó vuelta un charco y ahí funcionaba el puesto de salud móvil',
+    cantidad: 1,
+    unidad: 'reporte',
+    clasificadoPor: 'Sugerencia',
+    sectoresSugeridos: ['Deporte', 'Salud'],
+    registradoEn: '2026-08-14T10:25:00Z',
+  },
+  {
+    sector: null,
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-CDO-5TVB',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Ciénaga de Oro',
+    descripcion: 'Se reventó la tubería en la vía principal, hay un hueco enorme y no llega agua',
+    cantidad: 1,
+    unidad: 'reporte',
+    clasificadoPor: 'Sugerencia',
+    sectoresSugeridos: ['AguaYSaneamiento', 'Transporte'],
+    registradoEn: '2026-08-14T14:45:00Z',
+  },
+  {
+    sector: null,
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-PLR-3GNM',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Planeta Rica',
+    descripcion: 'Un poste cayó sobre la casa de la esquina y quedó la casa y el cable en el suelo',
+    cantidad: 1,
+    unidad: 'reporte',
+    clasificadoPor: 'Sugerencia',
+    sectoresSugeridos: ['Energia', 'Vivienda'],
+    registradoEn: '2026-08-14T14:35:00Z',
+  },
+  {
+    sector: null,
+    origen: 'ReporteCiudadano',
+    origenId: 'RPT-CAI-4XJS',
+    nivelConfianza: 'Autorreportado',
+    municipio: 'Caimito',
+    descripcion: 'Hay olor feo por todo el caño y los niños de la escuela de al lado están enfermos',
+    cantidad: 1,
+    unidad: 'reporte',
+    clasificadoPor: 'Sugerencia',
+    sectoresSugeridos: ['AguaYSaneamiento', 'Salud', 'Educacion'],
+    registradoEn: '2026-08-14T10:15:00Z',
+  },
+]);
+
+/** Los daños que esperan que un funcionario les asigne sector. Alimentan el subpanel C. */
+export const mockDanosSinSector: DanoSectorizado[] = mockDanos.filter(
+  (dano) => dano.sector === null,
+);
+
+/*
+ * Estado en el que está cada paquete en la demo. Cubre las cuatro casillas del
+ * flujo para que la pantalla no muestre trece filas iguales: hay enviados,
+ * aprobados esperando envío, en revisión y borradores.
+ */
+const ESTADO_POR_SECTOR: Record<Sector, EstadoPaquete> = {
+  Vivienda: 'Enviado',
+  Transporte: 'Enviado',
+  Telecomunicaciones: 'Enviado',
+  Salud: 'Aprobado',
+  AguaYSaneamiento: 'EnRevision',
+  Educacion: 'EnRevision',
+  Agropecuario: 'EnRevision',
+  Energia: 'Borrador',
+  ComercioIndustria: 'Borrador',
+  Cultura: 'Borrador',
+  InclusionSocial: 'Borrador',
+  Gobierno: 'Borrador',
+  Deporte: 'Borrador',
+};
+
+/** Quién firmó y cuándo. Solo los paquetes aprobados o enviados llevan firma. */
+const FIRMA_POR_SECTOR: Partial<Record<Sector, { por: string; en: string }>> = {
+  Vivienda: { por: 'Marcela Ibáñez Rueda', en: '2026-08-15T14:05:00Z' },
+  Transporte: { por: 'Julián Ospina Cárdenas', en: '2026-08-15T14:40:00Z' },
+  Telecomunicaciones: { por: 'Marcela Ibáñez Rueda', en: '2026-08-15T15:12:00Z' },
+  Salud: { por: 'Diana Restrepo Tovar', en: '2026-08-15T16:00:00Z' },
+};
+
+const RESUMENES_SEMBRADOS = new Map(
+  agruparPorSector(mockDanos).map((resumen) => [resumen.sector, resumen]),
+);
+
+/**
+ * Un paquete por sector, **incluido el que va en cero**.
+ *
+ * Los totales se calculan sobre los daños sembrados, nunca se escriben: si
+ * alguien agrega un daño arriba, el paquete de su ministerio cambia solo. Que
+ * el detalle y el encabezado del oficio digan cosas distintas es el error que
+ * más caro sale en un documento oficial.
+ */
+export const mockPaquetes: PaqueteMinisterio[] = SECTORES.map((sector, indice) => {
+  const resumen = RESUMENES_SEMBRADOS.get(sector);
+  const ficha = CATALOGO_SECTORES[sector];
+  const firma = FIRMA_POR_SECTOR[sector];
+  const estado = ESTADO_POR_SECTOR[sector];
+  const codigo = `PQT-2026-08-15-${String(indice + 1).padStart(4, '0')}`;
+
+  const paquete: PaqueteMinisterio = {
+    id: codigo,
+    codigo,
+    eventoId: EVENTO_ID,
+    sector,
+    entidad: ficha.entidad,
+    correoDestino: ficha.correo,
+    totalDanos: resumen?.totalDanos ?? 0,
+    totalMunicipios: resumen?.totalMunicipios ?? 0,
+    costoEstimadoTotal: resumen?.costoEstimado ?? 0,
+    estado,
+    aprobadoPor: firma?.por,
+    aprobadoEn: firma?.en,
+  };
+
+  if (estado !== 'Enviado') return paquete;
+
+  return {
+    ...paquete,
+    nombreArchivoCsv: nombreArchivoCsv(paquete),
+    nombreArchivoPdf: `${codigo}-oficio.pdf`,
+  };
+});
+
+/** Busca el paquete de un sector. Devuelve `undefined` si el sector no existe. */
+export function paquetePorSector(sector: string): PaqueteMinisterio | undefined {
+  return mockPaquetes.find((paquete) => paquete.sector === sector);
+}
+
+/*
+ * La bitácora nace con tres envíos: uno vacío no deja ver para qué sirve el
+ * subpanel D.
+ *
+ * El cuerpo del correo no se escribe aquí, se compone con la misma función que
+ * usa la pantalla del paquete. Así lo que quedó registrado es exactamente lo
+ * que el sistema manda, y no una versión bonita escrita a mano que nadie
+ * volvería a comparar.
+ */
+const ENVIOS_SEMBRADOS: readonly { sector: Sector; por: string; en: string }[] = [
+  { sector: 'Vivienda', por: 'Marcela Ibáñez Rueda', en: '2026-08-15T14:07:00Z' },
+  { sector: 'Transporte', por: 'Julián Ospina Cárdenas', en: '2026-08-15T14:42:00Z' },
+  { sector: 'Telecomunicaciones', por: 'Marcela Ibáñez Rueda', en: '2026-08-15T15:15:00Z' },
+];
+
+export const mockEnvios: EnvioRegistrado[] = ENVIOS_SEMBRADOS.map(({ sector, por, en }, indice) => {
+  const paquete = mockPaquetes.find((candidato) => candidato.sector === sector);
+  if (paquete === undefined) {
+    throw new Error(`Envío sembrado sin paquete: ${sector}`);
+  }
+
+  const correo = componerCorreo(paquete, mockEvento);
+
+  return {
+    id: `ENV-2026-08-15-${String(indice + 1).padStart(3, '0')}`,
+    paqueteId: paquete.id,
+    sector,
+    entidad: paquete.entidad,
+    destinatario: correo.destinatario,
+    asunto: correo.asunto,
+    cuerpo: correo.cuerpo,
+    enviadoPor: por,
+    enviadoEn: en,
+    // Hoy no hay proveedor de correo y no se finge que lo haya (decisión 1).
+    modo: 'Simulado',
+    archivos: [nombreArchivoCsv(paquete), `${paquete.codigo}-oficio.pdf`],
+  };
+});

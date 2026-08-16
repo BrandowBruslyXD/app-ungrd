@@ -17,6 +17,8 @@ const ReportDetail = lazy(() => import('@/features/reportes/pages/ReportDetail')
 const AidDirectory = lazy(() => import('@/features/reportes/pages/AidDirectory'));
 const Alerts = lazy(() => import('@/features/reportes/pages/Alerts'));
 const ManagerDashboard = lazy(() => import('@/features/gestor/pages/ManagerDashboard'));
+const PanelUngrd = lazy(() => import('@/features/ungrd/pages/PanelUngrd'));
+const PaqueteMinisterio = lazy(() => import('@/features/ungrd/pages/PaqueteMinisterio'));
 const RescuerDashboard = lazy(() => import('@/features/rescatista/pages/RescuerDashboard'));
 const FieldCensusWizard = lazy(() => import('@/features/rescatista/pages/FieldCensusWizard'));
 const SocorroDashboard = lazy(() => import('@/features/socorro/pages/SocorroDashboard'));
@@ -108,6 +110,8 @@ function Estructura({ role, onRoleChange }: EstructuraProps) {
             <Route path="/ayudas" element={<AidDirectory />} />
             <Route path="/alertas" element={<Alerts />} />
             <Route path="/gestor" element={<ManagerDashboard />} />
+            <Route path="/gestor/reparto" element={<PanelUngrd />} />
+            <Route path="/gestor/reparto/:sector" element={<PaqueteMinisterio />} />
             <Route path="/rescatista" element={<RescuerDashboard />} />
             <Route path="/rescatista/censo" element={<FieldCensusWizard />} />
             <Route path="/socorro" element={<SocorroDashboard />} />
