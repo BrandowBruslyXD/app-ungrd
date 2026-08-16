@@ -11,7 +11,9 @@ public class LoginValidator : AbstractValidator<LoginCommand>
         RuleFor(c => c.Email).NotEmpty().EmailAddress();
         // Mismo límite que en registro, contado en bytes UTF-8 (no caracteres): por encima de
         // 72 bytes nunca puede coincidir con el hash guardado, BCrypt lo trunca ahí.
-        RuleFor(c => c.Password).NotEmpty()
+        // Cascade(Stop): si Password llega null (NotEmpty falla), no debe seguir a Must —
+        // GetByteCount(null) lanza ArgumentNullException, no un error de validación.
+        RuleFor(c => c.Password).Cascade(CascadeMode.Stop).NotEmpty()
             .Must(p => Encoding.UTF8.GetByteCount(p) <= 72)
                 .WithMessage("La contraseña no puede tener más de 72 bytes");
     }

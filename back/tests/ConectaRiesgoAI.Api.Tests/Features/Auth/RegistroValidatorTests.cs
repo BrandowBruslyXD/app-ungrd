@@ -28,4 +28,15 @@ public class RegistroValidatorTests
 
         Assert.True(resultado.IsValid);
     }
+
+    [Fact]
+    public void Validate_PasswordNull_NoLanzaExcepcionYFallaValidacion()
+    {
+        var comando = new RegistroCommand("María", "maria@ejemplo.com", null!, "Bogotá");
+
+        var resultado = Validador.Validate(comando);
+
+        Assert.False(resultado.IsValid);
+        Assert.Contains(resultado.Errors, e => e.PropertyName == nameof(RegistroCommand.Password));
+    }
 }
