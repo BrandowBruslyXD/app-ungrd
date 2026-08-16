@@ -62,6 +62,12 @@ public class NasaFirmsClient(HttpClient httpClient, IOptions<NasaOptions> opcion
         }
     }
 
+    /// <summary>
+    /// Arma la URL del API de área de FIRMS con el cuadro (bbox) alrededor del punto: FIRMS no
+    /// acepta radio, solo rectángulo, así que el filtro exacto por distancia ocurre después en
+    /// <see cref="InterpretarCsv"/>.
+    /// </summary>
+    /// <summary>Arma el cuadro de búsqueda que exige FIRMS (sin radios, solo rectángulos) alrededor del punto dado.</summary>
     private string ConstruirUrl(double lat, double lng, double radioKm)
     {
         double deltaLat = radioKm / KmPorGradoLatitud;

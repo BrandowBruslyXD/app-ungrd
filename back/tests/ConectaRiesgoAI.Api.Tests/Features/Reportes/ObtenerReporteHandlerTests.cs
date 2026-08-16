@@ -306,4 +306,31 @@ public class ObtenerReporteHandlerTests
 
         Assert.Equal("   ", respuesta.ReportadoPor);
     }
+
+    [Fact]
+    public async Task Handle_GuardadoDeVerificacionFalla_DevuelveElResultadoSinPersistirSinRomperElReporte()
+    {
+        string baseDeDatos = Guid.NewGuid().ToString();
+        using (var semilla = AppDbContextPruebas.CrearConNombre(baseDeDatos))
+        {
+            semilla.Usuarios.Add(NuevoUsuario(1, "Ana Ciudadana"));
+            var reporte = NuevoReporte("RPT-2026-08-15-0012", 1);
+            reporte.Tipo = TipoReporte.Incendio;
+            semilla.Reportes.Add(reporte);
+            await semilla.SaveChangesAsync();
+        }
+
+        await using var contexto = AppDbContextPruebas.CrearQueFallaAlGuardarVerificaciones(baseDeDatos);
+        var resultado = new ResultadoVerificacionSatelital(true, 2, 1.5, "2 focos de calor detectados a menos de 5 km");
+        var nasaFirmsClient = new NasaFirmsClientFalso(resultado);
+        var handler = NuevoHandler(contexto, nasa: nasaFirmsClient);
+
+        var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0012"), CancellationToken.None);
+
+        // La degradación elegante de la regla 3 del contrato: el error de base de datos no
+        // llega al ciudadano; el bloque satelital se devuelve calculado pero sin persistir.
+        Assert.NotNull(respuesta.VerificacionSatelital);
+        Assert.True(respuesta.VerificacionSatelital!.Confirmado);
+        Assert.Empty(contexto.VerificacionesSatelitales);
+    }
 }
