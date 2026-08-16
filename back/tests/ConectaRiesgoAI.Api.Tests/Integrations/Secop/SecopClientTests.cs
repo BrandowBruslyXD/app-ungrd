@@ -13,7 +13,7 @@ public class SecopClientTests
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://www.datos.gov.co/") };
         return new SecopClient(
             httpClient,
-            new MemoryCache(new MemoryCacheOptions()),
+            new MemoryCache(new MemoryCacheOptions { SizeLimit = 500 }),
             Options.Create(opciones ?? new SecopOptions()),
             NullLogger<SecopClient>.Instance);
     }
@@ -49,7 +49,9 @@ public class SecopClientTests
     [Fact]
     public async Task ConsultarPorMunicipioAsync_SecopResponde500_UsaElRespaldoDelMunicipio()
     {
-        var cliente = Crear(new HandlerDeRespuestaFija(HttpStatusCode.InternalServerError, "error"));
+        var cliente = Crear(
+            new HandlerDeRespuestaFija(HttpStatusCode.InternalServerError, "error"),
+            new SecopOptions { UsarRespaldoSiFalla = true });
 
         var resultado = await cliente.ConsultarPorMunicipioAsync("Bogotá", CancellationToken.None);
 
@@ -61,7 +63,9 @@ public class SecopClientTests
     [Fact]
     public async Task ConsultarPorMunicipioAsync_SecopLanzaExcepcionDeRed_NoPropagaYDevuelveRespaldo()
     {
-        var cliente = Crear(new HandlerQueLanza(new HttpRequestException("timeout simulado")));
+        var cliente = Crear(
+            new HandlerQueLanza(new HttpRequestException("timeout simulado")),
+            new SecopOptions { UsarRespaldoSiFalla = true });
 
         var resultado = await cliente.ConsultarPorMunicipioAsync("Bogotá", CancellationToken.None);
 
@@ -88,7 +92,9 @@ public class SecopClientTests
     [Fact]
     public async Task ConsultarPorMunicipioAsync_MunicipioSinTildeYSecopFalla_UsaElRespaldoDeTodosModos()
     {
-        var cliente = Crear(new HandlerQueLanza(new HttpRequestException("timeout simulado")));
+        var cliente = Crear(
+            new HandlerQueLanza(new HttpRequestException("timeout simulado")),
+            new SecopOptions { UsarRespaldoSiFalla = true });
 
         var resultado = await cliente.ConsultarPorMunicipioAsync("bogota", CancellationToken.None);
 
@@ -98,7 +104,9 @@ public class SecopClientTests
     [Fact]
     public async Task ConsultarPorMunicipioAsync_MunicipioSinDatosDeRespaldoYSecopFalla_DevuelveListaVacia()
     {
-        var cliente = Crear(new HandlerQueLanza(new HttpRequestException("timeout simulado")));
+        var cliente = Crear(
+            new HandlerQueLanza(new HttpRequestException("timeout simulado")),
+            new SecopOptions { UsarRespaldoSiFalla = true });
 
         var resultado = await cliente.ConsultarPorMunicipioAsync("Municipio Inventado", CancellationToken.None);
 

@@ -18,9 +18,16 @@ public class SecopClient(HttpClient httpClient, IMemoryCache cache, IOptions<Sec
     /// <summary>Recurso del dataset. Palabras clave del issue CR-23 para acotar a obras de prevención del riesgo.</summary>
     private const string RecursoDataset = "resource/jbjy-vk9h.json";
 
+    // Con y sin tilde: el dataset de SECOP no es consistente en acentuación y "upper(...) like"
+    // hace comparación literal de caracteres, así que "canalización" no matchea "CANALIZACION".
     private static readonly string[] PalabrasClave =
     [
-        "alcantarillado", "canalizacion", "gestion del riesgo", "prevencion", "mitigacion", "obras de contencion"
+        "alcantarillado",
+        "canalizacion", "canalización",
+        "gestion del riesgo", "gestión del riesgo",
+        "prevencion", "prevención",
+        "mitigacion", "mitigación",
+        "obras de contencion", "obras de contención"
     ];
 
     private static readonly TimeSpan DuracionCache = TimeSpan.FromMinutes(30);
@@ -54,7 +61,7 @@ public class SecopClient(HttpClient httpClient, IMemoryCache cache, IOptions<Sec
                 peticion.Headers.Add("X-App-Token", _opciones.AppToken);
             }
 
-            HttpResponseMessage respuesta = await httpClient.SendAsync(peticion, cancellationToken);
+            using HttpResponseMessage respuesta = await httpClient.SendAsync(peticion, cancellationToken);
             if (!respuesta.IsSuccessStatusCode)
             {
                 logger.LogWarning(
