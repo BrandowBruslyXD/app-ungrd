@@ -1,0 +1,167 @@
+# Verifica el frontend en cada Pull Request hacia main.
+#
+# Por qué existe: no había ningún workflow de frontend. `front/playwright.config.ts`
+# y `front/e2e/datos-reales.spec.ts` ya estaban listos para correr contra un backend
+# real, pero nadie los disparaba en CI — dependía de que alguien los corriera a mano.
+#
+# Dos jobs separados a propósito: `rapido` (lint, tipos, vitest) no necesita Postgres
+# ni el backend .NET, así que su resultado llega en segundos sin esperar a que se
+# levante toda la infraestructura del job de e2e.
+name: Verificar frontend
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "front/**"
+      - ".github/workflows/verificar-frontend.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verificar-frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rapido:
+    name: Lint, tipos y pruebas unitarias
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: front
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tipos
+        run: npm run typecheck
+
+      - name: Pruebas unitarias
+        run: npm run test
+
+  e2e:
+    name: Playwright contra el backend real
+    needs: rapido
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: conecta
+          POSTGRES_PASSWORD: conecta_dev
+          POSTGRES_DB: conectariesgoai
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U conecta -d conectariesgoai"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Preparar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: back/global.json
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+
+      - name: Restaurar y compilar el backend
+        working-directory: back
+        run: |
+          dotnet restore ConectaRiesgoAI.slnx
+          dotnet build ConectaRiesgoAI.slnx --no-restore --configuration Release
+
+      - name: Instalar dependencias del frontend
+        working-directory: front
+        run: npm ci
+
+      - name: Instalar navegadores de Playwright
+        working-directory: front
+        # Solo chromium: los dos proyectos configurados (`movil` con Pixel 7 y
+        # `escritorio` con Desktop Chrome) corren sobre Chromium, no hace falta
+        # descargar Firefox ni WebKit.
+        run: npx playwright install --with-deps chromium
+
+      - name: Levantar el backend
+        working-directory: back
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ASPNETCORE_URLS: http://localhost:5000
+          ConnectionStrings__Postgres: "Host=localhost;Port=5432;Database=conectariesgoai;Username=conecta;Password=conecta_dev"
+          ConnectionStrings__AzureStorage: "UseDevelopmentStorage=true"
+          Jwt__Secret: "clave-solo-para-ci-nunca-se-usa-fuera-de-este-job-32+"
+          Jwt__Issuer: "ConectaRiesgoAI"
+          Jwt__Audience: "ConectaRiesgoAI"
+          IngestaBot__ApiKey: "clave-de-servicio-solo-para-desarrollo-local"
+        run: |
+          nohup dotnet run --project src/ConectaRiesgoAI.Api --no-build --configuration Release > "$RUNNER_TEMP/backend.log" 2>&1 &
+
+          echo "Esperando a que el backend responda en /health..."
+          for intento in $(seq 1 30); do
+            if curl --fail --silent http://localhost:5000/health > /dev/null; then
+              echo "Backend arriba."
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "::error::El backend no respondió en /health dentro del tiempo de espera."
+          cat "$RUNNER_TEMP/backend.log"
+          exit 1
+
+      - name: Sembrar datos de demo
+        working-directory: back
+        env:
+          API: http://localhost:5000
+          CLAVE_INGESTA: clave-de-servicio-solo-para-desarrollo-local
+        run: node scripts/sembrar-demo.mjs
+
+      - name: Playwright
+        working-directory: front
+        env:
+          API_URL: http://localhost:5000
+        run: npx playwright test
+
+      - name: Publicar reporte de Playwright
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: front/playwright-report/
+          retention-days: 7
+
+      - name: Publicar log del backend
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-log
+          path: ${{ runner.temp }}/backend.log
+          retention-days: 7

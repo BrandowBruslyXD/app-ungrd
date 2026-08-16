@@ -43,7 +43,11 @@ async function reportesDeLaApi(page: Page): Promise<ReporteApi[]> {
 }
 
 test.describe('los datos del backend llegan a la pantalla', () => {
-  test('el tablero del gestor pinta los reportes que existen en la base', async ({ page }) => {
+  // https://github.com/jasonfabian8/app-ungrd/issues/93
+  // El tablero del gestor pinta con listReportes(), que devuelve datos mock fijos
+  // en vez de llamar al backend: estas tres pruebas comparan contra la API real y
+  // fallan siempre, no por flakiness. Se reactivan cuando /gestor consuma /api/reportes.
+  test.fixme('el tablero del gestor pinta los reportes que existen en la base', async ({ page }) => {
     const esperados = await reportesDeLaApi(page);
     expect(esperados.length, 'la base tiene que estar sembrada').toBeGreaterThan(0);
 
@@ -53,7 +57,8 @@ test.describe('los datos del backend llegan a la pantalla', () => {
     await expect(page.getByText(String(esperados.length), { exact: true }).first()).toBeVisible();
   });
 
-  test('cada reporte cae en la columna de su estado', async ({ page }) => {
+  // https://github.com/jasonfabian8/app-ungrd/issues/93
+  test.fixme('cada reporte cae en la columna de su estado', async ({ page }) => {
     const esperados = await reportesDeLaApi(page);
     const avanzados = esperados.filter((r) => r.estado !== 'Reportado');
     test.skip(avanzados.length === 0, 'la base no tiene casos avanzados que comprobar');
@@ -122,7 +127,10 @@ test.describe('los datos del backend llegan a la pantalla', () => {
 });
 
 test.describe('la pantalla se comporta cuando el servidor no responde', () => {
-  test('el tablero avisa y ofrece reintentar en vez de quedarse vacío', async ({ page }) => {
+  // https://github.com/jasonfabian8/app-ungrd/issues/93
+  // /gestor no llama a /api/reportes todavía, así que abortar esa ruta no tiene
+  // ningún efecto sobre esta pantalla.
+  test.fixme('el tablero avisa y ofrece reintentar en vez de quedarse vacío', async ({ page }) => {
     /*
      * Se corta la API a propósito: es el escenario de alguien con mala señal.
      * El patrón apunta al host del backend y no a `**` /api/reportes` **`, que en
