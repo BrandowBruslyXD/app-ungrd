@@ -1,4 +1,4 @@
-# Copilot Instructions — ConectaRiesgoAI
+# Copilot Instructions — ConectaRiesgo
 
 ## El proyecto
 
@@ -56,7 +56,7 @@ back/src/ConectaRiesgoAI.Api/
 
 ## Convenciones — TypeScript / React
 
-- Nada de `any`; TypeScript strict. Sin textos de UI hardcodeados: todo por i18n.
+- Nada de `any`; TypeScript strict.
 - La lógica de negocio va en hooks, no en componentes. Store solo cuando de verdad hace falta.
 
 ## Fuente única

@@ -69,10 +69,31 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                     b.Property<DateTime>("ActualizadoEn")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Canal")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Web");
+
+                    b.Property<string>("Clase")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("AfectacionPropia");
+
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Confianza")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Autorreportado");
 
                     b.Property<DateTime>("CreadoEn")
                         .HasColumnType("timestamp with time zone");
@@ -91,10 +112,10 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<double>("Latitud")
+                    b.Property<double?>("Latitud")
                         .HasColumnType("double precision");
 
-                    b.Property<double>("Longitud")
+                    b.Property<double?>("Longitud")
                         .HasColumnType("double precision");
 
                     b.Property<string>("Municipio")
@@ -111,6 +132,10 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
+
+                    b.Property<string>("UbicacionTexto")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<string>("UrlFoto")
                         .HasMaxLength(500)
@@ -151,6 +176,11 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<bool>("EsAcreditadoCenso")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Municipio")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -161,6 +191,13 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<string>("OrigenRegistro")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Web");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -170,9 +207,16 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Telefono")
                         .IsUnique();
 
                     b.ToTable("usuarios", (string)null);
@@ -183,8 +227,10 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                             Id = 1,
                             CreadoEn = new DateTime(2026, 8, 15, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "ciudadano@conectariesgoai.demo",
+                            EsAcreditadoCenso = false,
                             Municipio = "Bogotá",
                             Nombre = "Ana Ciudadana",
+                            OrigenRegistro = "Web",
                             PasswordHash = "$2b$12$08eRl6W5Vpj8HwNAAQ3NUOUQOM.aG/NA.WTBc5LbMWjN9jz.3mwJ.",
                             Rol = "Ciudadano"
                         },
@@ -193,8 +239,10 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                             Id = 2,
                             CreadoEn = new DateTime(2026, 8, 15, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "gestor@conectariesgoai.demo",
+                            EsAcreditadoCenso = false,
                             Municipio = "Bogotá",
                             Nombre = "Carlos Gestor",
+                            OrigenRegistro = "Web",
                             PasswordHash = "$2b$12$08eRl6W5Vpj8HwNAAQ3NUOUQOM.aG/NA.WTBc5LbMWjN9jz.3mwJ.",
                             Rol = "Gestor"
                         },
@@ -203,8 +251,10 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                             Id = 3,
                             CreadoEn = new DateTime(2026, 8, 15, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@conectariesgoai.demo",
+                            EsAcreditadoCenso = false,
                             Municipio = "Bogotá",
                             Nombre = "Admin Sistema",
+                            OrigenRegistro = "Web",
                             PasswordHash = "$2b$12$08eRl6W5Vpj8HwNAAQ3NUOUQOM.aG/NA.WTBc5LbMWjN9jz.3mwJ.",
                             Rol = "Admin"
                         });

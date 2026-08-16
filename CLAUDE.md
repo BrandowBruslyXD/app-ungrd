@@ -1,4 +1,4 @@
-# CLAUDE.md — ConectaRiesgoAI
+# CLAUDE.md — ConectaRiesgo
 
 ## Qué es este proyecto
 
@@ -22,7 +22,7 @@ suelta.
 
 Contexto original del problema: [docs/idea-negocio/](docs/idea-negocio/). Ojo: esos documentos son
 de la exploración inicial, cuando el producto se pensaba **solo** como asistente por WhatsApp y con
-otro nombre. **El producto se llama ConectaRiesgoAI**: es una app web, y WhatsApp es un canal más
+otro nombre. **El producto es una app web y se llama ConectaRiesgo.** WhatsApp es un canal más
 para reportar y consultar, no el único.
 
 Es un proyecto de **hackatón**: prioriza lo que se puede demostrar funcionando. Pragmatismo por
@@ -131,8 +131,9 @@ La pregunta de revisión no es "¿respeta las capas?" sino **"¿esta rebanada se
 ### C#
 
 - Un tipo público por archivo (helpers y tipos privados anidados, permitidos).
-- Tipos explícitos; nada de `var` salvo proyecciones anónimas de LINQ. Los proyectos `.Tests` están
-  exentos: ahí `var` es la convención.
+- Se permite `var` cuando el tipo es evidente por el lado derecho de la asignación (p. ej.
+  `new`, un literal o un cast explícito). Si no es evidente a simple vista, usa el tipo explícito.
+  Los proyectos `.Tests` están exentos de esta restricción: ahí `var` es la convención.
 - Campos privados `_camelCase`; clases, métodos y propiedades `PascalCase`.
 - DTOs como `record` inmutables. Nunca expongas la entidad persistida en el contrato HTTP.
 - Timestamps ISO-8601 en UTC.
@@ -144,7 +145,6 @@ La pregunta de revisión no es "¿respeta las capas?" sino **"¿esta rebanada se
 ### TypeScript / React
 
 - TypeScript strict. **Nada de `any`.**
-- Ningún texto de UI hardcodeado: todo por i18n.
 - La lógica de negocio vive en hooks, no en componentes.
 - Todo estado de carga y de error de una llamada a API se maneja explícitamente y se le muestra al
   usuario en lenguaje comprensible — sin jerga ni códigos.
@@ -179,7 +179,7 @@ La pregunta de revisión no es "¿respeta las capas?" sino **"¿esta rebanada se
 | Skill | Para qué |
 |---|---|
 | `audit-backend` | Auditar una rebanada o todo el backend: arquitectura, caminos de fallo, seguridad, tests |
-| `audit-frontend` | Auditar el frontend: tipado, estado, datos, i18n, seguridad, accesibilidad, performance |
+| `audit-frontend` | Auditar el frontend: tipado, estado, datos, seguridad, accesibilidad, performance |
 | `auditar-feature` | Verificar que lo que un issue declara corresponde con el código real |
 | `crear-epica` | Entrevista guiada para convertir un requerimiento en issue épica |
 | `consultar-issues` | Consultar y agrupar issues por categoría, estado, milestone |

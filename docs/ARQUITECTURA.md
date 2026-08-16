@@ -237,6 +237,7 @@ commit**. Ver [`README.md`](../README.md#ambientes) para la URL del backend en p
 
 ## Pendientes de este documento
 
+- **Nombre del producto (cerrado):** la app se llama **ConectaRiesgo** (UI y documentación). Los namespaces del backend usan `ConectaRiesgoAI`. `RespondeYA` quedó solo en documentos históricos de exploración (`docs/idea-negocio/`).
 - **`servicios/` vs `Integrations/`:** ya existen tres microservicios reales y verificados en
   `servicios/` (`ms-satelital`, `ms-transparencia`, `ms-social`) que cubren NASA FIRMS, SECOP y
   redes sociales, pero este documento describe esas integraciones como clientes HTTP dentro de

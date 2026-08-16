@@ -44,7 +44,7 @@ un issue que no pudiste leer.
 
 ## Lo que toda feature debe cumplir aquí
 
-No hay catálogo ni códigos: son estas seis exigencias, aplicables a toda feature por defecto.
+No hay catálogo ni códigos: son estas cinco exigencias, aplicables a toda feature por defecto.
 
 1. **Criterios de aceptación verificables**, en Gherkin, en el issue, incluyendo **el camino que
    falla** y no solo el feliz. Sin ellos solo se contrasta la existencia de las piezas, no el
@@ -56,11 +56,10 @@ No hay catálogo ni códigos: son estas seis exigencias, aplicables a toda featu
    textuales, contraste.
 5. **Observabilidad mínima**: que un fallo en producción se diagnostique **sin depurar**, leyendo el
    registro.
-6. **Textos de UI por i18n**: ni un literal visible al usuario incrustado en el componente.
 
-Audita solo las que el alcance realmente toca (no reclames i18n sin superficie de UI), pero señala si
-alguna debió declararse como no aplicable. Las exclusiones que el issue declare **se respetan y se
-reportan**; si no declara ninguna, se asume que las aceptó todas.
+Audita solo las que el alcance realmente toca (no reclames accesibilidad sin superficie de UI), pero
+señala si alguna debió declararse como no aplicable. Las exclusiones que el issue declare **se
+respetan y se reportan**; si no declara ninguna, se asume que las aceptó todas.
 
 ### Cómo se ve un incumplimiento en el código
 

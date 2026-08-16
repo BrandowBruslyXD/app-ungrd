@@ -2,7 +2,7 @@
 name: audit-frontend
 description: >
   Auditoría del frontend de ConectaRiesgoAI (React + TypeScript en `front`) por
-  dimensiones: tipado estricto → componentes → estado → datos/API y errores de red → i18n →
+  dimensiones: tipado estricto → componentes → estado → datos/API y errores de red → textos →
   reuso → seguridad → accesibilidad → performance → tests → build. Devuelve hallazgos
   priorizados por severidad, con evidencia `archivo:línea` y escenario de fallo concreto.
   Úsalo cuando pidan auditar, revisar o validar el frontend — p. ej. "audita el frontend",
@@ -24,9 +24,11 @@ usa puede estar en la calle, con un teléfono de gama baja, señal intermitente 
 vuelve no negociables **accesibilidad**, **comportamiento con red lenta o caída** y **mensajes de
 error que una persona entienda y pueda accionar**.
 
-**Stack.** React + TypeScript en `front`. El resto (bundler, estado, i18n, runner de tests)
-**aún no está decidido**: audita contra lo que usen el `package.json` y el código. Cuando aquí se
-nombra una librería concreta es **como ejemplo**, no como el stack vigente.
+**Stack.** React + TypeScript en `front`. El resto (bundler, estado, runner de tests) **aún no
+está decidido**: audita contra lo que usen el `package.json` y el código. Cuando aquí se nombra
+una librería concreta es **como ejemplo**, no como el stack vigente. El repo no usa i18n: los
+textos van hardcodeados en español neutro directamente en el código — no reportes eso como
+hallazgo.
 
 ---
 
@@ -60,7 +62,7 @@ node -e "const p=require('./front/package.json');console.log(Object.keys(p.scrip
 ```
 
 Estructura razonable: `components/ hooks/ services/ (o api/) store/ utils/ constants/ types/ pages/
-(o routes/) i18n/ (o locales/)`. Anota desviaciones; no las reportes si el proyecto es coherente.
+(o routes/)`. Anota desviaciones; no las reportes si el proyecto es coherente.
 
 ## Fase 2 — TypeScript y tipado
 
@@ -114,17 +116,19 @@ Estructura razonable: `components/ hooks/ services/ (o api/) store/ utils/ const
 - [ ] **Paginación** en toda lista (`skip`/`take` + total y controles). Cargar la lista completa es
       lento en la red del usuario y caro en su plan de datos.
 
-## Fase 6 — i18n y textos
+## Fase 6 — Textos
 
-- [ ] **Cero textos hardcodeados en JSX**: labels, botones, placeholders, errores, estados vacíos,
-      `aria-label`, títulos. Todo desde el mecanismo que use el proyecto (una librería de i18n o un
-      módulo de textos tipado).
-- [ ] **Un solo mecanismo**: dos conviviendo garantizan textos que nadie traduce.
-- [ ] Misma llave en todos los idiomas soportados, fallback funcionando, sin llaves huérfanas ni
-      llaves usadas que no existen (se renderiza la llave cruda en pantalla).
-- [ ] Fechas y números **locale-aware** (`Intl`), no formatos armados a mano.
+El repo no usa i18n: los textos de UI van hardcodeados en español neutro, directamente en el
+código. Eso no es un hallazgo — lo que sí se audita es la calidad del texto:
+
 - [ ] Español **neutro colombiano, sin voseo**, frases cortas, sin jerga ni nombres internos de
-      estados: el usuario está en emergencia, no leyendo un manual.
+      estados (enums, códigos): el usuario está en emergencia, no leyendo un manual.
+- [ ] Labels, botones, placeholders, errores, estados vacíos, `aria-label` y títulos tienen texto
+      real y comprensible — nada de claves crudas, `TODO`, texto de relleno ni cadenas vacías.
+- [ ] Consistencia de tono y terminología entre pantallas para el mismo concepto (p. ej. un mismo
+      estado del reporte no se nombra distinto en dos vistas).
+- [ ] Fechas y números formateados con criterio (`Intl` u otro), no concatenados a mano de forma
+      que rompa con valores límite.
 
 ## Fase 7 — Reuso
 
@@ -226,7 +230,6 @@ y `npm test` en verde.
 
 ```bash
 grep -rnE ":\s*any\b|\bas any\b|<any>" front/src --include=*.ts --include=*.tsx | grep -v ".d.ts"
-grep -rnE ">[A-Za-zÁÉÍÓÚÑñ][^<>{}]{2,}<" front/src --include=*.tsx   # texto directo en JSX
 grep -rnE "dangerouslySetInnerHTML|(local|session)Storage\.(set|get)Item" front/src
 grep -rn "fetch(" front/src --include=*.tsx                          # fetch fuera de servicios
 grep -rn "AbortController\|signal:" front/src                        # cancelación
@@ -242,7 +245,7 @@ grep -rn "console\." front/src
 **Veredicto:** <LISTO / NO LISTO — 1-2 líneas + estado de build / tsc --noEmit / test>
 
 ## Lo que está bien
-- <p. ej. TS strict sin `any` · i18n completo · estados de error cubiertos · foco visible>
+- <p. ej. TS strict sin `any` · textos claros y consistentes · estados de error cubiertos · foco visible>
 
 ## Hallazgos
 ### 🔴 Crítica — <título>
@@ -261,6 +264,7 @@ grep -rn "console\." front/src
 
 **Los seis defectos que ninguna herramienta delata** y que aquí duelen más — revísalos siempre antes
 de cerrar: script `test` ausente o con `--passWithNoTests` · solo el camino feliz, sin estados de
-carga y error · fetch sin timeout ni cancelación, o reintento ciego en un envío · textos
-hardcodeados en errores, estados vacíos y `aria-label` · tokens o datos del ciudadano en
-`localStorage` o en consola · `<div onClick>` y el color como única señal de gravedad.
+carga y error · fetch sin timeout ni cancelación, o reintento ciego en un envío · placeholders,
+estados vacíos o `aria-label` con texto crudo, técnico o vacío en vez de un mensaje real · tokens o
+datos del ciudadano en `localStorage` o en consola · `<div onClick>` y el color como única señal de
+gravedad.

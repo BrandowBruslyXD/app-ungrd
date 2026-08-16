@@ -297,4 +297,4 @@ propuesta redactada en el informe y adviértelo explícitamente.
    que alguien cambie un id en la URL.
 8. **Listado sin paginación** que funciona con los 20 registros de la demo y no con los reales.
 9. **Textos de dominio** (mensajes de seguimiento, entradas de historial) son texto server-side de
-   auditoría, **no** cadenas de UI: no los confundas con lo que pasa por i18n en el frontend.
+   auditoría, **no** cadenas de UI: no los confundas con los textos que el frontend hardcodea.
