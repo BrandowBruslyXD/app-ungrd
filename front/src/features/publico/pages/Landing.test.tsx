@@ -18,6 +18,14 @@ describe('Landing', () => {
     expect(screen.getByRole('link', { name: /reportar una emergencia/i })).toBeInTheDocument();
   });
 
+  it('permite abrir el tutorial desde la portada', () => {
+    montar();
+    expect(screen.getByRole('link', { name: /ver tutorial/i })).toHaveAttribute(
+      'href',
+      '/tutorial',
+    );
+  });
+
   it('muestra el aviso del 123 antes que cualquier otra cosa', () => {
     montar();
     expect(screen.getByRole('link', { name: /llamar al 123/i })).toBeInTheDocument();
