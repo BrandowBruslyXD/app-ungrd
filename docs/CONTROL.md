@@ -1,4 +1,4 @@
-# Control del proyecto — ConectaRiesgoAI
+# Control del proyecto — ConectaRiesgo
 
 > El tablero del PMO. Aquí se ve **qué bloquea**, **qué se decidió** y **qué falta**.
 > Si alguien pregunta "¿en qué vamos?", la respuesta está en este archivo.
@@ -65,7 +65,8 @@ Se anotan para no volver a discutir lo mismo a las 3 de la mañana.
 | D7 | **Sin PostGIS** | Haversine en C# alcanza y ahorra una hora de pelear con extensiones |
 | D8 | **Una aprobación de cualquiera** para hacer merge | Un PR bloqueado es tiempo muerto. Solo no se vale autoaprobarse |
 | D9 | **Respaldo de SECOP** marcado como no real | `datos.gov.co` estuvo caído. Mostrarlo como real sería engañar al jurado |
-| D16 | **Azure Blob Storage además de Cloudinary, no en reemplazo** — `POST /api/evidencias` sube server-side a dos contenedores privados (`evidencias`, `censo`) con URL firmada. Coexiste con el flujo Cloudinary client-side de `CONTRATO-API.md` sección 2; no se tocó ese endpoint | Issue #47: Azure Container Apps no tiene disco persistente, y las fotos del censo (documentos, rostros) necesitan un contenedor con la protección más alta de la Ley 1581. Unificar ambos flujos de subida queda para cuando exista `CrearReporte` |
+| D16 | **Backfill de `Reporte.Clase = AfectacionPropia`** para los reportes previos a la migración `AgregaCamposParaWhatsapp` | Es una suposición, no un dato real: no hay forma de saber retroactivamente si esos reportes eran un aviso sobre un evento o una afectación propia. Quien construya reportes o filtros por `Clase` debe saber que los históricos están adivinados |
+| D17 | **Azure Blob Storage además de Cloudinary, no en reemplazo** — `POST /api/evidencias` sube server-side a dos contenedores privados (`evidencias`, `censo`) con URL firmada. Coexiste con el flujo Cloudinary client-side de `CONTRATO-API.md` sección 2; no se tocó ese endpoint | Issue #47: Azure Container Apps no tiene disco persistente, y las fotos del censo (documentos, rostros) necesitan un contenedor con la protección más alta de la Ley 1581. Unificar ambos flujos de subida queda para cuando exista `CrearReporte` |
 
 ---
 
