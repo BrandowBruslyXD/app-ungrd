@@ -195,8 +195,15 @@ public class RegistrarCensoHandler(AppDbContext db, ILogger<RegistrarCensoHandle
                 await db.SaveChangesAsync(cancellationToken);
                 return operacion;
             }
-            catch (DbUpdateException ex) when (EsViolacionDeIndiceUnico(ex) && intento < MaximoIntentos)
+            catch (DbUpdateException ex) when (EsViolacionDeIndiceUnico(ex))
             {
+                // Sin "&& intento < MaximoIntentos" a propósito: si el filtro exigiera eso, el
+                // tercer choque no entraría al catch, la excepción se propagaría sin control y el
+                // SingleAsync de abajo —el respaldo pensado justo para este caso— quedaría
+                // inalcanzable (hallazgo de revisión del PR #66). Agotar los intentos reintentando
+                // un Codigo nuevo no tiene sentido aquí: la colisión es por (BrigadistaId,
+                // Municipio) con jornada abierta, no por Codigo, así que ningún reintento la evita
+                // — se sale del bucle y se reutiliza la que ganó la carrera.
                 db.OperacionesCenso.Remove(operacion);
             }
         }
