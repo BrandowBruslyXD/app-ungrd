@@ -13,5 +13,9 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // `e2e/` es de Playwright: usa su propio `test` y necesita un navegador de
+    // verdad. Si vitest lo recoge, falla al importar y ensucia el resultado.
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['node_modules', 'dist', 'e2e'],
   },
 });

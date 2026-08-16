@@ -1,0 +1,51 @@
+# Verifica el backend en cada Pull Request.
+#
+# Por qué existe: solo había un workflow, el de desplegar a Azure, que corre
+# DESPUÉS del merge y no ejecuta ninguna prueba. Tres pruebas llevaban rotas en
+# `main` sin que nadie se enterara — dos porque el enum de tipos creció y una
+# porque daba por hecho que Azure no estaba disponible.
+name: Verificar backend
+
+on:
+  pull_request:
+    paths:
+      - "back/**"
+      - ".github/workflows/verificar-backend.yml"
+  push:
+    branches: [main]
+    paths:
+      - "back/**"
+      - ".github/workflows/verificar-backend.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verificar-backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Compilación y pruebas
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Preparar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # La versión sale de global.json para que sea la misma que en local.
+          global-json-file: back/global.json
+
+      - name: Restaurar dependencias
+        run: dotnet restore back/ConectaRiesgoAI.slnx
+
+      - name: Compilar
+        run: dotnet build back/ConectaRiesgoAI.slnx --no-restore --configuration Release
+
+      - name: Correr pruebas
+        run: dotnet test back/ConectaRiesgoAI.slnx --no-build --configuration Release --verbosity minimal

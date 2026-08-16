@@ -1,7 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Satellite, Banknote, ExternalLink, Check, FileQuestion } from 'lucide-react';
-import { getReporte } from '@/api/reportes';
+import { useReporte } from '@/hooks/useReportesApi';
+import { Cargando, ErrorAlCargar } from '@/components/ui/EstadoDeCarga';
 import { SeverityBadge } from '@/components/shared/StatusBadge';
 import EmergencyIcon from '@/components/shared/EmergencyIcon';
 import Timeline from '@/components/shared/Timeline';
@@ -61,14 +62,36 @@ function formatearPesos(monto: number): string {
 export default function ReportDetail() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const reporte = id ? getReporte(id) : undefined;
+  const { reporte, cargando, error, noExiste, reintentar } = useReporte(id);
 
   useTituloPagina(
     reporte ? `${t('meta.reportDetail.title')} ${reporte.id}` : t('meta.reportDetail.title'),
     t('meta.reportDetail.description'),
   );
 
-  if (!reporte) {
+  if (cargando) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-8 lg:py-12">
+        <Cargando filas={3} etiqueta={`Consultando el reporte ${id ?? ''}`} />
+      </div>
+    );
+  }
+
+  /*
+   * Un fallo de red y un código inexistente se ven distinto a propósito. Quien
+   * acaba de dictar su código por teléfono necesita saber si se equivocó al
+   * escribirlo o si simplemente hay que reintentar: mandarlo a «no encontrado»
+   * cuando lo que falló fue la señal le hace creer que su reporte se perdió.
+   */
+  if (error && !reporte) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-12">
+        <ErrorAlCargar mensaje={error} onReintentar={reintentar} />
+      </div>
+    );
+  }
+
+  if (!reporte || noExiste) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <FileQuestion className="mx-auto h-14 w-14 text-tinta-300" aria-hidden="true" />

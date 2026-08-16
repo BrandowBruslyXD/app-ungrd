@@ -52,3 +52,9 @@ Thumbs.db
 # --- Cobertura y pruebas ---
 coverage/
 TestResults/
+
+# --- Playwright (pruebas de punta a punta) ---
+/front/test-results/
+/front/playwright-report/
+/front/blob-report/
+/front/.playwright/

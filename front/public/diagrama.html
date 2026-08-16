@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="description" content="Cómo funciona ConectaRiesgoAI: de los tres canales de entrada al informe por sector.">
+<meta name="theme-color" content="#06121f">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<title>ConectaRiesgoAI · Cómo funciona</title>
+
+<style>
+  /*
+    Un solo tema, oscuro, a propósito: esto se proyecta y se graba en video.
+    Si cambiara con la preferencia de quien lo abre, la toma saldría distinta
+    en cada máquina.
+  */
+  :root {
+    --fondo:      #06121f;
+    --superficie: #0d2138;
+    --superficie-alta: #123054;
+    --linea:      #1d3f66;
+    --tinta:      #eaf1fa;
+    --tinta-med:  #9db6d4;
+    --tinta-baja: #5f7c9e;
+    --oro:        #f5c000;
+    --oro-suave:  #ffd84d;
+    --verde:      #35c08a;
+    --coral:      #ff7a5c;
+
+    --paso: clamp(0.82rem, 0.95vw, 1rem);
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1100px 700px at 8% 0%, #12335a 0%, transparent 62%),
+      radial-gradient(900px 600px at 96% 100%, #0f2a49 0%, transparent 58%),
+      var(--fondo);
+    color: var(--tinta);
+    font-family: var(--sans);
+    font-size: var(--paso);
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .lienzo {
+    max-width: 1680px;
+    margin: 0 auto;
+    padding: clamp(1rem, 2.2vh, 2rem) clamp(1rem, 2.5vw, 2.5rem) clamp(3.5rem, 6vh, 4.5rem);
+  }
+
+  /* ── Encabezado ─────────────────────────────────────────────────────── */
+  header { margin-bottom: clamp(1rem, 2.2vh, 1.9rem); }
+
+  .marca {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-size: clamp(1.35rem, 2.3vw, 2.1rem);
+    text-wrap: balance;
+  }
+  .marca .ia { color: var(--oro); }
+
+  .subtitulo {
+    color: var(--tinta-med);
+    margin: 0.5rem 0 0;
+    max-width: 62ch;
+    font-size: clamp(0.9rem, 1.05vw, 1.05rem);
+  }
+
+  /* ── Riel de fases ──────────────────────────────────────────────────── */
+  .riel {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(275px, 1fr));
+    gap: clamp(0.7rem, 1.1vw, 1.2rem);
+    align-items: start;
+    overflow-x: auto;
+    padding-bottom: 0.75rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--linea) transparent;
+  }
+
+  .fase {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    opacity: 0.16;
+    filter: saturate(0.25);
+    transform: translateY(10px);
+    transition: opacity 0.55s ease, transform 0.55s ease, filter 0.55s ease;
+  }
+  .fase.viva { opacity: 1; transform: none; filter: none; }
+
+  .fase-cabeza {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-bottom: 0.15rem;
+  }
+
+  .orden {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--fondo);
+    background: var(--oro);
+    border-radius: 999px;
+    padding: 0.12rem 0.5rem;
+    letter-spacing: 0.02em;
+  }
+
+  .fase-titulo {
+    font-size: 0.83rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: var(--tinta-med);
+  }
+
+  /* ── Tarjetas ───────────────────────────────────────────────────────── */
+  .pieza {
+    background: linear-gradient(180deg, var(--superficie) 0%, #0a1b2e 100%);
+    border: 1px solid var(--linea);
+    border-radius: 12px;
+    padding: 0.7rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+  }
+
+  .pieza.acentuada { border-color: rgba(245,192,0,0.45); }
+  .pieza.salida    { border-color: rgba(53,192,138,0.42); }
+
+  .pieza-nombre {
+    font-weight: 700;
+    font-size: 0.97rem;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .glifo {
+    width: 1.55rem;
+    height: 1.55rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 7px;
+    background: var(--superficie-alta);
+    font-size: 0.92rem;
+  }
+
+  .pieza-nota {
+    color: var(--tinta-med);
+    font-size: 0.86rem;
+    line-height: 1.4;
+  }
+
+  .tecnica {
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    color: var(--tinta-baja);
+    letter-spacing: 0.01em;
+    word-break: break-word;
+  }
+
+  /* ── Cables entre fases ─────────────────────────────────────────────── */
+  .cable {
+    position: relative;
+    height: 2px;
+    background: var(--linea);
+    margin: 0.3rem 0 0.1rem;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .cable::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, var(--oro), transparent);
+    transform: translateX(-100%);
+  }
+  .fase.viva .cable::after { animation: fluir 2.4s ease-in-out infinite; }
+
+  @keyframes fluir {
+    0%   { transform: translateX(-100%); }
+    60%  { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* ── Estado de lo construido ────────────────────────────────────────── */
+  .estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    padding: 0.14rem 0.45rem;
+    border-radius: 5px;
+    width: fit-content;
+  }
+  .estado.listo    { color: var(--verde); background: rgba(53,192,138,0.11); }
+  .estado.curso    { color: var(--oro);   background: rgba(245,192,0,0.11); }
+
+  /* ── Cifra viva ─────────────────────────────────────────────────────── */
+  .cifras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.4rem;
+    margin-top: 0.15rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--tinta-med);
+  }
+  .cifras b { color: var(--oro); font-weight: 700; }
+
+  /* ── Barra de control ───────────────────────────────────────────────── */
+  .control {
+    position: fixed;
+    right: clamp(1rem, 2.5vw, 2.5rem);
+    bottom: clamp(0.9rem, 2vh, 1.4rem);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(9,26,45,0.93);
+    border: 1px solid var(--linea);
+    border-radius: 999px;
+    padding: 0.4rem 0.5rem;
+    backdrop-filter: blur(9px);
+    z-index: 20;
+  }
+
+  .control button {
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--tinta);
+    background: var(--superficie-alta);
+    border: 1px solid var(--linea);
+    border-radius: 999px;
+    padding: 0.42rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .control button:hover { background: #17406e; }
+  .control button.principal { background: var(--oro); color: #10233b; border-color: transparent; }
+  .control button.principal:hover { background: var(--oro-suave); }
+  .control button:focus-visible { outline: 2px solid var(--oro-suave); outline-offset: 2px; }
+
+  .puntos { display: flex; gap: 0.3rem; padding: 0 0.35rem; }
+  .punto {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--linea);
+    transition: background 0.3s ease, transform 0.3s ease;
+  }
+  .punto.activo { background: var(--oro); transform: scale(1.35); }
+
+  .pista {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--tinta-baja);
+    padding-right: 0.5rem;
+  }
+
+  /* ── Cierre ─────────────────────────────────────────────────────────── */
+  .cierre {
+    margin-top: 0;
+    border-top: 1px solid transparent;
+    padding-top: 0;
+    max-height: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 0.7rem 1.8rem;
+    opacity: 0.16;
+    transform: translateY(10px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+  }
+  .cierre.viva {
+    opacity: 1;
+    transform: none;
+    max-height: 40vh;
+    margin-top: clamp(1rem, 2.2vh, 1.9rem);
+    border-top-color: var(--linea);
+    padding-top: 0.9rem;
+  }
+
+  .cierre h2 {
+    grid-column: 1 / -1;
+    margin: 0 0 0.15rem;
+    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .cierre h2 em { font-style: normal; color: var(--oro); }
+
+  .punto-clave b { display: block; margin-bottom: 0.2rem; }
+  .punto-clave span { color: var(--tinta-med); font-size: 0.86rem; line-height: 1.4; }
+
+  @media (max-width: 780px) {
+    .riel { grid-template-columns: repeat(4, 82vw); }
+  }
+
+  /*
+    En pantalla ancha la pieza ocupa exactamente el alto de la ventana y nunca
+    desplaza la pagina: se graba en 16:9 y un scroll a mitad de la explicacion
+    arruina la toma. Si una columna crece de mas, se desplaza dentro del riel y
+    el encabezado se queda quieto.
+  */
+  @media (min-width: 1000px) {
+    html, body { height: 100%; overflow: hidden; }
+
+    .lienzo {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: clamp(1rem, 2vh, 1.75rem);
+    }
+
+    .riel {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      align-content: start;
+      padding-right: 0.35rem;
+    }
+
+    .cierre.viva { max-height: 32vh; overflow-y: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+
+</head>
+<body>
+<div class="lienzo">
+  <header>
+    <div class="marca">ConectaRiesgo<span class="ia">AI</span></div>
+    <p class="subtitulo">
+      Una emergencia entra por donde la persona pueda —un mensaje, una llamada, la
+      web— y sale convertida en un caso con seguimiento y en un informe para la
+      entidad que debe atenderlo.
+    </p>
+  </header>
+
+  <div class="riel">
+
+    <!-- ── 1. Canales ────────────────────────────────────────────────── -->
+    <section class="fase" data-fase="0">
+      <div class="fase-cabeza">
+        <span class="orden">1</span>
+        <h2 class="fase-titulo">Cómo entra</h2>
+      </div>
+      <div class="cable"></div>
+
+      <article class="pieza acentuada">
+        <div class="pieza-nombre"><span class="glifo">💬</span>WhatsApp con IA</div>
+        <p class="pieza-nota">
+          Conversa, entiende qué pasó y pide foto y ubicación. Si detecta que hay
+          vidas en riesgo, corta y manda al 123.
+        </p>
+        <span class="estado listo">Funcionando</span>
+        <p class="tecnica">Meta Cloud API · botones nativos</p>
+      </article>
+
+      <article class="pieza acentuada">
+        <div class="pieza-nombre"><span class="glifo">📞</span>Llamada con IA</div>
+        <p class="pieza-nota">
+          Para quien no tiene datos ni sabe escribir en un teléfono. Atiende, toma
+          el reporte hablando y dicta el código al final.
+        </p>
+        <span class="estado listo">Funcionando</span>
+        <p class="tecnica">Agente de voz · línea gratuita</p>
+      </article>
+
+      <article class="pieza acentuada">
+        <div class="pieza-nombre"><span class="glifo">📱</span>Aplicación web</div>
+        <p class="pieza-nota">
+          Formulario de seis pasos con foto y punto en el mapa. Guarda en el
+          teléfono si no hay señal.
+        </p>
+        <span class="estado listo">Funcionando</span>
+        <p class="tecnica">React · funciona sin conexión</p>
+      </article>
+    </section>
+
+    <!-- ── 2. Ingesta ────────────────────────────────────────────────── -->
+    <section class="fase" data-fase="1">
+      <div class="fase-cabeza">
+        <span class="orden">2</span>
+        <h2 class="fase-titulo">Cómo se ordena</h2>
+      </div>
+      <div class="cable"></div>
+
+      <article class="pieza">
+        <div class="pieza-nombre"><span class="glifo">🔌</span>Una sola puerta</div>
+        <p class="pieza-nota">
+          Los tres canales entran por la misma API. Da igual por dónde llegue: el
+          caso queda igual de completo.
+        </p>
+        <p class="tecnica">POST /api/ingesta/reportes<br>POST /api/reportes</p>
+      </article>
+
+      <article class="pieza">
+        <div class="pieza-nombre"><span class="glifo">⚙️</span>Se normaliza</div>
+        <p class="pieza-nota">
+          Del texto libre salen datos: qué tipo de emergencia es, en qué municipio,
+          qué necesita esa familia. Y un código único para seguirlo.
+        </p>
+        <p class="tecnica">clasificación · municipio · RPT-AAAA-MM-DD-0000</p>
+      </article>
+
+      <article class="pieza">
+        <div class="pieza-nombre"><span class="glifo">🛰️</span>Se contrasta</div>
+        <p class="pieza-nota">
+          El reporte se cruza con focos de calor de la NASA y con el gasto público
+          del municipio. Nadie más conecta las dos cosas.
+        </p>
+        <p class="tecnica">NASA FIRMS · SECOP</p>
+      </article>
+    </section>
+
+    <!-- ── 3. Datos ──────────────────────────────────────────────────── -->
+    <section class="fase" data-fase="2">
+      <div class="fase-cabeza">
+        <span class="orden">3</span>
+        <h2 class="fase-titulo">Dónde queda</h2>
+      </div>
+      <div class="cable"></div>
+
+      <article class="pieza">
+        <div class="pieza-nombre"><span class="glifo">🗄️</span>Base de datos</div>
+        <p class="pieza-nota">
+          Un caso por reporte, con quién lo hizo, por qué canal entró y dónde
+          ocurrió.
+        </p>
+        <p class="tecnica">PostgreSQL</p>
+      </article>
+
+      <article class="pieza acentuada">
+        <div class="pieza-nombre"><span class="glifo">🕒</span>Historial del caso</div>
+        <p class="pieza-nota">
+          Cada movimiento queda anotado con fecha y responsable. Esto es lo que ve
+          el ciudadano avanzar, y lo que hace que nadie pueda decir que no sabía.
+        </p>
+        <p class="tecnica">Reportado → Verificado → Asignado → En atención → Atendido → Cerrado</p>
+      </article>
+
+      <div class="cifras" aria-label="Datos de la demostración">
+        <span>web <b>11</b></span>
+        <span>whatsapp <b>8</b></span>
+        <span>llamada <b>3</b></span>
+      </div>
+    </section>
+
+    <!-- ── 4. Salida ─────────────────────────────────────────────────── -->
+    <section class="fase" data-fase="3">
+      <div class="fase-cabeza">
+        <span class="orden">4</span>
+        <h2 class="fase-titulo">Quién lo usa</h2>
+      </div>
+      <div class="cable"></div>
+
+      <article class="pieza">
+        <div class="pieza-nombre"><span class="glifo">🙋</span>El ciudadano</div>
+        <p class="pieza-nota">
+          Consulta con su código y ve avanzar su caso. No tiene que volver a
+          contar lo que ya contó.
+        </p>
+      </article>
+
+      <article class="pieza">
+        <div class="pieza-nombre"><span class="glifo">🎽</span>El brigadista</div>
+        <p class="pieza-nota">
+          Levanta el censo casa por casa y evalúa si la vivienda es habitable.
+          Funciona sin señal, que es como se trabaja en vereda.
+        </p>
+      </article>
+
+      <article class="pieza">
+        <div class="pieza-nombre"><span class="glifo">🏛️</span>El gestor del riesgo</div>
+        <p class="pieza-nota">
+          Ve todo lo que entra en su municipio, en qué va cada caso y cuál no ha
+          tocado nadie.
+        </p>
+      </article>
+
+      <article class="pieza salida">
+        <div class="pieza-nombre"><span class="glifo">📤</span>Informes por sector</div>
+        <p class="pieza-nota">
+          Lo que entró se reparte según a qué ministerio le toca: vivienda, salud,
+          vías, educación.
+        </p>
+        <span class="estado curso">En construcción</span>
+      </article>
+    </section>
+
+  </div>
+
+  <section class="cierre">
+    <h2>Lo que nadie más está haciendo: <em>cerrar el ciclo</em>.</h2>
+
+    <div class="punto-clave">
+      <b>Se reporta por donde se pueda</b>
+      <span>Con datos, sin datos o sin saber leer. Tres canales, un mismo caso.</span>
+    </div>
+
+    <div class="punto-clave">
+      <b>Se sigue hasta el final</b>
+      <span>El ciudadano ve avanzar su caso con el código que le dieron.</span>
+    </div>
+
+    <div class="punto-clave">
+      <b>Se contrasta y se rinde cuentas</b>
+      <span>Satélite para verificar el evento, SECOP para ver qué se gastó en prevenirlo.</span>
+    </div>
+  </section>
+</div>
+
+<nav class="control" aria-label="Avance del diagrama">
+  <span class="pista">← →</span>
+  <button type="button" id="atras">Atrás</button>
+  <div class="puntos" id="puntos" role="presentation"></div>
+  <button type="button" class="principal" id="siguiente">Siguiente</button>
+</nav>
+
+<script>
+  const fases = Array.from(document.querySelectorAll('.fase'));
+  const cierre = document.querySelector('.cierre');
+  const puntos = document.getElementById('puntos');
+  const siguiente = document.getElementById('siguiente');
+  const atras = document.getElementById('atras');
+
+  // Una parada por fase, más una final para el cierre.
+  const TOTAL = fases.length + 1;
+  let paso = 0;
+
+  for (let i = 0; i < TOTAL; i++) {
+    const p = document.createElement('span');
+    p.className = 'punto';
+    puntos.appendChild(p);
+  }
+  const marcas = Array.from(puntos.children);
+
+  function pintar() {
+    fases.forEach((f, i) => f.classList.toggle('viva', i <= paso));
+    cierre.classList.toggle('viva', paso >= fases.length);
+    marcas.forEach((m, i) => m.classList.toggle('activo', i <= paso));
+
+    atras.disabled = paso === 0;
+    atras.style.opacity = paso === 0 ? 0.4 : 1;
+    siguiente.textContent = paso >= TOTAL - 1 ? 'Reiniciar' : 'Siguiente';
+
+    /*
+       Se desplaza el riel a mano y solo en horizontal. `scrollIntoView` movía
+       también la página, y al grabar se perdía el encabezado con el nombre del
+       producto justo cuando se está hablando de él.
+    */
+    const riel = document.querySelector('.riel');
+    const activa = fases[Math.min(paso, fases.length - 1)];
+    if (riel && activa && riel.scrollWidth > riel.clientWidth) {
+      riel.scrollTo({ left: activa.offsetLeft - 16, behavior: 'smooth' });
+    }
+  }
+
+  function avanzar() {
+    paso = paso >= TOTAL - 1 ? 0 : paso + 1;
+    pintar();
+  }
+
+  function retroceder() {
+    if (paso > 0) { paso--; pintar(); }
+  }
+
+  siguiente.addEventListener('click', avanzar);
+  atras.addEventListener('click', retroceder);
+
+  // Teclado: para narrar sin tocar el ratón mientras se graba.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+      if (document.activeElement?.tagName === 'BUTTON' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      avanzar();
+    }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); retroceder(); }
+    if (e.key === 'Home') { paso = 0; pintar(); }
+  });
+
+  pintar();
+</script>
+
+</body>
+</html>
