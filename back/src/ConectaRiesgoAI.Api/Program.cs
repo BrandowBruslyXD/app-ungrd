@@ -4,6 +4,7 @@ using ConectaRiesgoAI.Api.Common.Behaviors;
 using ConectaRiesgoAI.Api.Common.Endpoints;
 using ConectaRiesgoAI.Api.Common.Errors;
 using ConectaRiesgoAI.Api.Integrations.Secop;
+using ConectaRiesgoAI.Api.Integrations.Storage;
 using ConectaRiesgoAI.Api.Persistence;
 using Microsoft.AspNetCore.RateLimiting;
 using FluentValidation;
@@ -61,6 +62,11 @@ builder.Services.AddRateLimiter(o => o.AddFixedWindowLimiter("secop", opt =>
 
 // --- Autenticación -------------------------------------------------------
 builder.Services.AgregarAutenticacion(builder.Configuration);
+
+// --- Almacenamiento de archivos (Azure Blob Storage) ----------------------
+builder.Services.Configure<OpcionesAlmacenamiento>(
+    builder.Configuration.GetSection(OpcionesAlmacenamiento.Seccion));
+builder.Services.AddSingleton<IAlmacenamientoDeArchivos, AlmacenamientoDeArchivosAzure>();
 
 // --- Errores -------------------------------------------------------------
 builder.Services.AddExceptionHandler<ManejadorGlobalDeErrores>();
