@@ -92,7 +92,15 @@ El flujo de 5 pasos del boceto: brigadista que registra personas afectadas con d
 ---
 
 ## Fase 3.5 · Reparto sectorial a ministerios — el panel de la UNGRD
-**Estado: 🟠 propuesta escrita · pendiente de una decisión del equipo**
+**Estado: 🟡 frontend construido sobre datos simulados · backend sin empezar**
+
+> ⚠️ **Este estado quedó atrás del código.** `front/src/features/ungrd/` ya tiene el panel completo
+> —`PanelUngrd`, `ListaDesastres`, `PaqueteMinisterio`, `RepartoPorSector`, `BandejaSinClasificar`,
+> gráficas de cobertura y confianza, y sus tests— pero corre entero sobre
+> `front/src/mocks/mockSectorial.ts`. **No existe ninguna rebanada de reparto/sectores en
+> `back/src`.** La pregunta ya no es "si se construye" (la tabla A/B de abajo queda como registro de
+> por qué se decidió empezar), sino quién construye el backend que reemplace el mock antes de la
+> demo.
 
 Convierte la información consolidada de una emergencia en **el paquete que le toca a cada
 ministerio** (PDF de oficio + CSV de detalle), listo para que un funcionario lo apruebe y lo envíe.

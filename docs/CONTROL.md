@@ -3,7 +3,7 @@
 > El tablero del PMO. Aquí se ve **qué bloquea**, **qué se decidió** y **qué falta**.
 > Si alguien pregunta "¿en qué vamos?", la respuesta está en este archivo.
 
-**Última actualización:** 15 de agosto de 2026
+**Última actualización:** 16 de agosto de 2026 — auditoría de arquitectura vs. código real
 
 ---
 
@@ -17,7 +17,7 @@
 | B4 | **Sin MapKey de NASA** | PMO | Verificación satelital |
 | B5 | **CodeRabbit no está instalado.** El `.coderabbit.yaml` está en `main`, la app de GitHub no | Dueño del repo — **solo él puede** | Revisión automática |
 
-> **Resueltos:** ~~roles sin repartir~~ · ~~`front/` vacío~~ · ~~sin PostgreSQL en la nube~~ · ~~el backend sin casos de uso~~
+> **Resueltos:** ~~roles sin repartir~~ · ~~`front/` vacío~~ · ~~sin PostgreSQL en la nube~~ · ~~el backend sin casos de uso~~ · ~~`Integrations/Nasa`, `Integrations/Secop` y `Integrations/Storage` sin código (H3)~~
 
 ---
 
@@ -56,9 +56,9 @@ Se anotan para no volver a discutir lo mismo a las 3 de la mañana.
 | D14 | **Las carpetas son `back/` y `front/`**, no `backend/` y `frontend/` | Igual que arriba: la documentación citaba rutas que ya no existían |
 | D15 | **Backend en Azure Container Apps + Azure Database for PostgreSQL Flexible Server** (región `brazilsouth`), no en Railway/Render ni Neon como se sugería antes | El App Service Plan chocó con cuota de cómputo en 0 en la suscripción (`Intelapps Subscription`); Container Apps usa cuota de consumo y no tuvo ese problema. Se aprovecha la suscripción de Azure ya disponible. Cada push a `main` que toca `back/` se despliega solo vía `deploy-backend.yml` (GitHub Actions + Azure Container Registry) |
 | D2 | **Sin monitoreo de X** | Buscar publicaciones dejó de ser gratis. Se usa Bluesky, que sí lo es |
-| D3 | **Integraciones como clientes HTTP internos** en `back/src/ConectaRiesgoAI.Api/Integrations/` | Detalle en `docs/ARQUITECTURA.md`. ⚠️ **Sin ejecutar todavía:** ya existen microservicios reales en `servicios/` (`ms-satelital`, `ms-transparencia`, `ms-social`) que cubren esto mismo — falta decidir si se migran a `Integrations/` o si esta decisión se revierte |
+| D3 | **Integraciones como clientes HTTP internos** en `back/src/ConectaRiesgoAI.Api/Integrations/` | Detalle en `docs/ARQUITECTURA.md`. ✅ **Ya ejecutada:** `Integrations/Nasa`, `Integrations/Secop` e `Integrations/Storage` existen y `GET /api/reportes/{codigo}` los consume. ⚠️ **Queda un huérfano:** `servicios/` (`ms-satelital`, `ms-transparencia`, `ms-social`) sigue existiendo y cubre lo mismo que `Integrations/Nasa`/`Integrations/Secop` por un camino distinto (microservicio propio en vez de cliente HTTP interno) — falta decidir si se retira `servicios/ms-satelital` y `servicios/ms-transparencia` o si se documenta por qué coexisten con `Integrations/` |
 | D4 | **Sin panel de administrador** (pantalla 6) | No aporta al pitch y cuesta horas. ⚠️ **En revisión:** la entrevista con la ingeniera de la UNGRD cambió el argumento — el panel de reparto sectorial sí aporta, y mucho. Ver D15 |
-| D15 | **Reparto sectorial a ministerios: diseño aprobado, construcción pendiente de decisión** | El dolor real de la UNGRD es repartir la información entre ministerios, hoy a mano y con un mes de demora. Diseño completo y nueve decisiones tomadas en `docs/REPARTO-SECTORIAL.md`: envío de correo **simulado**, entregable **PDF + CSV**, aprobación **humana** obligatoria, ministerios que **no entran al sistema**, tres fuentes con nivel de confianza visible, clasificación determinista primero, agrupación por evento, trece sectores del formato oficial FR-1703-SMD-09, correos falsos en la demo. **Falta decidir si desplaza a la Fase 1 como diferenciador del pitch** — ver `FASES.md`, Fase 3.5 |
+| D15 | **Reparto sectorial a ministerios: diseño aprobado, construcción pendiente de decisión** | El dolor real de la UNGRD es repartir la información entre ministerios, hoy a mano y con un mes de demora. Diseño completo y nueve decisiones tomadas en `docs/REPARTO-SECTORIAL.md`: envío de correo **simulado**, entregable **PDF + CSV**, aprobación **humana** obligatoria, ministerios que **no entran al sistema**, tres fuentes con nivel de confianza visible, clasificación determinista primero, agrupación por evento, trece sectores del formato oficial FR-1703-SMD-09, correos falsos en la demo. **Falta decidir si desplaza a la Fase 1 como diferenciador del pitch** — ver `FASES.md`, Fase 3.5. ⚠️ **Este renglón quedó atrás del código:** `front/src/features/ungrd/` ya tiene el panel completo construido (`PanelUngrd`, `ListaDesastres`, `PaqueteMinisterio`, `RepartoPorSector`, `BandejaSinClasificar`, gráficas y tests), pero corre entero sobre `front/src/mocks/mockSectorial.ts` — **no hay una sola rebanada de reparto/sectores en `back/src`.** La decisión pendiente ya no es "si se construye", es "quién construye el backend que reemplace el mock" |
 | D5 | **Sin modo offline** en el hackathon | 5-6 horas de trabajo y es lo que más fácil se rompe en vivo. Se muestra el indicador y se cuenta como visión |
 | D6 | **Registro de damnificados en Fase 3** | La Fase 1 sola ya es demostrable. Empezar por lo grande es apostar todo |
 | D7 | **Sin PostGIS** | Haversine en C# alcanza y ahorra una hora de pelear con extensiones |
@@ -100,10 +100,12 @@ Encontrados al revisar el plan. **Sin issue creado todavía.**
 |:---|:---|:---|
 | H1 | **No hay pantalla de login/registro** en el frontend. Sin ella no hay sesión, sin sesión no hay rol, y sin rol el panel del gestor es inalcanzable | 🔴 |
 | H2 | **El rol de Mapas tiene una sola tarea.** Esa persona quedaría desocupada mientras backend carga con 4 issues P0 | 🔴 |
-| H3 | **`Integrations/Nasa` e `Integrations/Secop` no existen en `back/`** — la funcionalidad ya está en `servicios/ms-satelital` y `servicios/ms-transparencia`, pero nadie tiene asignado decidir si se migran o si D3 se revierte | 🟠 |
+| ~~H3~~ | ~~`Integrations/Nasa` e `Integrations/Secop` no existen en `back/`~~ → **resuelto**: hoy existen `Integrations/Nasa`, `Integrations/Secop` **e `Integrations/Storage`** en `back/src/ConectaRiesgoAI.Api/Integrations/`, y `GET /api/reportes/{codigo}` ya los consume. Queda pendiente decidir si `servicios/ms-satelital` y `servicios/ms-transparencia` se retiran por duplicar esa lógica, o si se quedan como respaldo — ver D3 | — |
 | H4 | **El monitoreo social no tiene issue** — está construido pero invisible en el tablero | 🟠 |
 | H5 | **No hay issue de tramitar credenciales**, y bloquea a otros | 🟠 |
 | ~~H6~~ | ~~#9 (fotos) está etiquetado backend pero el trabajo real es del frontend~~ → **resuelto**: #9 se cerró documentado como cubierto por `CrearReporte` + `POST /api/evidencias` (issue #47/PR #51); lo que queda es conectar el formulario del issue #12 a ese endpoint | — |
+| H7 | **`README.md` y `docs/EXPERIENCIAS-FRONTEND.md` se contradicen sobre el frontend en producción.** El README dice "_pendiente — bloqueado por issue #33 (front sin inicializar)_"; `EXPERIENCIAS-FRONTEND.md` dice "Un solo proyecto en Vercel, como está hoy (`conectariesgoai.vercel.app`)". Falta confirmar cuál es cierto y corregir el otro documento | 🟠 |
+| H8 | **`front/src/api/reportes.ts` sigue leyendo de `mocks/mock.ts` y `localStorage`**, pese a que ya existe un cliente HTTP real y con manejo de errores en `front/src/api/client.ts`. Confirma que B2 sigue abierto: la infraestructura para conectar existe, pero nadie cambió el origen de datos | 🟡 (ya rastreado como B2, se anota la evidencia concreta) |
 
 ---
 
@@ -131,9 +133,9 @@ Encontrados al revisar el plan. **Sin issue creado todavía.**
 
 **El riesgo de vida no depende de la IA.** Falló una vez en pruebas —"hay una señora atrapada" no disparó la transferencia— y ahora corta por un patrón determinístico de 20 palabras, sin llamar al modelo. Verificado en tres escenarios, incluido que no dispare de más.
 
-**Backend:** 14 endpoints en 8 rebanadas, migraciones aplicándose solas, y una colección de Postman con 28 peticiones encadenadas (**62 de 69 aserciones pasan**).
+**Backend:** migraciones aplicándose solas, y una colección de Postman con 28 peticiones encadenadas (**62 de 69 aserciones pasan**). El conteo de "14 endpoints en 8 rebanadas" quedó desactualizado: ya existe también la rebanada **`Features/Ingesta/`** (`CrearReporte`, `ObtenerReporte`, `RegistrarCenso` — sección 6 de `CONTRATO-API.md`, el puente con el bot de WhatsApp), y `Domain/Entities` ya modela `PersonaAfectada`, `MiembroNucleoFamiliar`, `DanoRegistrado` y una entidad nueva sin documentar en `MODELO-DATOS.md`: **`OperacionCenso`** (jornada de censo del brigadista, issue #48).
 
-**Frontend:** 8 áreas funcionales más el módulo de censo EDAN, con los tipos ya alineados al contrato.
+**Frontend:** más de las "8 áreas" originales — hoy `front/src/features/` tiene `auth`, `reportes`, `gestor`, `rescatista` (censo de brigadista), `socorro` (incidentes y habitabilidad), `ungrd` (panel de reparto sectorial, con pantallas, gráficas y tests) y `publico` (landing). `admin` y `mapa` siguen siendo carpetas vacías (`.gitkeep`) — el mapa de riesgo de la Fase 1 **no está construido todavía** pese a estar en el flujo del pitch. Ver `docs/EXPERIENCIAS-FRONTEND.md` para la organización real por rol (terreno / sala de crisis), que reemplaza la tabla de pantallas de `ARQUITECTURA.md`.
 
 **Documentación:** el sistema real de reportes de Colombia investigado con fuentes oficiales — formatos EDAN, campos del RUD, cadena CMGRD→CDGRD→UNGRD.
 

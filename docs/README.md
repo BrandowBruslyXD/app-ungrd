@@ -1,6 +1,6 @@
 # Documentación — ConectaRiesgo
 
-Cuatro documentos, cada uno responde una pregunta distinta.
+Once documentos, cada uno responde una pregunta distinta.
 
 | Documento | Responde | Quién lo usa |
 |:---|:---|:---|

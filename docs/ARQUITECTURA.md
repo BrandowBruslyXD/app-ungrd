@@ -53,8 +53,12 @@ back/
 │     │  │  └─ VerificacionSatelital/
 │     │  ├─ Transparencia/
 │     │  │  └─ ContratosSecop/
-│     │  └─ Evidencias/
-│     │     └─ SubirEvidencia/
+│     │  ├─ Evidencias/
+│     │  │  └─ SubirEvidencia/
+│     │  └─ Ingesta/                     ← bot de WhatsApp / Dapta, autenticado con X-Api-Key
+│     │     ├─ CrearReporte/
+│     │     ├─ ObtenerReporte/
+│     │     └─ RegistrarCenso/
 │     │
 │     ├─ Domain/                        ← modelo compartido entre slices
 │     │  ├─ Entities/                     Usuario, Reporte, EventoCronologia
@@ -121,37 +125,57 @@ Las consultas usan `Query` en vez de `Command`: `ListarReportesQuery`, `ListarRe
 | `GET /api/verificacion/satelital` | `Features/Verificacion/VerificacionSatelital/` |
 | `GET /api/transparencia/secop` | `Features/Transparencia/ContratosSecop/` |
 | `POST /api/evidencias` | `Features/Evidencias/SubirEvidencia/` |
+| `POST /api/ingesta/reportes` | `Features/Ingesta/CrearReporte/` |
+| `GET /api/ingesta/reportes/{codigo}` | `Features/Ingesta/ObtenerReporte/` |
+| `POST /api/ingesta/censo` | `Features/Ingesta/RegistrarCenso/` |
 
 > `GET /api/reportes/{codigo}` compone su respuesta llamando a `Integrations/Nasa` y `Integrations/Secop`. Ambas con tiempo límite de 5 segundos y devolviendo `null` / `[]` si fallan — la pantalla de seguimiento **nunca** se cae por un servicio externo.
 >
 > `POST /api/evidencias` sube un archivo a Azure Blob Storage vía `Integrations/Storage` y
 > devuelve una URL firmada; nunca guarda nada en Postgres. Si Azure Blob Storage falla, responde
 > `subida: false` y `urlFoto: null` en vez de un 500 — mismo trato que NASA/SECOP.
+>
+> `POST /api/ingesta/reportes` y `POST /api/ingesta/censo` no llevan sesión de usuario: se
+> autentican con la cabecera `X-Api-Key` porque quien llama es un servicio (el bot de WhatsApp o el
+> agente telefónico), no una persona con token. `GET /api/ingesta/reportes/{codigo}` es público y
+> responde `200` siempre, incluso con código inexistente — el bot no distingue ramas de error.
+> Detalle en [INTEGRACION-BOT-BACKEND.md](INTEGRACION-BOT-BACKEND.md).
 
 ---
 
-## Frontend — por features
+## Frontend — por features (hoy) → por experiencia (destino)
 
-La misma idea del backend: agrupar por lo que hace, no por lo que es.
+La misma idea del backend: agrupar por lo que hace, no por lo que es. **Este documento describe
+dónde va cada archivo hoy.** El destino — reorganizar por experiencia de usuario (Terreno vs. Sala
+de crisis) en vez de por feature — ya está diseñado y en construcción, con su propio documento:
+[EXPERIENCIAS-FRONTEND.md](EXPERIENCIAS-FRONTEND.md). Léelo antes de crear una pantalla nueva o de
+mover archivos: define a qué experiencia pertenece cada rol y el plan de migración por pasos.
 
 ```
 front/
 ├─ public/
 └─ src/
-   ├─ api/               cliente HTTP + una función por endpoint
+   ├─ api/               cliente HTTP (src/api/client.ts) + una función por endpoint
    ├─ mocks/             respuestas de ejemplo del CONTRATO-API
    ├─ features/
    │  ├─ auth/           login, registro, sesión
    │  ├─ reportes/       dashboard, reportar, seguimiento
-   │  ├─ mapa/           mapa de riesgo
-   │  ├─ gestor/         panel de la autoridad
-   │  └─ admin/          panel de administración
-   ├─ components/        UI compartida (layout, badges, botones)
+   │  ├─ publico/        landing pública
+   │  ├─ gestor/         panel de la autoridad (incluye el mapa de observación)
+   │  ├─ rescatista/     tablero y flujo del brigadista (censo)
+   │  ├─ socorro/        bitácora de incidente y evaluación de habitabilidad
+   │  └─ ungrd/          panel UNGRD: lista de desastres y paquete del ministerio (Fase 3.5)
+   ├─ components/        UI compartida (layout, badges, botones, mapa)
    ├─ hooks/             hooks transversales
-   ├─ lib/               utilidades
+   ├─ lib/               utilidades (incluye almacenamiento en localStorage, en transición)
    ├─ types/             tipos espejo de los DTOs del backend
    └─ styles/
 ```
+
+> No hay features separadas `mapa/` ni `admin/`: el mapa vive como componente compartido
+> (`components/ui/MapaUbicacion.tsx`, `features/gestor/components/MapaObservacion.tsx`) y lo que
+> iba a ser "admin" es `features/ungrd/`, mucho más grande que un panel de administración genérico —
+> es la implementación de la Fase 3.5 (`docs/REPARTO-SECTORIAL.md`).
 
 Cada feature tiene adentro `components/`, `hooks/` y `pages/`. Lo que usen dos features distintas sube a `src/components/` o `src/hooks/`.
 
@@ -163,9 +187,19 @@ Cada feature tiene adentro `components/`, `hooks/` y `pages/`. Lo que usen dos f
 | Dashboard ciudadano | `features/reportes/pages/` |
 | Reportar emergencia | `features/reportes/pages/` |
 | Seguimiento del reporte | `features/reportes/pages/` |
-| Mapa de riesgo | `features/mapa/pages/` |
+| Mapa de riesgo | `components/ui/MapaUbicacion.tsx` |
 | Panel de gestor | `features/gestor/pages/` |
-| Panel de administrador | `features/admin/pages/` |
+| Censo de damnificados (brigadista) | `features/rescatista/pages/` |
+| Bitácora de incidente / habitabilidad (socorro) | `features/socorro/pages/` |
+| Panel UNGRD — lista de desastres, paquete del ministerio | `features/ungrd/pages/` |
+
+### `src/api/client.ts` existe, pero `reportes.ts` todavía no lo usa
+
+Hay un cliente HTTP real y completo (`apiFetch<T>()`, timeout de 15 s, `ErrorApi` con mensajes en
+español). El bloqueante B2 de `CONTROL.md` no es que falte ese cliente: es que
+`features/reportes/` sigue leyendo de `mocks/` y `lib/almacenamiento` (localStorage) por diseño de
+transición, tal como lo explica el propio comentario del archivo. Conectar `reportes.ts` al cliente
+real es lo que cierra B2.
 
 ### `src/mocks/` no es opcional
 
@@ -246,10 +280,15 @@ commit**. Ver [`README.md`](../README.md#ambientes) para la URL del backend en p
 ## Pendientes de este documento
 
 - **Nombre del producto (cerrado):** la app se llama **ConectaRiesgo** (UI y documentación). Los namespaces del backend usan `ConectaRiesgoAI`. `RespondeYA` quedó solo en documentos históricos de exploración (`docs/idea-negocio/`).
-- **`servicios/` vs `Integrations/`:** ya existen tres microservicios reales y verificados en
-  `servicios/` (`ms-satelital`, `ms-transparencia`, `ms-social`) que cubren NASA FIRMS, SECOP y
-  redes sociales, pero este documento describe esas integraciones como clientes HTTP dentro de
-  `back/src/ConectaRiesgoAI.Api/Integrations/`, que todavía no tiene código. Falta que el equipo
-  decida cuál es la arquitectura real y ajuste este documento en consecuencia.
+- **`servicios/` vs `Integrations/` (parcialmente resuelto):** `back/src/ConectaRiesgoAI.Api/Integrations/`
+  **ya tiene código real y en uso** — `Integrations/Nasa`, `Integrations/Secop` e
+  `Integrations/Storage` existen y `ObtenerReporteHandler` los consume para componer
+  `GET /api/reportes/{codigo}`. Lo que sigue sin resolverse es la relación con `servicios/`: en este
+  repositorio, `ms-satelital`, `ms-transparencia` y `ms-social` solo contienen su
+  `appsettings.Example.json` — sin código fuente propio versionado aquí —, así que **la
+  implementación real y verificable hoy es la de `Integrations/`**, no la de `servicios/`. Falta que
+  el equipo confirme si esos tres microservicios corren desde otro repositorio/despliegue o si son
+  scaffolding sin terminar, y actualice `CONTROL.md` (decisión D3) en consecuencia.
 - Los enums de este documento siguen `CONTRATO-API.md` (`Incendio`, `Inundacion`, …), que difiere de las categorías de `idea-negocio/investigacion-uno.md` (`vivienda_albergue`, …). **Manda el contrato**, porque es lo que frontend y backend ya acordaron.
-- Falta definir el despliegue (`docker-compose.yml` solo cubre la base de datos local).
+- Falta definir el despliegue (`docker-compose.yml` solo cubre la base de datos local). El backend en
+  producción sí está definido — Azure Container Apps, ver más abajo.

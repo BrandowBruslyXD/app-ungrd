@@ -38,7 +38,7 @@ Para confirmar que la API quedó arriba: `curl http://localhost:5000/health` deb
 | Ambiente | URL |
 |:---|:---|
 | Backend (producción) | https://conectariesgoai-api.delightfulsand-f3f95f4d.brazilsouth.azurecontainerapps.io |
-| Frontend (producción) | _pendiente — bloqueado por issue #33 (front sin inicializar)_ |
+| Frontend (producción) | `conectariesgoai.vercel.app` — el issue #33 (front sin inicializar) está **cerrado**; el front ya tiene siete features construidas (`auth`, `reportes`, `gestor`, `rescatista`, `socorro`, `ungrd`, `publico`). Ver [docs/EXPERIENCIAS-FRONTEND.md](docs/EXPERIENCIAS-FRONTEND.md#despliegue) |
 
 El backend corre en Azure Container Apps (`conectariesgoai-rg`, región `brazilsouth`) con
 PostgreSQL en Azure Database for PostgreSQL Flexible Server. Cada push a `main` que toque `back/`
@@ -67,10 +67,8 @@ curl -X POST http://localhost:5000/api/auth/login \
 
 ## Documentación
 
-| Documento | Para qué |
-|:---|:---|
-| [ARQUITECTURA.md](docs/ARQUITECTURA.md) | dónde va cada archivo y por qué |
-| [CONTRATO-API.md](docs/CONTRATO-API.md) | qué devuelve cada endpoint — fuente de verdad entre back y front |
-| [idea-negocio/](docs/idea-negocio/) | la investigación que originó el proyecto |
+El índice completo de los documentos de `docs/` — arquitectura, contrato de API, modelo de
+datos, fases, control del proyecto, bots y más — vive en **[docs/README.md](docs/README.md)**, con
+una fila por documento y a quién le sirve cada uno. Empieza ahí.
 
-> **Antes de escribir código, lee `ARQUITECTURA.md`.** Son cinco minutos y evitan que terminemos con cinco formas distintas de hacer lo mismo.
+> **Antes de escribir código, lee `docs/ARQUITECTURA.md`.** Son cinco minutos y evitan que terminemos con cinco formas distintas de hacer lo mismo.
