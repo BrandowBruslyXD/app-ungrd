@@ -62,10 +62,10 @@ Aquí es donde dejamos de parecernos a las apps que ya existen.
 
 | Qué | Estado |
 |:---|:---|
-| Verificación satelital NASA FIRMS | 🟡 `Integrations/Nasa` con la carpeta lista, **falta la MapKey** |
+| Verificación satelital NASA FIRMS | 🟡 `Integrations/Nasa` implementado (cliente NASA FIRMS + `GET /api/verificacion/satelital` + `GET /api/reportes/{codigo}` ya lo consume, issue #18), **falta la MapKey real** |
 | Transparencia del gasto con SECOP | 🟡 `Integrations/Secop` listo y probado, con respaldo |
 | Monitoreo de redes sociales | 🟡 Falta cuenta de Bluesky |
-| Que el backend consuma las integraciones | ⬜ **Sin dueño asignado** |
+| Que el backend consuma las integraciones | 🟡 SECOP y NASA ya conectados en `GET /api/reportes/{codigo}` (issue #18) |
 | Instalable como PWA | ⬜ |
 
 **Cómo se sabe que terminó:** en el detalle de un reporte aparecen los bloques de satélite y de contratos públicos, y si un servicio externo se cae, el bloque desaparece sin romper la pantalla.

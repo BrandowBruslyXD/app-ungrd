@@ -608,7 +608,8 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ReporteId");
+                    b.HasIndex("ReporteId")
+                        .IsUnique();
 
                     b.ToTable("verificaciones_satelitales", (string)null);
                 });

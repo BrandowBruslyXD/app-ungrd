@@ -336,6 +336,24 @@ Parámetros opcionales: `municipio`, `lat`, `lng`, `radioKm`.
 
 ## 4. Servicios de apoyo
 
+### `GET /api/verificacion/satelital?lat=&lng=&radioKm=` — público
+
+Consulta directa a NASA FIRMS, sin ligarla a ningún reporte. Útil para probar la integración por separado.
+
+**Respuesta `200`**
+```json
+{
+  "fuente": "NASA FIRMS",
+  "confirmado": true,
+  "focosDetectados": 3,
+  "distanciaMasCercanaKm": 2.1,
+  "detalle": "3 focos de calor detectados a menos de 5 km",
+  "consultadoEn": "2026-08-15T14:40:00Z"
+}
+```
+
+> Si NASA FIRMS falla, tarda o no hay `MAP_KEY` configurada, responde `200` con cuerpo `null` — mismo criterio que el bloque `verificacionSatelital` de `GET /api/reportes/{codigo}`.
+
 ### `GET /api/transparencia/secop?municipio=` — público
 
 Contratos de prevención del municipio consultados en Datos Abiertos (SECOP). Máximo 5, ordenados
@@ -360,11 +378,6 @@ por valor. Tope de 30 peticiones/minuto por IP.
 ```
 
 > Devuelve `[]` (lista vacía, no error) cuando no hay contratos o SECOP no responde a tiempo.
-
-### `GET /api/verificacion/satelital` — **no implementado en v1**
-
-La verificación satelital solo llega embebida en `GET /api/reportes/{codigo}` cuando ya fue
-persistida en base de datos. Este endpoint standalone queda para una fase posterior.
 
 ---
 

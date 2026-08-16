@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Common.Geo;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Persistence;
@@ -13,8 +14,6 @@ namespace ConectaRiesgoAI.Api.Features.Estadisticas.ResumenEstadisticas;
 public class ResumenEstadisticasHandler(AppDbContext context)
     : IRequestHandler<ResumenEstadisticasQuery, ResumenEstadisticasResponse>
 {
-    private const double RadioTierraKm = 6371;
-
     /// <summary>
     /// Filtra municipio en SQL; el radio se calcula en memoria porque Haversine no se traduce a
     /// SQL sin PostGIS (mismo enfoque que <c>ListarReportesHandler</c>). "porTipo" y "porCanal" cuentan sobre
@@ -33,7 +32,7 @@ public class ResumenEstadisticasHandler(AppDbContext context)
         if (tieneUbicacion)
         {
             reportes = reportes
-                .Where(r => CalcularDistanciaKm(query.Lat!.Value, query.Lng!.Value, r.Latitud, r.Longitud) is { } distanciaKm
+                .Where(r => GeoCalculos.DistanciaKm(query.Lat!.Value, query.Lng!.Value, r.Latitud, r.Longitud) is { } distanciaKm
                             && (query.RadioKm is null || distanciaKm <= query.RadioKm))
                 .ToList();
         }
@@ -76,23 +75,4 @@ public class ResumenEstadisticasHandler(AppDbContext context)
             porcentajeAtendidos,
             minutosDeAtencion.Count == 0 ? 0 : (int)Math.Round(minutosDeAtencion.Average()));
     }
-
-    /// <summary>Distancia entre dos puntos GPS (fórmula de Haversine). <c>null</c> si el reporte no tiene coordenadas.</summary>
-    private static double? CalcularDistanciaKm(double lat1, double lng1, double? lat2, double? lng2)
-    {
-        if (lat2 is null || lng2 is null)
-        {
-            return null;
-        }
-
-        double dLat = GradosARadianes(lat2.Value - lat1);
-        double dLng = GradosARadianes(lng2.Value - lng1);
-        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
-                + Math.Cos(GradosARadianes(lat1)) * Math.Cos(GradosARadianes(lat2.Value))
-                * Math.Sin(dLng / 2) * Math.Sin(dLng / 2);
-        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        return RadioTierraKm * c;
-    }
-
-    private static double GradosARadianes(double grados) => grados * Math.PI / 180;
 }
