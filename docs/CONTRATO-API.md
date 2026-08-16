@@ -448,6 +448,66 @@ sección. `nivelDano` y `necesidad` no tienen columna propia todavía: se anexan
 **Respuesta `401`** — falta `X-Api-Key` o la clave no es válida, con la forma estándar de error.
 No se crea ningún reporte.
 
+### `POST /api/ingesta/censo` 🔑 clave de servicio
+
+El registro del brigadista (issue #48). Autenticado igual que `/api/ingesta/reportes`, con
+`X-Api-Key`. El `telefono` es del brigadista, no del damnificado: se verifica contra
+`Usuario.EsAcreditadoCenso` — si no está acreditado, `403`. Reutiliza la `OperacionCenso` abierta
+del brigadista en ese municipio, o abre una nueva.
+
+**Petición**
+```json
+{
+  "telefono": "573001234567",
+  "municipio": "Soacha",
+  "barrioVereda": "Villa Mercedes",
+  "consentimiento": true,
+  "declaracionVeracidad": true,
+  "nombres": "María",
+  "apellidos": "Ramírez",
+  "tipoDocumento": "CC",
+  "numeroDocumento": "1234567890",
+  "edad": 34,
+  "genero": "Femenino",
+  "telefonoContacto": null,
+  "departamento": "Cundinamarca",
+  "ciudad": "Soacha",
+  "direccionResidencia": "Villa Mercedes, casa 12",
+  "latitud": null,
+  "longitud": null,
+  "esCabezaDeHogar": true,
+  "tieneDiscapacidad": false,
+  "esAdultoMayor": false,
+  "estaEmbarazada": false,
+  "perteneceGrupoEtnico": null,
+  "esVictimaConflicto": false,
+  "requiereAtencionMedica": false,
+  "estadoVivienda": "Averiada — NO habitable",
+  "necesidad": "AHE alimentaria",
+  "miembrosNucleo": [
+    { "nombres": "Juan", "apellidos": "Ramírez", "parentesco": "Hijo", "edad": 8, "tipoDocumento": null, "numeroDocumento": null, "tieneDiscapacidad": false, "estudiaActualmente": true }
+  ]
+}
+```
+
+`tipoDocumento` es `CC` \| `TI` \| `CE` \| `Pasaporte` \| `RC` \| `SinDocumento` (obligatorio;
+`numeroDocumento` queda `null` cuando es `SinDocumento` — perder el documento en la emergencia no
+descarta a la persona). `genero` es `Femenino` \| `Masculino` \| `Otro` \| `PrefiereNoDecir`.
+`perteneceGrupoEtnico` es `Indigena` \| `Afrocolombiano` \| `Rrom` \| `Raizal` \| `Palenquero` \|
+`Ninguno`, o `null`. `estadoVivienda` y `necesidad` llegan como texto libre (no tienen enum propio
+todavía): el backend aproxima un nivel de daño por palabras clave para el reporte interno, pero el
+texto original queda intacto. `miembrosNucleo` admite hasta 20 elementos.
+
+**Respuesta `201`**
+```json
+{ "codigo": "DMN-2026-08-16-0031", "codigoOperacionCenso": "CEN-2026-08-16-0001-K7M2", "estado": "Borrador" }
+```
+
+**Respuesta `400`** — `consentimiento: false` (no se persiste nada), datos con forma inválida, o
+cédula ya registrada en el mismo evento censal (mensaje genérico, sin repetir la cédula).
+
+**Respuesta `403`** — el teléfono no tiene `EsAcreditadoCenso`. No se crea nada.
+
 ### `GET /api/ingesta/reportes/{codigo}` — público
 
 Consulta de seguimiento para el bot. **No usa JWT ni API key:** el código funciona como número de
