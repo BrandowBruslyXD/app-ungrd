@@ -43,7 +43,7 @@ public class ListarReportesHandler(AppDbContext context)
         }
 
         var ordenados = tieneUbicacion
-            ? conDistancia.OrderBy(x => x.DistanciaKm)
+            ? conDistancia.OrderBy(x => x.DistanciaKm ?? double.MaxValue)
             : conDistancia.OrderByDescending(x => x.Reporte.CreadoEn);
 
         return ordenados

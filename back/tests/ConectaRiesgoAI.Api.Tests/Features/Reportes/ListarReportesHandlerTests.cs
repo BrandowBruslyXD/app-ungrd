@@ -100,6 +100,38 @@ public class ListarReportesHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ConLatLngSinRadio_ReportesSinGpsQuedanAlFinal()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Reportes.AddRange(
+            new Reporte
+            {
+                Codigo = "RPT-SIN-GPS",
+                Tipo = TipoReporte.Incendio,
+                Descripcion = "Por WhatsApp",
+                Municipio = "Bogotá",
+                Canal = CanalOrigen.WhatsApp,
+                IdentificadorCanal = IdentificadorCanalReporte.ParaTelefono("573001234567"),
+                UsuarioId = 1,
+                CreadoEn = DateTime.UtcNow
+            },
+            NuevoReporte("RPT-CON-GPS", TipoReporte.Incendio, EstadoReporte.Reportado, "Bogotá",
+                4.710989, -74.072092, DateTime.UtcNow));
+        await contexto.SaveChangesAsync();
+        var handler = new ListarReportesHandler(contexto);
+
+        var resultado = await handler.Handle(
+            new ListarReportesQuery(null, null, null, 4.710989, -74.072092, null, null, null),
+            CancellationToken.None);
+
+        Assert.Equal(2, resultado.Count);
+        Assert.Equal("RPT-CON-GPS", resultado[0].Codigo);
+        Assert.NotNull(resultado[0].DistanciaKm);
+        Assert.Equal("RPT-SIN-GPS", resultado[1].Codigo);
+        Assert.Null(resultado[1].DistanciaKm);
+    }
+
+    [Fact]
     public async Task Handle_FiltraPorCanal_SoloDevuelveLosQueCoinciden()
     {
         using var contexto = AppDbContextPruebas.Crear();

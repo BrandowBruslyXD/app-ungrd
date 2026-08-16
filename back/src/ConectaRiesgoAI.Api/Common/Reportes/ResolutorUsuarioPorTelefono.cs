@@ -32,7 +32,7 @@ public class ResolutorUsuarioPorTelefono(AppDbContext db, ILogger<ResolutorUsuar
         Usuario nuevo = new()
         {
             Nombre = nombreContacto.Trim(),
-            Email = $"wa-{telefonoNormalizado}@ingesta.conectariesgoai.local",
+            Email = EmailIngestaPorCanal(canalOrigen, telefonoNormalizado),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N")),
             Municipio = municipio.Trim(),
             Telefono = telefonoNormalizado,
@@ -49,6 +49,9 @@ public class ResolutorUsuarioPorTelefono(AppDbContext db, ILogger<ResolutorUsuar
         {
             // Dos webhooks concurrentes con el mismo teléfono pasan el FirstOrDefault de arriba
             // antes de que ninguno haya guardado; el índice único es la última barrera.
+            // Hay que desvincular el insert fallido: si queda en Added, un SaveChanges posterior
+            // del mismo request reintenta insertarlo y vuelve a chocar con el constraint.
+            db.Entry(nuevo).State = EntityState.Detached;
             return await db.Usuarios.SingleAsync(u => u.Telefono == telefonoNormalizado, cancellationToken);
         }
 
@@ -60,10 +63,26 @@ public class ResolutorUsuarioPorTelefono(AppDbContext db, ILogger<ResolutorUsuar
         return nuevo;
     }
 
-    private static bool ViolaElIndiceUnicoDeTelefono(DbUpdateException ex) =>
-        ex.InnerException is PostgresException
+    /// <summary>Email sintético único por canal; nunca se usa para login.</summary>
+    private static string EmailIngestaPorCanal(CanalOrigen canal, string telefono) =>
+        canal switch
         {
-            SqlState: PostgresErrorCodes.UniqueViolation,
-            ConstraintName: IndicesPostgres.UsuariosTelefono
+            CanalOrigen.Telefono => $"tel-{telefono}@ingesta.conectariesgoai.local",
+            CanalOrigen.WhatsApp => $"wa-{telefono}@ingesta.conectariesgoai.local",
+            _ => $"ingesta-{telefono}@ingesta.conectariesgoai.local"
         };
+
+    private static bool ViolaElIndiceUnicoDeTelefono(DbUpdateException ex)
+    {
+        if (ex.InnerException is PostgresException pg)
+        {
+            return pg.SqlState == PostgresErrorCodes.UniqueViolation
+                && pg.ConstraintName == IndicesPostgres.UsuariosTelefono;
+        }
+
+        // Respaldo cuando el proveedor no expone ConstraintName (p. ej. SQLite en pruebas):
+        // el insert rechazado es un Usuario con teléfono duplicado.
+        return ex.Entries.Any(entry =>
+            entry.Entity is Usuario usuario && !string.IsNullOrEmpty(usuario.Telefono));
+    }
 }

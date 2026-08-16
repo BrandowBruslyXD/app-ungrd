@@ -32,12 +32,18 @@ namespace ConectaRiesgoAI.Api.Persistence.Migrations
                 unique: true,
                 filter: "\"ReferenciaExterna\" IS NOT NULL");
 
-            // Reportes previos a esta migración heredan usuario:{id} como identificador web.
+            // Backfill según canal: web usa usuario:{id}; WhatsApp/teléfono usan el teléfono del usuario.
             migrationBuilder.Sql(
                 """
-                UPDATE reportes
-                SET "IdentificadorCanal" = 'usuario:' || "UsuarioId"::text
-                WHERE "IdentificadorCanal" = '';
+                UPDATE reportes r
+                SET "IdentificadorCanal" = CASE
+                    WHEN r."Canal" IN ('WhatsApp', 'Telefono')
+                         AND u."Telefono" IS NOT NULL THEN u."Telefono"
+                    ELSE 'usuario:' || r."UsuarioId"::text
+                END
+                FROM usuarios u
+                WHERE r."UsuarioId" = u."Id"
+                  AND r."IdentificadorCanal" = '';
                 """);
         }
 

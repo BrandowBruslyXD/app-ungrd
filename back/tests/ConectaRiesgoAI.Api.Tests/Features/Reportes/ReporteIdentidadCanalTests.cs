@@ -2,6 +2,7 @@ using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Persistence;
+using ConectaRiesgoAI.Api.Tests.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -182,6 +183,88 @@ public class ReporteIdentidadCanalTests
 
         int[] usuariosDeReportes = await db.Reportes.Select(r => r.UsuarioId).ToArrayAsync();
         Assert.Equal(usuariosDeReportes[0], usuariosDeReportes[1]);
+    }
+
+    [Fact]
+    public async Task ResolverOCrear_Telefono_UsaPrefijoTelEnEmail()
+    {
+        using var db = NuevoContexto();
+        var resolutor = NuevoResolutor(db);
+
+        Usuario usuario = await resolutor.ResolverOCrearAsync(
+            "573009998877",
+            CanalOrigen.Telefono,
+            "Pedro L.",
+            "Medellín",
+            CancellationToken.None);
+
+        Assert.StartsWith("tel-", usuario.Email);
+    }
+
+    [Fact]
+    public async Task ResolverOCrear_Whatsapp_UsaPrefijoWaEnEmail()
+    {
+        using var db = NuevoContexto();
+        var resolutor = NuevoResolutor(db);
+
+        Usuario usuario = await resolutor.ResolverOCrearAsync(
+            "573008887766",
+            CanalOrigen.WhatsApp,
+            "Ana L.",
+            "Cali",
+            CancellationToken.None);
+
+        Assert.StartsWith("wa-", usuario.Email);
+    }
+
+    /// <summary>
+    /// SQLite aplica el índice único de teléfono. Simula la carrera de dos webhooks concurrentes
+    /// y verifica que, tras la colisión, el contexto puede seguir guardando sin reintentar el insert.
+    /// </summary>
+    [Fact]
+    public async Task ResolverOCrear_ColisionDeTelefono_DesvinculaElInsertFallidoYPermiteSeguirGuardando()
+    {
+        var (contexto, conexion) = AppDbContextSqlitePruebas.Crear();
+        using var contextoDesechable = contexto;
+        using var conexionDesechable = conexion;
+
+        var opciones = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(conexion)
+            .Options;
+
+        Task<Usuario> primera = new ResolutorUsuarioPorTelefono(
+            new AppDbContext(opciones),
+            NullLogger<ResolutorUsuarioPorTelefono>.Instance)
+            .ResolverOCrearAsync("573001111222", CanalOrigen.WhatsApp, "A", "Bogotá", CancellationToken.None);
+
+        Task<Usuario> segunda = new ResolutorUsuarioPorTelefono(
+            new AppDbContext(opciones),
+            NullLogger<ResolutorUsuarioPorTelefono>.Instance)
+            .ResolverOCrearAsync("573001111222", CanalOrigen.Telefono, "A", "Bogotá", CancellationToken.None);
+
+        Usuario[] usuarios = await Task.WhenAll(primera, segunda);
+
+        Assert.Equal(usuarios[0].Id, usuarios[1].Id);
+        Assert.Equal(1, await contexto.Usuarios.CountAsync(u => u.Telefono == "573001111222"));
+
+        var resolutor = NuevoResolutor(contexto);
+        Usuario resuelto = await resolutor.ResolverOCrearAsync(
+            "573001111222", CanalOrigen.WhatsApp, "A", "Bogotá", CancellationToken.None);
+
+        contexto.Reportes.Add(new Reporte
+        {
+            Codigo = "RPT-2026-08-16-0300",
+            Tipo = TipoReporte.Otro,
+            Descripcion = "Tras colisión",
+            Municipio = "Bogotá",
+            Canal = CanalOrigen.WhatsApp,
+            IdentificadorCanal = IdentificadorCanalReporte.ParaTelefono("573001111222"),
+            ReferenciaExterna = "wamid-post-collision",
+            UsuarioId = resuelto.Id
+        });
+
+        await contexto.SaveChangesAsync();
+        Assert.Equal(1, await contexto.Reportes.CountAsync());
     }
 
     /// <summary>
