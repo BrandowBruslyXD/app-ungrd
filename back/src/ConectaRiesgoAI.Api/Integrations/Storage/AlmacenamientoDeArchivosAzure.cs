@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
@@ -10,25 +11,40 @@ public class AlmacenamientoDeArchivosAzure : IAlmacenamientoDeArchivos
 {
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
 
-    private readonly BlobServiceClient _cliente;
+    private readonly BlobServiceClient? _cliente;
     private readonly OpcionesAlmacenamiento _opciones;
     private readonly ILogger<AlmacenamientoDeArchivosAzure> _logger;
+
+    /// <summary>Contenedores para los que ya se confirmó que existen, para no repetir la llamada en cada subida.</summary>
+    private readonly ConcurrentDictionary<Contenedor, bool> _contenedoresVerificados = new();
 
     public AlmacenamientoDeArchivosAzure(
         IConfiguration configuration,
         IOptions<OpcionesAlmacenamiento> opciones,
         ILogger<AlmacenamientoDeArchivosAzure> logger)
     {
-        var cadenaConexion = configuration.GetConnectionString("AzureStorage");
-        if (string.IsNullOrWhiteSpace(cadenaConexion))
-        {
-            throw new InvalidOperationException(
-                "Falta la sección 'ConnectionStrings:AzureStorage' en la configuración.");
-        }
-
-        _cliente = new BlobServiceClient(cadenaConexion);
         _opciones = opciones.Value;
         _logger = logger;
+
+        // Nunca lanza: si falta la configuración o es inválida, SubirAsync lo trata como
+        // cualquier otro fallo de Azure y responde Exitoso = false, sin tumbar al llamador
+        // (ver issue #47, escenario "el blob no está disponible").
+        string? cadenaConexion = configuration.GetConnectionString("AzureStorage");
+        if (string.IsNullOrWhiteSpace(cadenaConexion))
+        {
+            _logger.LogWarning(
+                "Falta 'ConnectionStrings:AzureStorage' en la configuración; las subidas de evidencias fallarán de forma controlada hasta que se aprovisione.");
+            return;
+        }
+
+        try
+        {
+            _cliente = new BlobServiceClient(cadenaConexion);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "No se pudo crear el cliente de Azure Blob Storage con la cadena de conexión configurada.");
+        }
     }
 
     /// <inheritdoc />
@@ -38,17 +54,27 @@ public class AlmacenamientoDeArchivosAzure : IAlmacenamientoDeArchivos
         string tipoContenido,
         CancellationToken cancellationToken)
     {
-        using var conTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        if (_cliente is null)
+        {
+            return new ResultadoSubida(false, null, "El cliente de Azure Blob Storage no está configurado.");
+        }
+
+        using CancellationTokenSource conTimeout =
+            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         conTimeout.CancelAfter(Timeout);
 
         try
         {
-            var contenedorCliente = _cliente.GetBlobContainerClient(contenedor.ANombre());
-            await contenedorCliente.CreateIfNotExistsAsync(
-                PublicAccessType.None, cancellationToken: conTimeout.Token);
+            BlobContainerClient contenedorCliente = _cliente.GetBlobContainerClient(contenedor.ANombre());
+            if (!_contenedoresVerificados.ContainsKey(contenedor))
+            {
+                await contenedorCliente.CreateIfNotExistsAsync(
+                    PublicAccessType.None, cancellationToken: conTimeout.Token);
+                _contenedoresVerificados[contenedor] = true;
+            }
 
-            var nombreBlob = $"{Guid.NewGuid():N}{ExtensionPara(tipoContenido)}";
-            var blobCliente = contenedorCliente.GetBlobClient(nombreBlob);
+            string nombreBlob = $"{Guid.NewGuid():N}{ExtensionPara(tipoContenido)}";
+            BlobClient blobCliente = contenedorCliente.GetBlobClient(nombreBlob);
 
             await blobCliente.UploadAsync(
                 contenido,
@@ -61,11 +87,21 @@ public class AlmacenamientoDeArchivosAzure : IAlmacenamientoDeArchivos
         {
             // Nunca propaga: un blob caído no puede tumbar al llamador (ver CLAUDE.md,
             // mismo trato que Integrations/Nasa e Integrations/Secop).
-            _logger.LogWarning(ex, "No se pudo subir el archivo al contenedor {Contenedor}", contenedor);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Quien llamaba canceló la operación: no es un fallo nuestro que investigar.
+                _logger.LogInformation("La subida al contenedor {Contenedor} se canceló por quien llamaba.", contenedor);
+            }
+            else
+            {
+                _logger.LogWarning(ex, "No se pudo subir el archivo al contenedor {Contenedor}", contenedor);
+            }
+
             return new ResultadoSubida(false, null, ex.Message);
         }
     }
 
+    /// <summary>Arma la URL firmada (SAS) de solo lectura, con la expiración configurada.</summary>
     private string? GenerarUrlFirmada(BlobClient blobCliente)
     {
         if (!blobCliente.CanGenerateSasUri)
@@ -75,7 +111,7 @@ public class AlmacenamientoDeArchivosAzure : IAlmacenamientoDeArchivos
             return null;
         }
 
-        var constructorSas = new BlobSasBuilder
+        BlobSasBuilder constructorSas = new()
         {
             BlobContainerName = blobCliente.BlobContainerName,
             BlobName = blobCliente.Name,
@@ -87,6 +123,7 @@ public class AlmacenamientoDeArchivosAzure : IAlmacenamientoDeArchivos
         return blobCliente.GenerateSasUri(constructorSas).ToString();
     }
 
+    /// <summary>Extensión del blob según el tipo MIME ya validado por el llamador.</summary>
     private static string ExtensionPara(string tipoContenido) => tipoContenido switch
     {
         "image/jpeg" => ".jpg",

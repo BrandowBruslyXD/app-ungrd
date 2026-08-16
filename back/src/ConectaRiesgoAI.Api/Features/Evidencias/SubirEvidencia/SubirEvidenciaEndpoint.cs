@@ -27,10 +27,10 @@ public class SubirEvidenciaEndpoint : IEndpoint
         ISender sender,
         CancellationToken cancellationToken)
     {
-        await using var contenido = archivo.OpenReadStream();
-        var comando = new SubirEvidenciaCommand(tipo, archivo.ContentType, archivo.Length, contenido);
+        await using Stream contenido = archivo.OpenReadStream();
+        SubirEvidenciaCommand comando = new(tipo, archivo.ContentType, archivo.Length, contenido);
 
-        var respuesta = await sender.Send(comando, cancellationToken);
+        SubirEvidenciaResponse respuesta = await sender.Send(comando, cancellationToken);
         return Results.Json(respuesta, statusCode: StatusCodes.Status201Created);
     }
 }
