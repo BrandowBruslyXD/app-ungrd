@@ -274,6 +274,7 @@ Parámetros opcionales: `municipio`, `lat`, `lng`, `radioKm`.
 ```json
 {
   "porTipo": { "Incendio": 3, "Inundacion": 2, "Deslizamiento": 1, "ViaAfectada": 0, "ColapsoEstructural": 0, "Otro": 0 },
+  "porCanal": { "Web": 20, "WhatsApp": 15, "Telefono": 12 },
   "totalHoy": 47,
   "atendidos": 35,
   "porcentajeAtendidos": 74,
@@ -281,7 +282,7 @@ Parámetros opcionales: `municipio`, `lat`, `lng`, `radioKm`.
 }
 ```
 
-> Devuelve **ceros, no un error**, cuando no hay datos. `porTipo` siempre trae las 6 llaves aunque valgan `0`, para que el frontend no tenga que preguntar si existen.
+> Devuelve **ceros, no un error**, cuando no hay datos. `porTipo` siempre trae las 6 llaves aunque valgan `0`, para que el frontend no tenga que preguntar si existen. `porCanal` siempre trae `Web`, `WhatsApp` y `Telefono` con el mismo criterio.
 
 ---
 

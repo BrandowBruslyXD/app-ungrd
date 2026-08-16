@@ -31,10 +31,15 @@ public class BuscadorReporteIdempotente(AppDbContext db) : IBuscadorReporteIdemp
 
     /// <inheritdoc />
     /// <remarks>El nombre del índice debe coincidir con <see cref="IndicesPostgres.ReportesCanalReferenciaExterna"/>.</remarks>
-    public bool EsDuplicadoDeReferenciaExterna(DbUpdateException excepcion) =>
-        excepcion.InnerException is PostgresException
+    public bool EsDuplicadoDeReferenciaExterna(DbUpdateException excepcion)
+    {
+        if (excepcion.InnerException is PostgresException pg)
         {
-            SqlState: PostgresErrorCodes.UniqueViolation,
-            ConstraintName: IndicesPostgres.ReportesCanalReferenciaExterna
-        };
+            return pg.SqlState == PostgresErrorCodes.UniqueViolation
+                && pg.ConstraintName == IndicesPostgres.ReportesCanalReferenciaExterna;
+        }
+
+        return excepcion.Entries.Any(entry =>
+            entry.Entity is Reporte reporte && !string.IsNullOrWhiteSpace(reporte.ReferenciaExterna));
+    }
 }

@@ -17,8 +17,8 @@ public class ResumenEstadisticasHandler(AppDbContext context)
 
     /// <summary>
     /// Filtra municipio en SQL; el radio se calcula en memoria porque Haversine no se traduce a
-    /// SQL sin PostGIS (mismo enfoque que <c>ListarReportesHandler</c>). "porTipo" cuenta sobre
-    /// todos los reportes filtrados, sin restringir a hoy: refleja la carga actual por tipo.
+    /// SQL sin PostGIS (mismo enfoque que <c>ListarReportesHandler</c>). "porTipo" y "porCanal" cuentan sobre
+    /// todos los reportes filtrados, sin restringir a hoy: reflejan la carga actual por tipo y canal.
     /// "totalHoy"/"atendidos"/"tiempoPromedioMinutos" sí se acotan al día en curso (UTC).
     /// </summary>
     public async Task<ResumenEstadisticasResponse> Handle(ResumenEstadisticasQuery query, CancellationToken cancellationToken)
@@ -45,6 +45,13 @@ public class ResumenEstadisticasHandler(AppDbContext context)
             porTipo[reporte.Tipo.ToString()]++;
         }
 
+        Dictionary<string, int> porCanal = Enum.GetValues<CanalOrigen>()
+            .ToDictionary(c => c.ToString(), _ => 0);
+        foreach (Reporte reporte in reportes)
+        {
+            porCanal[reporte.Canal.ToString()]++;
+        }
+
         DateTime hoyUtc = DateTime.UtcNow.Date;
         List<Reporte> reportesDeHoy = reportes.Where(r => r.CreadoEn.Date == hoyUtc).ToList();
         List<Reporte> atendidosDeHoy = reportesDeHoy
@@ -63,6 +70,7 @@ public class ResumenEstadisticasHandler(AppDbContext context)
 
         return new ResumenEstadisticasResponse(
             porTipo,
+            porCanal,
             totalHoy,
             atendidos,
             porcentajeAtendidos,
