@@ -2,41 +2,37 @@ import {
   Droplets,
   Mountain,
   Flame,
-  Activity,
-  Wind,
-  Sun,
   AlertTriangle,
+  Construction,
+  Route,
 } from 'lucide-react';
 import type { EmergencyType } from '@/types';
 
 const icons: Record<EmergencyType, typeof Droplets> = {
-  inundacion: Droplets,
-  deslizamiento: Mountain,
-  incendio: Flame,
-  sismo: Activity,
-  vendaval: Wind,
-  sequia: Sun,
-  otro: AlertTriangle,
+  Inundacion: Droplets,
+  Deslizamiento: Mountain,
+  Incendio: Flame,
+  ViaAfectada: Route,
+  ColapsoEstructural: Construction,
+  Otro: AlertTriangle,
 };
 
 const colors: Record<EmergencyType, string> = {
-  inundacion: 'text-ungrd-600 bg-ungrd-50',
-  deslizamiento: 'text-amber-700 bg-amber-50',
-  incendio: 'text-red-600 bg-red-50',
-  sismo: 'text-gold-700 bg-gold-50',
-  vendaval: 'text-slate-600 bg-slate-100',
-  sequia: 'text-orange-600 bg-orange-50',
-  otro: 'text-slate-500 bg-slate-50',
+  Inundacion: 'text-ungrd-600 bg-ungrd-50',
+  Deslizamiento: 'text-amber-700 bg-amber-50',
+  Incendio: 'text-red-600 bg-red-50',
+  ViaAfectada: 'text-slate-600 bg-slate-100',
+  ColapsoEstructural: 'text-orange-600 bg-orange-50',
+  Otro: 'text-slate-500 bg-slate-50',
 };
 
 const labels: Record<EmergencyType, string> = {
-  inundacion: 'Inundación',
-  deslizamiento: 'Deslizamiento',
-  incendio: 'Incendio',
-  sismo: 'Sismo',
-  vendaval: 'Vendaval',
-  sequia: 'Sequía',
-  otro: 'Otro',
+  Inundacion: 'Inundación',
+  Deslizamiento: 'Deslizamiento',
+  Incendio: 'Incendio',
+  ViaAfectada: 'Vía afectada',
+  ColapsoEstructural: 'Colapso estructural',
+  Otro: 'Otro',
 };
 
 interface Props {

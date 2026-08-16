@@ -13,7 +13,7 @@ import {
   FileWarning,
   Search,
 } from 'lucide-react';
-import { mockAidCategories } from '@/data/mock';
+import { listAyudas } from '@/api/reportes';
 import type { AidItem } from '@/types';
 
 const categoryIcons: Record<string, typeof HeartHandshake> = {
@@ -96,6 +96,7 @@ function AidItemCard({ item }: { item: AidItem }) {
 }
 
 export default function AidDirectory() {
+  const mockAidCategories = listAyudas();
   const [searchQuery, setSearchQuery] = useState('');
   const [openCategory, setOpenCategory] = useState<string | null>(mockAidCategories[0]?.id ?? null);
 

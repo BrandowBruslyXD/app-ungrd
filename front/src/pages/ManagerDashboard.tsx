@@ -11,18 +11,19 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import { mockReports } from '@/data/mock';
-import { StatusBadge, SeverityBadge } from '@/components/shared/StatusBadge';
+import { listReportes } from '@/api/reportes';
+import { SeverityBadge, StatusBadge } from '@/components/shared/StatusBadge';
 import EmergencyIcon from '@/components/shared/EmergencyIcon';
 import TrustBadge from '@/components/shared/TrustBadge';
 import type { ReportStatus } from '@/types';
 
 const columns: { status: ReportStatus; label: string; color: string }[] = [
-  { status: 'recibido', label: 'Nuevos', color: 'border-t-slate-400' },
-  { status: 'verificando', label: 'En verificación', color: 'border-t-ungrd-400' },
-  { status: 'confirmado', label: 'Confirmados', color: 'border-t-amber-400' },
-  { status: 'en_atencion', label: 'En atención', color: 'border-t-blue-400' },
-  { status: 'resuelto', label: 'Resueltos', color: 'border-t-emerald-400' },
+  { status: 'Reportado', label: 'Reportados', color: 'border-t-slate-400' },
+  { status: 'Verificado', label: 'Verificados', color: 'border-t-ungrd-400' },
+  { status: 'Asignado', label: 'Asignados', color: 'border-t-amber-400' },
+  { status: 'EnAtencion', label: 'En atención', color: 'border-t-blue-400' },
+  { status: 'Atendido', label: 'Atendidos', color: 'border-t-indigo-400' },
+  { status: 'Cerrado', label: 'Cerrados', color: 'border-t-emerald-400' },
 ];
 
 const statCards = [
@@ -42,9 +43,9 @@ function formatTimeAgo(iso: string): string {
   return `${Math.floor(hours / 24)}d`;
 }
 
-function MobileTriageSection({ status, label, color }: { status: ReportStatus; label: string; color: string }) {
-  const [open, setOpen] = useState(status === 'recibido');
-  const reports = mockReports.filter((r) => r.status === status);
+function MobileTriageSection({ status, label, color, reports }: { status: ReportStatus; label: string; color: string; reports: ReturnType<typeof listReportes> }) {
+  const [open, setOpen] = useState(status === 'Reportado');
+  const columnReports = reports.filter((r) => r.status === status);
 
   return (
     <div className={`card border-l-4 ${color.replace('border-t-', 'border-l-')} overflow-hidden`}>
@@ -54,17 +55,18 @@ function MobileTriageSection({ status, label, color }: { status: ReportStatus; l
       >
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-slate-700">{label}</span>
-          <span className="badge bg-slate-100 text-slate-500">{reports.length}</span>
+          <span className="badge bg-slate-100 text-slate-500">{columnReports.length}</span>
         </div>
         {open ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
       </button>
-      {open && reports.length > 0 && (
+      {open && columnReports.length > 0 && (
         <div className="border-t border-slate-100 p-2 space-y-2">
-          {reports.map((report) => (
+          {columnReports.map((report) => (
             <div key={report.id} className="rounded-xl border border-slate-200 bg-white p-3">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <EmergencyIcon type={report.type} size="sm" />
-                <SeverityBadge severity={report.severity} />
+                <SeverityBadge severity={report.prioridad} />
+                <StatusBadge status={report.status} />
                 <TrustBadge level={report.trustLevel} />
               </div>
               <p className="text-xs font-semibold text-slate-800 line-clamp-2">{report.title}</p>
@@ -77,7 +79,7 @@ function MobileTriageSection({ status, label, color }: { status: ReportStatus; l
           ))}
         </div>
       )}
-      {open && reports.length === 0 && (
+      {open && columnReports.length === 0 && (
         <div className="border-t border-slate-100 p-4 text-center text-xs text-slate-300">
           Sin reportes
         </div>
@@ -87,6 +89,8 @@ function MobileTriageSection({ status, label, color }: { status: ReportStatus; l
 }
 
 export default function ManagerDashboard() {
+  const mockReports = listReportes();
+
   return (
     <div className="animate-fade-in">
       {/* Top bar */}
@@ -160,7 +164,7 @@ export default function ManagerDashboard() {
             {/* Mobile: accordion */}
             <div className="space-y-2 lg:hidden">
               {columns.map(({ status, label, color }) => (
-                <MobileTriageSection key={status} status={status} label={label} color={color} />
+                <MobileTriageSection key={status} status={status} label={label} color={color} reports={mockReports} />
               ))}
             </div>
 
@@ -180,7 +184,8 @@ export default function ManagerDashboard() {
                           <div key={report.id} className="rounded-xl border border-slate-200 bg-white p-3 hover:shadow-sm transition-shadow cursor-pointer">
                             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                               <EmergencyIcon type={report.type} size="sm" />
-                              <SeverityBadge severity={report.severity} />
+                              <SeverityBadge severity={report.prioridad} />
+                <StatusBadge status={report.status} />
                               <TrustBadge level={report.trustLevel} />
                             </div>
                             <p className="text-xs font-semibold text-slate-800 line-clamp-2">{report.title}</p>

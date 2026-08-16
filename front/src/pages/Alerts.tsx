@@ -6,7 +6,7 @@ import {
   Bell,
   MapPin,
 } from 'lucide-react';
-import { mockAlerts } from '@/data/mock';
+import { listAlertas } from '@/api/reportes';
 import { SeverityBadge } from '@/components/shared/StatusBadge';
 import type { Alert } from '@/types';
 
@@ -27,6 +27,7 @@ function formatDate(iso: string): string {
 }
 
 export default function Alerts() {
+  const mockAlerts = listAlertas();
   const activeAlerts = mockAlerts.filter((a) => a.active);
 
   return (
@@ -57,7 +58,7 @@ export default function Alerts() {
         {activeAlerts.map((alert) => {
           const source = sourceConfig[alert.source];
           const SourceIcon = source.icon;
-          const isCritical = alert.severity === 'critica';
+          const isCritical = alert.prioridad === 'Alta';
 
           return (
             <div
@@ -76,7 +77,7 @@ export default function Alerts() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <SeverityBadge severity={alert.severity} />
+                    <SeverityBadge severity={alert.prioridad} />
                     <span className={`badge ${source.color}`}>{source.label}</span>
                   </div>
                   <h3 className="text-base font-bold text-slate-800">{alert.title}</h3>

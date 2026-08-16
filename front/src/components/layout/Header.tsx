@@ -10,12 +10,11 @@ import {
   HandHeart,
   Bell,
   LayoutDashboard,
-  Users,
   ChevronDown,
   Plus,
   Flame,
 } from 'lucide-react';
-import type { UserRole } from '@/types';
+import type { DemoView } from '@/types';
 
 const citizenLinks = [
   { to: '/', label: 'Inicio', icon: Home },
@@ -28,11 +27,6 @@ const citizenLinks = [
 const managerLinks = [
   { to: '/gestor', label: 'Panel de Triage', icon: LayoutDashboard },
   { to: '/alertas', label: 'Alertas', icon: Bell },
-];
-
-const adminLinks = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/admin/usuarios', label: 'Usuarios', icon: Users },
 ];
 
 const rescuerLinks = [
@@ -48,26 +42,28 @@ const socorroLinks = [
   { to: '/alertas', label: 'Alertas', icon: Bell },
 ];
 
-const roleLabels: Record<UserRole, string> = {
-  citizen: 'Ciudadano',
-  manager: 'Gestor CMGRD',
-  admin: 'Administrador',
-  rescuer: 'Brigadista',
-  socorro: 'Org. Socorro',
+const roleLabels: Record<DemoView, string> = {
+  Ciudadano: 'Ciudadano',
+  Gestor: 'Gestor CMGRD',
+  Admin: 'Administrador',
+  Brigadista: 'Brigadista',
+  Socorro: 'Org. Socorro',
 };
 
 interface HeaderProps {
-  role: UserRole;
-  onRoleChange: (role: UserRole) => void;
+  role: DemoView;
+  onRoleChange: (role: DemoView) => void;
 }
 
-const roleHome: Record<UserRole, string> = {
-  citizen: '/',
-  manager: '/gestor',
-  admin: '/admin',
-  rescuer: '/rescatista',
-  socorro: '/socorro',
+const roleHome: Record<DemoView, string> = {
+  Ciudadano: '/',
+  Gestor: '/gestor',
+  Admin: '/',
+  Brigadista: '/rescatista',
+  Socorro: '/socorro',
 };
+
+const demoRoles: DemoView[] = ['Ciudadano', 'Socorro', 'Brigadista', 'Gestor'];
 
 export default function Header({ role, onRoleChange }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -75,21 +71,19 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  function switchRole(r: UserRole) {
+  function switchRole(r: DemoView) {
     onRoleChange(r);
     navigate(roleHome[r]);
   }
 
   const links =
-    role === 'admin'
-      ? adminLinks
-      : role === 'manager'
-        ? managerLinks
-        : role === 'rescuer'
-          ? rescuerLinks
-          : role === 'socorro'
-            ? socorroLinks
-            : citizenLinks;
+    role === 'Gestor'
+      ? managerLinks
+      : role === 'Brigadista'
+        ? rescuerLinks
+        : role === 'Socorro'
+          ? socorroLinks
+          : citizenLinks;
 
   return (
     <header className="sticky top-0 z-50 border-b border-ungrd-700/20 bg-ungrd-600/95 backdrop-blur-xl">
@@ -138,7 +132,7 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
                 <div className="fixed inset-0 z-40" onClick={() => setRoleMenuOpen(false)} />
                 <div className="absolute right-0 top-full z-50 mt-1 w-56 rounded-xl border border-slate-200 bg-white py-1 shadow-lg animate-scale-in">
                   <p className="px-3 py-1.5 text-xs font-medium text-slate-400">Cambiar vista (demo)</p>
-                  {(['citizen', 'socorro', 'rescuer', 'manager', 'admin'] as UserRole[]).map((r) => (
+                  {demoRoles.map((r) => (
                     <button
                       key={r}
                       onClick={() => { switchRole(r); setRoleMenuOpen(false); }}
@@ -169,7 +163,7 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
         <div className="border-t border-ungrd-500/30 bg-ungrd-700 px-4 pb-4 pt-2 md:hidden animate-slide-up">
           <p className="mb-2 text-xs font-medium text-ungrd-200">Vista: {roleLabels[role]}</p>
           <div className="mb-3 flex flex-wrap gap-1">
-            {(['citizen', 'socorro', 'rescuer', 'manager', 'admin'] as UserRole[]).map((r) => (
+            {demoRoles.map((r) => (
               <button
                 key={r}
                 onClick={() => { switchRole(r); setMenuOpen(false); }}

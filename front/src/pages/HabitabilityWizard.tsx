@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import type { Habitability, HousingDamageAggregate } from '@/types/edan';
 import { HABITABILITY_LABELS } from '@/types/edan';
-import { mockIncidentLogs } from '@/data/mockSocorro';
+import { mockIncidentLogs } from '@/mocks/mockSocorro';
 
 interface HabForm {
   incidentLogId: string;
@@ -96,7 +96,7 @@ export default function HabitabilityWizard() {
           )}
         </div>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <button onClick={() => { setSubmitted(false); setStep(1); setForm({ ...form, address: '', housingType: '', habitability: '', damageAggregate: '', notes: '', occupantsPresent: 0, needsStructuralInspection: false, evacuationNotificationIssued: false, temporaryShelterActivated: false }); }} className="btn-primary">
+          <button onClick={() => { setSubmitted(false); setStep(1); setForm({ incidentLogId: '', address: '', housingType: '', habitability: '', damageAggregate: '', notes: '', occupantsPresent: 0, needsStructuralInspection: false, evacuationNotificationIssued: false, temporaryShelterActivated: false }); }} className="btn-primary">
             Evaluar otra vivienda
           </button>
           <button onClick={() => navigate('/socorro')} className="btn-secondary">

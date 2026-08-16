@@ -8,16 +8,15 @@ import ReportDetail from '@/pages/ReportDetail';
 import AidDirectory from '@/pages/AidDirectory';
 import Alerts from '@/pages/Alerts';
 import ManagerDashboard from '@/pages/ManagerDashboard';
-import AdminDashboard from '@/pages/AdminDashboard';
 import RescuerDashboard from '@/pages/RescuerDashboard';
 import FieldCensusWizard from '@/pages/FieldCensusWizard';
 import SocorroDashboard from '@/pages/SocorroDashboard';
 import IncidentLogWizard from '@/pages/IncidentLogWizard';
 import HabitabilityWizard from '@/pages/HabitabilityWizard';
-import type { UserRole } from '@/types';
+import type { DemoView } from '@/types';
 
 export default function App() {
-  const [role, setRole] = useState<UserRole>('citizen');
+  const [role, setRole] = useState<DemoView>('Ciudadano');
 
   return (
     <BrowserRouter>
@@ -28,13 +27,11 @@ export default function App() {
             <Route
               path="/"
               element={
-                role === 'manager' ? (
+                role === 'Gestor' ? (
                   <Navigate to="/gestor" replace />
-                ) : role === 'admin' ? (
-                  <Navigate to="/admin" replace />
-                ) : role === 'rescuer' ? (
+                ) : role === 'Brigadista' ? (
                   <Navigate to="/rescatista" replace />
-                ) : role === 'socorro' ? (
+                ) : role === 'Socorro' ? (
                   <Navigate to="/socorro" replace />
                 ) : (
                   <CitizenDashboard />
@@ -47,8 +44,6 @@ export default function App() {
             <Route path="/ayudas" element={<AidDirectory />} />
             <Route path="/alertas" element={<Alerts />} />
             <Route path="/gestor" element={<ManagerDashboard />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/usuarios" element={<AdminDashboard />} />
             <Route path="/rescatista" element={<RescuerDashboard />} />
             <Route path="/rescatista/censo" element={<FieldCensusWizard />} />
             <Route path="/socorro" element={<SocorroDashboard />} />

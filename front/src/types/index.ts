@@ -1,4 +1,11 @@
-export type UserRole = 'citizen' | 'manager' | 'admin' | 'rescuer' | 'socorro';
+/** Roles del contrato API (JWT). */
+export type Rol = 'Ciudadano' | 'Gestor' | 'Admin';
+
+/**
+ * Vistas de demo en el header. Brigadista y Socorro no están en el contrato JWT aún.
+ * Ciudadano, Gestor y Admin usan los mismos literales que la API.
+ */
+export type DemoView = Rol | 'Brigadista' | 'Socorro';
 
 export type CitizenReportType = 'testigo' | 'afectado';
 
@@ -11,23 +18,29 @@ export const TRUST_LEVEL_LABELS: Record<TrustLevel, string> = {
   avalado: 'Avalado por CMGRD',
 };
 
+/** Valores de enum del contrato API para tipo de emergencia. */
 export type EmergencyType =
-  | 'inundacion'
-  | 'deslizamiento'
-  | 'incendio'
-  | 'sismo'
-  | 'vendaval'
-  | 'sequia'
-  | 'otro';
+  | 'Incendio'
+  | 'Inundacion'
+  | 'Deslizamiento'
+  | 'ViaAfectada'
+  | 'ColapsoEstructural'
+  | 'Otro';
 
+/** Flujo de estados del contrato API. */
 export type ReportStatus =
-  | 'recibido'
-  | 'verificando'
-  | 'confirmado'
-  | 'en_atencion'
-  | 'resuelto';
+  | 'Reportado'
+  | 'Verificado'
+  | 'Asignado'
+  | 'EnAtencion'
+  | 'Atendido'
+  | 'Cerrado';
 
-export type SeverityLevel = 'baja' | 'media' | 'alta' | 'critica';
+/** Prioridad del contrato API. */
+export type Prioridad = 'Baja' | 'Media' | 'Alta';
+
+/** @deprecated Usar Prioridad. */
+export type SeverityLevel = Prioridad;
 
 export interface Report {
   id: string;
@@ -36,7 +49,7 @@ export interface Report {
   title: string;
   description: string;
   status: ReportStatus;
-  severity: SeverityLevel;
+  prioridad: Prioridad;
   trustLevel: TrustLevel;
   location: string;
   coordinates: { lat: number; lng: number };
@@ -81,7 +94,7 @@ export interface Alert {
   id: string;
   title: string;
   description: string;
-  severity: SeverityLevel;
+  prioridad: Prioridad;
   location: string;
   createdAt: string;
   source: 'citizen' | 'satellite' | 'social_media' | 'official';

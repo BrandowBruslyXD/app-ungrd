@@ -5,7 +5,7 @@ import {
   COLOMBIAN_DEPARTMENTS,
   MUNICIPALITIES_BY_DEPT,
   mockCalamityDeclarations,
-} from '@/data/mockEdan';
+} from '@/mocks/mockEdan';
 
 interface Props {
   data: CensusWizardState;

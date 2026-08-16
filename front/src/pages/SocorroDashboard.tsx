@@ -20,7 +20,7 @@ import {
   mockIncidentLogs,
   mockHabitabilityAssessments,
   mockSocorroStats,
-} from '@/data/mockSocorro';
+} from '@/mocks/mockSocorro';
 import { EVENT_TYPE_LABELS, HABITABILITY_LABELS, SOCORRO_ENTITY_LABELS } from '@/types/edan';
 import type { Habitability } from '@/types/edan';
 

@@ -21,7 +21,7 @@ import {
   mockPersons,
   mockRescuerStats,
   mockCalamityDeclarations,
-} from '@/data/mockEdan';
+} from '@/mocks/mockEdan';
 import { EVENT_TYPE_LABELS } from '@/types/edan';
 
 export default function RescuerDashboard() {

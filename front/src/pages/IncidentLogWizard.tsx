@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { EDAN_EVENT_TYPES, EVENT_TYPE_LABELS } from '@/types/edan';
 import type { EdanEventType, IncidentStatus } from '@/types/edan';
-import { COLOMBIAN_DEPARTMENTS, MUNICIPALITIES_BY_DEPT } from '@/data/mockEdan';
+import { COLOMBIAN_DEPARTMENTS, MUNICIPALITIES_BY_DEPT } from '@/mocks/mockEdan';
 
 interface IncidentForm {
   eventType: EdanEventType | '';

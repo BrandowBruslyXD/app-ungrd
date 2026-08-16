@@ -1,18 +1,18 @@
-import type { ReportStatus, SeverityLevel } from '@/types';
+import type { ReportStatus, Prioridad } from '@/types';
 
 const statusLabels: Record<ReportStatus, string> = {
-  recibido: 'Recibido',
-  verificando: 'En verificación',
-  confirmado: 'Confirmado',
-  en_atencion: 'En atención',
-  resuelto: 'Resuelto',
+  Reportado: 'Reportado',
+  Verificado: 'Verificado',
+  Asignado: 'Asignado',
+  EnAtencion: 'En atención',
+  Atendido: 'Atendido',
+  Cerrado: 'Cerrado',
 };
 
-const severityLabels: Record<SeverityLevel, string> = {
-  baja: 'Baja',
-  media: 'Media',
-  alta: 'Alta',
-  critica: 'Crítica',
+const prioridadLabels: Record<Prioridad, string> = {
+  Baja: 'Baja',
+  Media: 'Media',
+  Alta: 'Alta',
 };
 
 export function StatusBadge({ status }: { status: ReportStatus }) {
@@ -23,10 +23,10 @@ export function StatusBadge({ status }: { status: ReportStatus }) {
   );
 }
 
-export function SeverityBadge({ severity }: { severity: SeverityLevel }) {
+export function SeverityBadge({ severity }: { severity: Prioridad }) {
   return (
     <span className={`badge severity-${severity}`}>
-      {severityLabels[severity]}
+      {prioridadLabels[severity]}
     </span>
   );
 }

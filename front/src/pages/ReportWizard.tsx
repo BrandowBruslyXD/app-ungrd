@@ -4,9 +4,6 @@ import {
   Droplets,
   Mountain,
   Flame,
-  Activity,
-  Wind,
-  Sun,
   AlertTriangle,
   Camera,
   MapPin,
@@ -25,13 +22,12 @@ import {
 import type { EmergencyType, CitizenReportType } from '@/types';
 
 const emergencyTypes: { type: EmergencyType; label: string; icon: typeof Droplets; color: string }[] = [
-  { type: 'inundacion', label: 'Inundación', icon: Droplets, color: 'border-ungrd-200 bg-ungrd-50 text-ungrd-700 hover:border-ungrd-400' },
-  { type: 'deslizamiento', label: 'Deslizamiento', icon: Mountain, color: 'border-amber-200 bg-amber-50 text-amber-700 hover:border-amber-400' },
-  { type: 'incendio', label: 'Incendio', icon: Flame, color: 'border-red-200 bg-red-50 text-red-700 hover:border-red-400' },
-  { type: 'sismo', label: 'Sismo', icon: Activity, color: 'border-gold-300 bg-gold-50 text-gold-800 hover:border-gold-500' },
-  { type: 'vendaval', label: 'Vendaval', icon: Wind, color: 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400' },
-  { type: 'sequia', label: 'Sequía', icon: Sun, color: 'border-orange-200 bg-orange-50 text-orange-700 hover:border-orange-400' },
-  { type: 'otro', label: 'Otro', icon: AlertTriangle, color: 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-400' },
+  { type: 'Inundacion', label: 'Inundación', icon: Droplets, color: 'border-ungrd-200 bg-ungrd-50 text-ungrd-700 hover:border-ungrd-400' },
+  { type: 'Deslizamiento', label: 'Deslizamiento', icon: Mountain, color: 'border-amber-200 bg-amber-50 text-amber-700 hover:border-amber-400' },
+  { type: 'Incendio', label: 'Incendio', icon: Flame, color: 'border-red-200 bg-red-50 text-red-700 hover:border-red-400' },
+  { type: 'ViaAfectada', label: 'Vía afectada', icon: MapPin, color: 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400' },
+  { type: 'ColapsoEstructural', label: 'Colapso estructural', icon: AlertTriangle, color: 'border-orange-200 bg-orange-50 text-orange-700 hover:border-orange-400' },
+  { type: 'Otro', label: 'Otro', icon: AlertTriangle, color: 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-400' },
 ];
 
 export default function ReportWizard() {
@@ -75,7 +71,7 @@ export default function ReportWizard() {
   const canProceed =
     (step === 0 && reportType !== null) ||
     (step === 1 && form.type) ||
-    (step === 2 && (isAfectado ? form.description.length >= 10 : form.description.length >= 10)) ||
+    (step === 2 && (isAfectado ? form.description.length >= 10 : form.severity !== '')) ||
     (step === 3 && (form.location || form.useGps)) ||
     (step === 4 && disclaimerAccepted);
 
@@ -299,11 +295,12 @@ export default function ReportWizard() {
             {isAfectado && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label htmlFor="contact-phone" className="block text-sm font-medium text-slate-700 mb-1.5">
                     <Phone className="mr-1 inline h-4 w-4" />
                     Teléfono de contacto
                   </label>
                   <input
+                    id="contact-phone"
                     type="tel"
                     value={form.contactPhone}
                     onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}

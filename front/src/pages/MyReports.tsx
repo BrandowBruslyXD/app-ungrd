@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin, Clock, Plus, Satellite, FileText, Eye, Home } from 'lucide-react';
-import { mockReports } from '@/data/mock';
+import { listMisReportes } from '@/api/reportes';
 import { StatusBadge, SeverityBadge } from '@/components/shared/StatusBadge';
 import EmergencyIcon from '@/components/shared/EmergencyIcon';
 import TrustBadge from '@/components/shared/TrustBadge';
@@ -14,6 +14,8 @@ function formatDate(iso: string): string {
 }
 
 export default function MyReports() {
+  const mockReports = listMisReportes();
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 lg:py-12 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
@@ -33,7 +35,7 @@ export default function MyReports() {
       <div className="grid grid-cols-3 gap-3 mb-8">
         {[
           { value: mockReports.length, label: 'Total', icon: FileText, color: 'text-ungrd-600 bg-ungrd-50' },
-          { value: mockReports.filter(r => r.status !== 'resuelto').length, label: 'Activos', icon: Clock, color: 'text-gold-700 bg-gold-50' },
+          { value: mockReports.filter(r => r.status !== 'Cerrado').length, label: 'Activos', icon: Clock, color: 'text-gold-700 bg-gold-50' },
           { value: mockReports.filter(r => r.satelliteVerified).length, label: 'Verificados', icon: Satellite, color: 'text-emerald-600 bg-emerald-50' },
         ].map(({ value, label, icon: Icon, color }) => (
           <div key={label} className="card p-4 text-center">
@@ -72,7 +74,7 @@ export default function MyReports() {
               </p>
               <div className="mt-1.5 flex flex-wrap items-center gap-2">
                 <StatusBadge status={report.status} />
-                <SeverityBadge severity={report.severity} />
+                <SeverityBadge severity={report.prioridad} />
                 <span className="flex items-center gap-1 text-xs text-slate-400">
                   <MapPin className="h-3 w-3" />
                   <span className="truncate max-w-[140px]">{report.location}</span>

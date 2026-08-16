@@ -10,7 +10,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useState } from 'react';
-import { mockReports } from '@/data/mock';
+import { getReporte } from '@/api/reportes';
 import { StatusBadge, SeverityBadge } from '@/components/shared/StatusBadge';
 import EmergencyIcon from '@/components/shared/EmergencyIcon';
 import Timeline from '@/components/shared/Timeline';
@@ -33,7 +33,7 @@ function formatCurrency(amount: number): string {
 export default function ReportDetail() {
   const { id } = useParams<{ id: string }>();
   const [copied, setCopied] = useState(false);
-  const report = mockReports.find((r) => r.id === id);
+  const report = id ? getReporte(id) : undefined;
 
   if (!report) {
     return (
@@ -86,7 +86,7 @@ export default function ReportDetail() {
                 {copied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
               </button>
               <StatusBadge status={report.status} />
-              <SeverityBadge severity={report.severity} />
+              <SeverityBadge severity={report.prioridad} />
             </div>
             <h1 className="mt-2 text-xl font-bold text-slate-800 lg:text-2xl">
               {report.title}

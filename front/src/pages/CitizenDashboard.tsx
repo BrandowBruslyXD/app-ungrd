@@ -10,7 +10,7 @@ import {
   Satellite,
   TrendingUp,
 } from 'lucide-react';
-import { mockReports, mockAlerts } from '@/data/mock';
+import { listAlertas, listReportes } from '@/api/reportes';
 import { SeverityBadge, StatusBadge } from '@/components/shared/StatusBadge';
 import EmergencyIcon from '@/components/shared/EmergencyIcon';
 
@@ -39,7 +39,7 @@ const quickActions = [
   {
     to: '/alertas',
     label: 'Alertas activas',
-    description: `${mockAlerts.filter((a) => a.active).length} alertas en tu zona`,
+    description: 'Alertas en tu zona',
     icon: Bell,
     color: 'bg-gold-500 shadow-gold-200 text-ungrd-900',
   },
@@ -55,7 +55,9 @@ function formatTimeAgo(iso: string): string {
 }
 
 export default function CitizenDashboard() {
-  const activeReports = mockReports.filter((r) => r.status !== 'resuelto');
+  const mockReports = listReportes();
+  const mockAlerts = listAlertas();
+  const activeReports = mockReports.filter((r) => r.status !== 'Cerrado');
 
   return (
     <div className="animate-fade-in">
@@ -112,7 +114,7 @@ export default function CitizenDashboard() {
         </section>
 
         {/* Active Alerts Banner */}
-        {mockAlerts.some((a) => a.severity === 'critica' && a.active) && (
+        {mockAlerts.some((a) => a.prioridad === 'Alta' && a.active) && (
           <Link
             to="/alertas"
             className="mt-4 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-3 transition-colors hover:bg-red-100 sm:mt-6 sm:p-4"
@@ -123,7 +125,7 @@ export default function CitizenDashboard() {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-red-800">Alerta Crítica Activa</p>
               <p className="truncate text-xs text-red-600 sm:text-sm">
-                {mockAlerts.find((a) => a.severity === 'critica')?.title}
+                {mockAlerts.find((a) => a.prioridad === 'Alta')?.title}
               </p>
             </div>
             <ChevronRight className="h-5 w-5 shrink-0 text-red-400" />
@@ -175,7 +177,7 @@ export default function CitizenDashboard() {
                     </p>
                     <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
                       <StatusBadge status={report.status} />
-                      <SeverityBadge severity={report.severity} />
+                      <SeverityBadge severity={report.prioridad} />
                     </div>
                   </div>
                   <span className="shrink-0 text-[11px] text-slate-400 mt-0.5">

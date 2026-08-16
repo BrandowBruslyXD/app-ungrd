@@ -65,16 +65,16 @@
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
   }
 
-  .severity-baja { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
-  .severity-media { @apply bg-amber-50 text-amber-700 border border-amber-200; }
-  .severity-alta { @apply bg-orange-50 text-orange-700 border border-orange-200; }
-  .severity-critica { @apply bg-red-50 text-red-700 border border-red-200; }
+  .severity-Baja { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
+  .severity-Media { @apply bg-amber-50 text-amber-700 border border-amber-200; }
+  .severity-Alta { @apply bg-red-50 text-red-700 border border-red-200; }
 
-  .status-recibido { @apply bg-slate-100 text-slate-600; }
-  .status-verificando { @apply bg-ungrd-50 text-ungrd-700; }
-  .status-confirmado { @apply bg-gold-50 text-gold-800; }
-  .status-en_atencion { @apply bg-ungrd-100 text-ungrd-700; }
-  .status-resuelto { @apply bg-emerald-50 text-emerald-700; }
+  .status-Reportado { @apply bg-slate-100 text-slate-600; }
+  .status-Verificado { @apply bg-ungrd-50 text-ungrd-700; }
+  .status-Asignado { @apply bg-gold-50 text-gold-800; }
+  .status-EnAtencion { @apply bg-ungrd-100 text-ungrd-700; }
+  .status-Atendido { @apply bg-blue-50 text-blue-700; }
+  .status-Cerrado { @apply bg-emerald-50 text-emerald-700; }
 }
 
 @layer utilities {
