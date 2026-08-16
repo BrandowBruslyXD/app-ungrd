@@ -1,0 +1,15 @@
+{
+  "name": "wabots-deepseek-daemon",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Daemon de sesión DeepSeek-web: refresca el bearer headless por perfil y lo escribe cifrado en la BD compartida de wabots.",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "pg": "^8.13.1",
+    "playwright": "1.49.1"
+  }
+}

@@ -1,0 +1,38 @@
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Builds
+dist/
+**/dist/
+build/
+**/build/
+**/tsconfig.tsbuildinfo
+
+# Entorno y secretos — NUNCA al repo
+.env
+.env.*
+**/.env
+**/.env.*
+# …pero los .example sí se versionan
+!**/*.example
+
+# Claves / credenciales sueltas
+*.pem
+*-service-account*.json
+**/sa.json
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Almacenamiento local
+storage/
+uploads/
+
+# Editor / SO
+.DS_Store
+.vscode/
+.idea/
+Thumbs.db
