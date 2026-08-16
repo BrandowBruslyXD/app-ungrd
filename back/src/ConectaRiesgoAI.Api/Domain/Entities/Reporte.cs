@@ -12,11 +12,25 @@ public class Reporte
 
     public TipoReporte Tipo { get; set; }
     public string Descripcion { get; set; } = null!;
-    public double Latitud { get; set; }
-    public double Longitud { get; set; }
+
+    /// <summary>Coordenadas del GPS. Nulas cuando el reporte entra por WhatsApp: ahí solo hay <see cref="UbicacionTexto"/>.</summary>
+    public double? Latitud { get; set; }
+    public double? Longitud { get; set; }
+
     public string? Direccion { get; set; }
     public string Municipio { get; set; } = null!;
     public string? UrlFoto { get; set; }
+
+    /// <summary>Ubicación en texto libre, tal como la escribe el ciudadano por WhatsApp (p. ej. "Soacha, Villa Mercedes, frente a la cancha").</summary>
+    public string? UbicacionTexto { get; set; }
+
+    /// <summary>Distingue un aviso sobre un evento de una afectación propia del ciudadano.</summary>
+    public ClaseReporte Clase { get; set; } = ClaseReporte.AfectacionPropia;
+
+    /// <summary>Nivel de respaldo del dato: no es lo mismo autorreportado que censado.</summary>
+    public ConfianzaReporte Confianza { get; set; } = ConfianzaReporte.Autorreportado;
+
+    public CanalOrigen Canal { get; set; } = CanalOrigen.Web;
 
     public EstadoReporte Estado { get; set; } = EstadoReporte.Reportado;
     public Prioridad Prioridad { get; set; } = Prioridad.Media;
