@@ -22,7 +22,8 @@ public class CrearReporteIngestaHandler(AppDbContext db, ILogger<CrearReporteIng
         CrearReporteIngestaCommand command, CancellationToken cancellationToken)
     {
         string telefono = command.Telefono.Trim();
-        Usuario usuario = await ObtenerOCrearUsuario(telefono, command.NombreContacto, command.UbicacionTexto, cancellationToken);
+        CanalOrigen canal = command.Canal ?? CanalOrigen.WhatsApp;
+        Usuario usuario = await ObtenerOCrearUsuario(telefono, command.NombreContacto, command.UbicacionTexto, canal, cancellationToken);
 
         if (!MapeoClaseReporte.TryMapear(command.Clase, out ClaseReporte clase))
         {
@@ -48,14 +49,18 @@ public class CrearReporteIngestaHandler(AppDbContext db, ILogger<CrearReporteIng
                 UrlFoto = command.UrlFoto,
                 Clase = clase,
                 Confianza = ConfianzaReporte.Autorreportado,
-                Canal = CanalOrigen.WhatsApp,
+                Canal = canal,
                 IdentificadorCanal = IdentificadorCanalReporte.ParaTelefono(telefono),
                 UsuarioId = usuario.Id
             };
             reporte.Cronologia.Add(new EventoCronologia
             {
                 Estado = EstadoReporte.Reportado,
-                Nota = "Reporte recibido por WhatsApp",
+                // La nota la lee el ciudadano en su cronología: decirle «recibido por
+                // WhatsApp» cuando llamó por teléfono le hace dudar de si su reporte quedó.
+                Nota = canal == CanalOrigen.Telefono
+                    ? "Reporte recibido por llamada telefónica"
+                    : "Reporte recibido por WhatsApp",
                 Responsable = "Sistema"
             });
 
@@ -80,7 +85,8 @@ public class CrearReporteIngestaHandler(AppDbContext db, ILogger<CrearReporteIng
     }
 
     private async Task<Usuario> ObtenerOCrearUsuario(
-        string telefono, string? nombreContacto, string? ubicacionTexto, CancellationToken cancellationToken)
+        string telefono, string? nombreContacto, string? ubicacionTexto, CanalOrigen canal,
+        CancellationToken cancellationToken)
     {
         Usuario? usuario = await db.Usuarios.SingleOrDefaultAsync(u => u.Telefono == telefono, cancellationToken);
         if (usuario is not null)
@@ -99,7 +105,7 @@ public class CrearReporteIngestaHandler(AppDbContext db, ILogger<CrearReporteIng
             Rol = Rol.Ciudadano,
             Municipio = DerivarMunicipio(ubicacionTexto),
             Telefono = telefono,
-            OrigenRegistro = CanalOrigen.WhatsApp
+            OrigenRegistro = canal
         };
         db.Usuarios.Add(usuario);
 

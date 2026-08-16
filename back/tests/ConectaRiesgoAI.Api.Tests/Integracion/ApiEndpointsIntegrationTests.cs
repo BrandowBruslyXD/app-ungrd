@@ -270,8 +270,18 @@ public class ApiEndpointsIntegrationTests : IClassFixture<ConectaRiesgoAiApiFact
     }
 
     [Fact]
-    public async Task Evidencias_SubirConToken_Responde200CuandoAzureNoEstaDisponible()
+    public async Task Evidencias_SubirConToken_Responde200EsteONoDisponibleElAlmacenamiento()
     {
+        /*
+         * Antes esta prueba afirmaba que `subida` era false, dando por hecho que Azure no
+         * estaba disponible. Eso la ataba al entorno: en una maquina con Azurite corriendo
+         * la subida si funciona y la prueba caia, aunque el codigo estuviera perfecto.
+         *
+         * Lo que de verdad hay que sostener es que subir una evidencia nunca tumba la
+         * peticion: responde 200 y dice en `subida` si el archivo quedo guardado o no. El
+         * ciudadano que reporta con mala señal no puede perder el reporte entero porque el
+         * almacenamiento este caido.
+         */
         string token = await RegistrarYLoginAsync();
         using MultipartFormDataContent contenido = new();
         ByteArrayContent bytes = new([0xFF, 0xD8, 0xFF]);
@@ -280,9 +290,21 @@ public class ApiEndpointsIntegrationTests : IClassFixture<ConectaRiesgoAiApiFact
         contenido.Add(new StringContent("DanoMaterial"), "tipo");
 
         HttpResponseMessage respuesta = await _cliente.SendAsync(ConToken(HttpMethod.Post, "/api/evidencias", token, contenido));
-        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+
         JsonElement cuerpo = await respuesta.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.False(cuerpo.GetProperty("subida").GetBoolean());
+        bool subida = cuerpo.GetProperty("subida").GetBoolean();
+
+        // Nunca falla la peticion; lo que cambia es el codigo y si trae URL.
+        if (subida)
+        {
+            Assert.Equal(HttpStatusCode.Created, respuesta.StatusCode);
+            Assert.False(string.IsNullOrWhiteSpace(cuerpo.GetProperty("urlFoto").GetString()));
+        }
+        else
+        {
+            Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+            Assert.Equal(JsonValueKind.Null, cuerpo.GetProperty("urlFoto").ValueKind);
+        }
     }
 
     [Fact]

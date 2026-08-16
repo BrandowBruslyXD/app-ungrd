@@ -5,6 +5,7 @@ import Header from '@/components/layout/Header';
 import PieDePagina from '@/components/layout/PieDePagina';
 import FondoDePagina from '@/components/layout/FondoDePagina';
 import { RUTA_POR_ROL } from '@/lib/rutasPorRol';
+import LimiteDeError from '@/components/layout/LimiteDeError';
 import { fondoDeRuta } from '@/lib/fotos';
 import type { DemoView } from '@/types';
 
@@ -86,6 +87,9 @@ function Estructura({ role, onRoleChange }: EstructuraProps) {
             : 'mx-auto w-full max-w-6xl flex-1 bg-papel shadow-[0_0_40px_rgba(4,25,60,0.10)] lg:my-6 lg:rounded-ficha lg:border lg:border-papel-borde'
         }
       >
+        {/* Dentro del <main> a propósito: así un fallo deja la cabecera y el
+            menú en pie, y la persona puede irse a otra pantalla. */}
+        <LimiteDeError>
         <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/" element={<Landing onRoleChange={onRoleChange} />} />
@@ -123,6 +127,7 @@ function Estructura({ role, onRoleChange }: EstructuraProps) {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
+        </LimiteDeError>
       </main>
       <PieDePagina completo={esPublica} />
     </div>

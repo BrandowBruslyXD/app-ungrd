@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, MapPin, Plus, Eye, Home, Inbox, ClipboardList } from 'lucide-react';
-import { listMisReportes } from '@/api/reportes';
+import { useReportes } from '@/hooks/useReportesApi';
+import { Cargando, ErrorAlCargar, AvisoSinConexion } from '@/components/ui/EstadoDeCarga';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import EmergencyIcon from '@/components/shared/EmergencyIcon';
 import TrustBadge from '@/components/shared/TrustBadge';
@@ -33,7 +34,7 @@ function formatearFecha(iso: string): string {
  */
 export default function MyReports() {
   const { t } = useTranslation();
-  const reportes = listMisReportes();
+  const { reportes, cargando, error, sinConexion, reintentar } = useReportes();
 
   useTituloPagina(t('meta.myReports.title'), t('meta.myReports.description'));
 
@@ -54,7 +55,17 @@ export default function MyReports() {
         </BandaPortada>
       </div>
 
-      {reportes.length === 0 ? (
+      {sinConexion && <AvisoSinConexion />}
+
+      {error && !reportes.length && (
+        <div className="mb-6">
+          <ErrorAlCargar mensaje={error} onReintentar={reintentar} />
+        </div>
+      )}
+
+      {cargando ? (
+        <Cargando filas={3} etiqueta="Cargando tus reportes" />
+      ) : reportes.length === 0 ? (
         <div className="ficha p-8 text-center">
           <Inbox className="mx-auto h-12 w-12 text-tinta-300" aria-hidden="true" />
           <p className="mt-4 text-lg font-bold">{t('myReports.emptyTitle')}</p>

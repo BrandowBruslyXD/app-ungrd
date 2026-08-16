@@ -38,9 +38,12 @@ public class ResumenEstadisticasHandlerTests
 
         var resultado = await handler.Handle(QuerySinFiltros(), CancellationToken.None);
 
-        Assert.Equal(6, resultado.PorTipo.Count);
+        // Se cuenta contra el enum y no contra un numero escrito a mano: cuando entraron
+        // Sismo, Vendaval y AvenidaTorrencial, el 6 fijo dejo estas pruebas en rojo sin que
+        // nada estuviera mal en el codigo.
+        Assert.Equal(Enum.GetValues<TipoReporte>().Length, resultado.PorTipo.Count);
         Assert.All(Enum.GetValues<TipoReporte>(), tipo => Assert.Equal(0, resultado.PorTipo[tipo.ToString()]));
-        Assert.Equal(3, resultado.PorCanal.Count);
+        Assert.Equal(Enum.GetValues<CanalOrigen>().Length, resultado.PorCanal.Count);
         Assert.All(Enum.GetValues<CanalOrigen>(), canal => Assert.Equal(0, resultado.PorCanal[canal.ToString()]));
         Assert.Equal(0, resultado.TotalHoy);
         Assert.Equal(0, resultado.Atendidos);
@@ -147,7 +150,7 @@ public class ResumenEstadisticasHandlerTests
     }
 
     [Fact]
-    public async Task Handle_PorTipoIncluyeLasSeisLlaves_AunqueAlgunasValganCero()
+    public async Task Handle_PorTipoIncluyeTodosLosTipos_AunqueAlgunosValganCero()
     {
         using var contexto = AppDbContextPruebas.Crear();
         contexto.Reportes.Add(
@@ -157,7 +160,10 @@ public class ResumenEstadisticasHandlerTests
 
         var resultado = await handler.Handle(QuerySinFiltros(), CancellationToken.None);
 
-        Assert.Equal(6, resultado.PorTipo.Count);
+        // El tablero pinta una barra por tipo: si el resumen omitiera los que estan en cero,
+        // la grafica cambiaria de forma segun lo que haya pasado ese dia.
+        Assert.Equal(Enum.GetValues<TipoReporte>().Length, resultado.PorTipo.Count);
+        Assert.All(Enum.GetValues<TipoReporte>(), tipo => Assert.True(resultado.PorTipo.ContainsKey(tipo.ToString())));
         Assert.Equal(1, resultado.PorTipo[TipoReporte.Incendio.ToString()]);
         Assert.Equal(0, resultado.PorTipo[TipoReporte.Inundacion.ToString()]);
         Assert.Equal(0, resultado.PorTipo[TipoReporte.Deslizamiento.ToString()]);

@@ -10,6 +10,8 @@ import { apiFetch, ErrorApi } from './client';
  */
 
 function respuesta(status: number, cuerpo?: unknown, opciones?: { textoPlano?: boolean }) {
+  // Solo se implementa lo que `apiFetch` toca. El doble pasa por `unknown`
+  // porque `Response` tiene una docena de miembros que aquí no hacen falta.
   return {
     ok: status >= 200 && status < 300,
     status,
@@ -17,7 +19,7 @@ function respuesta(status: number, cuerpo?: unknown, opciones?: { textoPlano?: b
       if (opciones?.textoPlano) throw new SyntaxError('Unexpected token < in JSON');
       return cuerpo;
     },
-  } as Response;
+  } as unknown as Response;
 }
 
 describe('apiFetch', () => {
@@ -44,7 +46,7 @@ describe('apiFetch', () => {
         json: async () => {
           throw new SyntaxError('Unexpected end of JSON input');
         },
-      } as Response;
+      } as unknown as Response;
       vi.mocked(fetch).mockResolvedValue(sinCuerpo);
 
       await expect(apiFetch('/reportes/RPT-1/estado')).resolves.toBeUndefined();
