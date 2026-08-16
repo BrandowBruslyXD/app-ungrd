@@ -13,7 +13,7 @@ La configuracion vive en [`.coderabbit.yaml`](../.coderabbit.yaml) en la raiz de
 
 | Cosa | Estado |
 |---|---|
-| Repo | `BrandowBruslyXD/app-ungrd` (**publico**, 0 estrellas) |
+| Repo | `jasonfabian8/app-ungrd` (**publico**, 0 estrellas) |
 | Costo | **Gratis** para repos publicos (ver seccion 2) |
 | Idioma de las revisiones | Espanol |
 | Perfil | `quiet` (solo lo importante) |
@@ -102,7 +102,7 @@ de secretos) estan cubiertas.
 ## 3. EL PASO MANUAL: instalar la GitHub App (solo el dueno)
 
 **Nada de esto funciona hasta que alguien con permisos de owner sobre
-`BrandowBruslyXD/app-ungrd` instale la GitHub App.** Un archivo `.coderabbit.yaml` en el
+`jasonfabian8/app-ungrd` instale la GitHub App.** Un archivo `.coderabbit.yaml` en el
 repo no activa nada por si solo. Segun la documentacion, hacen falta *"owner-level
 permissions for at least one repository"* u *"organization owner permissions"*.
 
@@ -111,10 +111,10 @@ Pasos exactos (flujo oficial, https://docs.coderabbit.ai/platforms/github-com):
 1. Entrar a **https://app.coderabbit.ai/login** y elegir **"Login with GitHub"**.
    (Alternativa equivalente: abrir **https://github.com/apps/coderabbitai** y pulsar
    *Install* / *Configure*; es la misma app oficial, publicada por `@coderabbitai`).
-2. Autenticarse en GitHub como **BrandowBruslyXD**.
+2. Autenticarse en GitHub como **jasonfabian8**.
 3. Autorizar los permisos iniciales de lectura que pide CodeRabbit (organizaciones y
    equipos asociados a la cuenta, y direcciones de correo).
-4. Elegir la **cuenta personal `BrandowBruslyXD`** como destino de la instalacion
+4. Elegir la **cuenta personal `jasonfabian8`** como destino de la instalacion
    (no una organizacion).
 5. En "Repository access", seleccionar **"Only select repositories"** y marcar
    **`app-ungrd`**. Recomendado frente a "All repositories": limita el alcance del token.

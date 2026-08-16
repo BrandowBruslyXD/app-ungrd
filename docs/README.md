@@ -1,6 +1,6 @@
 # Documentación — ConectaRiesgo
 
-Doce documentos, cada uno responde una pregunta distinta.
+Catorce documentos, cada uno responde una pregunta distinta.
 
 | Documento | Responde | Quién lo usa |
 |:---|:---|:---|
@@ -16,6 +16,8 @@ Doce documentos, cada uno responde una pregunta distinta.
 | **[CONTRATO-API.md](CONTRATO-API.md)** | ¿Qué endpoints hay y qué devuelven? | Backend y frontend |
 | **[REPARTO-SECTORIAL.md](REPARTO-SECTORIAL.md)** | ¿Cómo llega a cada ministerio lo que le toca? | Quien construya el panel de la UNGRD |
 | **[EXPERIENCIAS-FRONTEND.md](EXPERIENCIAS-FRONTEND.md)** | ¿Una app o dos? ¿Dónde vive cada pantalla y cada rol? | **Frontend — antes de mover un archivo** |
+| **[DATOS-SATELITALES.md](DATOS-SATELITALES.md)** | ¿Qué datos satelitales se pueden consumir de verdad, y qué no prometer? | Quien construya o explique la verificación satelital |
+| **[GESTION-RIESGO-DESASTRES.md](GESTION-RIESGO-DESASTRES.md)** | Transcripción de las entrevistas con la UNGRD: cómo funciona hoy la gestión de riesgo en Colombia | Contexto para `REPARTO-SECTORIAL.md` y el agente de WhatsApp |
 
 Y sobre cómo trabajamos, todo está en **[`CLAUDE.md`](../CLAUDE.md)** en la raíz: convenciones de
 código, arquitectura del backend, reglas de seguridad y flujo de Pull Requests.
@@ -36,7 +38,7 @@ Sirven como contexto, no como especificación.
 
 1. **[FASES.md](FASES.md)** — para entender qué estamos construyendo y en qué orden
 2. **[CONTROL.md](CONTROL.md)** — para saber qué está trabado ahora mismo
-3. Tu tarea → [issues del repositorio](https://github.com/BrandowBruslyXD/app-ungrd/issues), filtra por tu nombre
+3. Tu tarea → [issues del repositorio](https://github.com/jasonfabian8/app-ungrd/issues), filtra por tu nombre
 4. **[CONTRATO-API.md](CONTRATO-API.md)** si tocas backend o frontend
 
 ---
