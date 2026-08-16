@@ -12,7 +12,17 @@ import { defineConfig, devices } from '@playwright/test';
  * datos de verdad. Si no está, las pruebas fallan al primer `request.get`, y eso
  * es correcto — significa que la integración no está en pie.
  */
+// Puerto propio para las pruebas: así no pelea con el `npm run dev` que alguien
+// tenga abierto en el 5173 mientras trabaja.
 const PUERTO = Number(process.env.PUERTO_WEB ?? 5199);
+
+/*
+ * El mismo backend que consultan las pruebas. Se le pasa a Vite para que la
+ * aplicación y las comprobaciones miren siempre a la misma API: si cada una
+ * apuntara a un sitio, las pruebas dirían que los datos no llegan cuando en
+ * realidad están en otra base.
+ */
+const API = process.env.API_URL ?? 'http://localhost:5000';
 
 export default defineConfig({
   testDir: './e2e',
@@ -49,5 +59,6 @@ export default defineConfig({
     url: `http://localhost:${PUERTO}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: { VITE_API_BASE_URL: `${API}/api` },
   },
 });

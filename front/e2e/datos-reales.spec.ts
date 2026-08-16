@@ -18,7 +18,13 @@ import { test, expect, type Page } from '@playwright/test';
  *   node back/scripts/sembrar-demo.mjs
  */
 
-const API = process.env.API_URL ?? 'http://localhost:5001';
+/*
+ * El mismo puerto que usa el backend al arrancar (`launchSettings.json`) y que
+ * dan por supuesto el contrato de API y el cliente del frontend. Si se levanta en
+ * otro —por ejemplo para no chocar con una instancia ya abierta— se pasa por
+ * `API_URL`, igual que al sembrador con `API`.
+ */
+const API = process.env.API_URL ?? 'http://localhost:5000';
 
 interface ReporteApi {
   codigo: string;

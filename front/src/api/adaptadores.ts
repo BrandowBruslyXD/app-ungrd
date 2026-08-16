@@ -119,7 +119,15 @@ export function aReporte(api: ReporteApi): Report {
   return {
     id: api.codigo,
     type: tipo,
-    // El listado no distingue quién reportó; el detalle tampoco lo expone aún.
+    /*
+     * El backend sí lo sabe —`Clase` distingue afectación propia de aviso sobre
+     * un evento— pero todavía no lo expone en la respuesta. Mientras tanto se
+     * asume «testigo», que es lo prudente: dar por afectado a quien solo dio
+     * aviso le mostraría la advertencia del censo de damnificados sin que le
+     * corresponda.
+     *
+     * Cuando el contrato exponga `clase`, se mapea aquí y en ningún otro sitio.
+     */
     reportType: 'testigo',
     title: comoTitulo(api.descripcion, tipo),
     description: api.descripcion,
