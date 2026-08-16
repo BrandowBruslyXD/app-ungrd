@@ -1,0 +1,130 @@
+using ConectaRiesgoAI.Api.Domain.Entities;
+using ConectaRiesgoAI.Api.Domain.Enums;
+using ConectaRiesgoAI.Api.Features.Reportes.ObtenerReporte;
+using ConectaRiesgoAI.Api.Tests.Persistence;
+
+namespace ConectaRiesgoAI.Api.Tests.Features.Reportes;
+
+public class ObtenerReporteHandlerTests
+{
+    private static Usuario NuevoUsuario(int id, string nombre) => new()
+    {
+        Id = id,
+        Nombre = nombre,
+        Email = $"usuario{id}@conectariesgoai.demo",
+        PasswordHash = "hash",
+        Rol = Rol.Ciudadano,
+        Municipio = "Bogotá"
+    };
+
+    private static Reporte NuevoReporte(string codigo, int usuarioId) => new()
+    {
+        Codigo = codigo,
+        Tipo = TipoReporte.Inundacion,
+        Descripcion = "Descripción de prueba",
+        Municipio = "Bogotá",
+        Latitud = 4.71,
+        Longitud = -74.07,
+        UsuarioId = usuarioId
+    };
+
+    [Fact]
+    public async Task Handle_ReporteExistente_DevuelveCronologiaOrdenadaPorFecha()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Usuarios.Add(NuevoUsuario(1, "Ana Ciudadana"));
+        var reporte = NuevoReporte("RPT-2026-08-15-0001", 1);
+        reporte.Cronologia.Add(new EventoCronologia
+        {
+            Estado = EstadoReporte.Verificado,
+            Nota = "Confirmado",
+            Responsable = "Sistema",
+            Fecha = new DateTime(2026, 8, 15, 15, 0, 0, DateTimeKind.Utc)
+        });
+        reporte.Cronologia.Add(new EventoCronologia
+        {
+            Estado = EstadoReporte.Reportado,
+            Nota = "Reporte recibido",
+            Responsable = "Sistema",
+            Fecha = new DateTime(2026, 8, 15, 14, 0, 0, DateTimeKind.Utc)
+        });
+        contexto.Reportes.Add(reporte);
+        await contexto.SaveChangesAsync();
+        var handler = new ObtenerReporteHandler(contexto);
+
+        var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0001"), CancellationToken.None);
+
+        Assert.Equal(
+            [EstadoReporte.Reportado, EstadoReporte.Verificado],
+            respuesta.Cronologia.Select(e => e.Estado));
+    }
+
+    [Fact]
+    public async Task Handle_CodigoInexistente_LanzaKeyNotFoundException()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        var handler = new ObtenerReporteHandler(contexto);
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(
+            () => handler.Handle(new ObtenerReporteQuery("RPT-NO-EXISTE"), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Handle_UsuarioConNombreYApellido_AbreviaElApellidoParaProtegerLaPrivacidad()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Usuarios.Add(NuevoUsuario(1, "María Rodríguez"));
+        contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0002", 1));
+        await contexto.SaveChangesAsync();
+        var handler = new ObtenerReporteHandler(contexto);
+
+        var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0002"), CancellationToken.None);
+
+        Assert.Equal("María R.", respuesta.ReportadoPor);
+    }
+
+    [Fact]
+    public async Task Handle_SinVerificacionSatelital_DevuelveNullYTransparenciaVacia()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Usuarios.Add(NuevoUsuario(1, "Ana Ciudadana"));
+        contexto.Reportes.Add(NuevoReporte("RPT-2026-08-15-0003", 1));
+        await contexto.SaveChangesAsync();
+        var handler = new ObtenerReporteHandler(contexto);
+
+        var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0003"), CancellationToken.None);
+
+        Assert.Null(respuesta.VerificacionSatelital);
+        Assert.Empty(respuesta.Transparencia);
+    }
+
+    [Fact]
+    public async Task Handle_ConVariasVerificaciones_DevuelveLaMasReciente()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Usuarios.Add(NuevoUsuario(1, "Ana Ciudadana"));
+        var reporte = NuevoReporte("RPT-2026-08-15-0004", 1);
+        reporte.VerificacionesSatelitales.Add(new VerificacionSatelital
+        {
+            Fuente = "NASA FIRMS",
+            Confirmado = false,
+            Detalle = "Antigua",
+            ConsultadoEn = new DateTime(2026, 8, 15, 10, 0, 0, DateTimeKind.Utc)
+        });
+        reporte.VerificacionesSatelitales.Add(new VerificacionSatelital
+        {
+            Fuente = "NASA FIRMS",
+            Confirmado = true,
+            Detalle = "Reciente",
+            ConsultadoEn = new DateTime(2026, 8, 15, 12, 0, 0, DateTimeKind.Utc)
+        });
+        contexto.Reportes.Add(reporte);
+        await contexto.SaveChangesAsync();
+        var handler = new ObtenerReporteHandler(contexto);
+
+        var respuesta = await handler.Handle(new ObtenerReporteQuery("RPT-2026-08-15-0004"), CancellationToken.None);
+
+        Assert.NotNull(respuesta.VerificacionSatelital);
+        Assert.Equal("Reciente", respuesta.VerificacionSatelital!.Detalle);
+    }
+}
