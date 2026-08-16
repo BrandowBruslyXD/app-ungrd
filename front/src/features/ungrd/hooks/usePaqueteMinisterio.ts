@@ -10,7 +10,7 @@ import {
   type DesgloseConfianza,
   type ResumenMunicipio,
 } from '@/lib/sectorial';
-import { mockDanos, mockEvento, paquetePorSector } from '@/mocks/mockSectorial';
+import { danosDelEvento, eventoPorCodigo, paquetePorSector } from '@/mocks/mockSectorial';
 import { NIVELES_DANO } from '@/types/sectorial';
 import type {
   DanoSectorizado,
@@ -61,13 +61,43 @@ export interface EstadoEnvio {
   aprobadoEn?: string;
 }
 
+/**
+ * En qué punto de los tres pasos —generar, descargar, enviar— va el paquete.
+ *
+ * Los dos primeros pasos son estado de esta sesión y no del dato sembrado: son
+ * lo que **este** funcionario lleva hecho delante de la pantalla.
+ */
+export interface EstadoInforme {
+  /** ISO-8601 en UTC del momento en que se armó el documento, o `null`. */
+  generadoEn: string | null;
+  /** Quién lo generó. Va impreso en el membrete: un documento sin autor no se firma. */
+  generadoPor: string | null;
+  /** ISO-8601 en UTC de cuándo se abrió el diálogo de impresión, o `null`. */
+  pdfAbiertoEn: string | null;
+}
+
 /** Lo que devuelve el hook. `datos` es `null` cuando el sector de la URL no existe. */
 export interface UsoPaqueteMinisterio {
   datos: DatosPaquete | null;
   envio: EstadoEnvio | null;
+  informe: EstadoInforme;
+  /** Fija la fecha y el responsable del documento. Sin esto no hay nada que imprimir. */
+  generarInforme: (generadoPor: string) => void;
   /** Firma humana y registro del envío simulado. No manda ningún correo. */
   aprobarYEnviar: (firmadoPor: string) => void;
   descargarCsv: () => void;
+  /** Abre el diálogo de impresión del navegador, de donde sale el PDF. */
+  descargarPdf: () => void;
+}
+
+/** Ningún paso dado: es también lo que se ve cuando el sector de la URL no existe. */
+const INFORME_VACIO: EstadoInforme = { generadoEn: null, generadoPor: null, pdfAbiertoEn: null };
+
+interface InformeLocal extends EstadoInforme {
+  /** De qué paquete es el avance. Abrir otro no hereda el del anterior. */
+  paqueteId: string;
+  generadoEn: string;
+  generadoPor: string;
 }
 
 /*
@@ -144,9 +174,33 @@ export function armarNecesidades(danos: readonly DanoSectorizado[]): FilaNecesid
   return filas;
 }
 
-/** El sector viene de la URL: es texto libre hasta que se compruebe. */
-function esSectorConPaquete(codigo: string | undefined): PaqueteMinisterio | undefined {
-  return codigo === undefined ? undefined : paquetePorSector(codigo);
+/** Lo que la URL identifica: un desastre y, dentro de él, el paquete de un sector. */
+interface Resuelto {
+  evento: Evento;
+  paquete: PaqueteMinisterio;
+}
+
+/**
+ * Resuelve los dos códigos de la URL.
+ *
+ * Los dos son texto libre hasta que se comprueben, y el sector no se busca
+ * suelto: se busca **dentro** del desastre. Un mismo ministerio tiene un
+ * paquete distinto en cada emergencia, y confundirlos remitiría a la entidad
+ * los daños de otro evento.
+ */
+function resolver(
+  codigoEvento: string | undefined,
+  codigoSector: string | undefined,
+): Resuelto | undefined {
+  if (codigoEvento === undefined || codigoSector === undefined) return undefined;
+
+  const evento = eventoPorCodigo(codigoEvento);
+  if (evento === undefined) return undefined;
+
+  const paquete = paquetePorSector(codigoSector, evento.id);
+  if (paquete === undefined) return undefined;
+
+  return { evento, paquete };
 }
 
 /**
@@ -158,26 +212,35 @@ function esSectorConPaquete(codigo: string | undefined): PaqueteMinisterio | und
  * mientras pinta es un componente donde nadie ve el error hasta que el correo
  * ya salió.
  */
-export function usePaqueteMinisterio(codigoSector: string | undefined): UsoPaqueteMinisterio {
-  const paquete = useMemo(() => esSectorConPaquete(codigoSector), [codigoSector]);
+export function usePaqueteMinisterio(
+  codigoEvento: string | undefined,
+  codigoSector: string | undefined,
+): UsoPaqueteMinisterio {
+  const resuelto = useMemo(
+    () => resolver(codigoEvento, codigoSector),
+    [codigoEvento, codigoSector],
+  );
+  const paquete = resuelto?.paquete;
 
   /*
    * La aprobación no muta los datos sembrados: se guarda como una firma
    * separada y la pantalla la superpone. Mutar el arreglo importado dejaría el
    * panel de al lado mostrando un envío que esta sesión inventó, y al recargar
-   * desaparecería sin dejar rastro. Se guarda con su sector para que abrir otro
-   * paquete no herede la firma del anterior.
+   * desaparecería sin dejar rastro. Se guarda con el identificador del paquete
+   * —que es único por evento y sector— para que abrir otro no herede la firma
+   * del anterior.
    */
-  const [firmaLocal, setFirmaLocal] = useState<{ sector: string; por: string; en: string } | null>(
-    null,
-  );
+  const [firmaLocal, setFirmaLocal] = useState<{
+    paqueteId: string;
+    por: string;
+    en: string;
+  } | null>(null);
 
   const datos = useMemo<DatosPaquete | null>(() => {
-    if (paquete === undefined) return null;
+    if (resuelto === undefined) return null;
 
-    const danos = mockDanos.filter(
-      (dano) => dano.eventoId === paquete.eventoId && dano.sector === paquete.sector,
-    );
+    const { evento, paquete } = resuelto;
+    const danos = danosDelEvento(evento.id).filter((dano) => dano.sector === paquete.sector);
 
     /*
      * Los totales salen de las mismas funciones que arman el CSV y el correo, no
@@ -189,7 +252,7 @@ export function usePaqueteMinisterio(codigoSector: string | undefined): UsoPaque
     return {
       paquete,
       ficha: CATALOGO_SECTORES[paquete.sector],
-      evento: mockEvento,
+      evento,
       danos,
       municipios: totalesPorMunicipio(danos),
       necesidades: armarNecesidades(danos),
@@ -197,15 +260,15 @@ export function usePaqueteMinisterio(codigoSector: string | undefined): UsoPaque
       personasAfectadas: resumen?.personasAfectadas ?? 0,
       costoEstimado: resumen?.costoEstimado ?? 0,
       danosSinCosto: danos.filter((dano) => dano.costoEstimado === undefined).length,
-      correo: componerCorreo(paquete, mockEvento),
+      correo: componerCorreo(paquete, evento),
       archivos: [nombreArchivoCsv(paquete)],
     };
-  }, [paquete]);
+  }, [resuelto]);
 
   const envio = useMemo<EstadoEnvio | null>(() => {
     if (paquete === undefined) return null;
 
-    if (firmaLocal !== null && firmaLocal.sector === paquete.sector) {
+    if (firmaLocal !== null && firmaLocal.paqueteId === paquete.id) {
       return { estado: 'Enviado', aprobadoPor: firmaLocal.por, aprobadoEn: firmaLocal.en };
     }
 
@@ -216,18 +279,78 @@ export function usePaqueteMinisterio(codigoSector: string | undefined): UsoPaque
     };
   }, [paquete, firmaLocal]);
 
-  const aprobarYEnviar = useCallback(
-    (firmadoPor: string) => {
+  const [informeLocal, setInformeLocal] = useState<InformeLocal | null>(null);
+
+  const informe = useMemo<EstadoInforme>(() => {
+    if (paquete === undefined || informeLocal === null) return INFORME_VACIO;
+    if (informeLocal.paqueteId !== paquete.id) return INFORME_VACIO;
+
+    return {
+      generadoEn: informeLocal.generadoEn,
+      generadoPor: informeLocal.generadoPor,
+      pdfAbiertoEn: informeLocal.pdfAbiertoEn,
+    };
+  }, [paquete, informeLocal]);
+
+  const generarInforme = useCallback(
+    (generadoPor: string) => {
       if (paquete === undefined) return;
-      setFirmaLocal({ sector: paquete.sector, por: firmadoPor, en: new Date().toISOString() });
+
+      /*
+       * La fecha se fija al generar y no al imprimir. Un documento oficial dice
+       * cuándo se armó con los datos que tenía en ese momento; si la tomara el
+       * diálogo de impresión, dos copias del mismo consolidado llevarían fechas
+       * distintas y ninguna sería la del corte de la información.
+       */
+      setInformeLocal({
+        paqueteId: paquete.id,
+        generadoEn: new Date().toISOString(),
+        generadoPor,
+        pdfAbiertoEn: null,
+      });
     },
     [paquete],
   );
 
-  const descargarCsv = useCallback(() => {
-    if (paquete === undefined) return;
+  const descargarPdf = useCallback(() => {
+    if (informeLocal === null || paquete === undefined) return;
+    if (informeLocal.paqueteId !== paquete.id) return;
 
-    const contenido = armarCsvPaquete(paquete, mockDanos);
+    setInformeLocal({ ...informeLocal, pdfAbiertoEn: new Date().toISOString() });
+
+    /*
+     * El PDF lo hace el navegador, no la aplicación: la hoja `impresion.css`
+     * deja en la página solo el documento y el diálogo ofrece «Guardar como
+     * PDF». Traer una librería de PDF por esto sumaría cientos de kilobytes a
+     * un paquete que se descarga con la red de una emergencia.
+     */
+    window.print();
+  }, [informeLocal, paquete]);
+
+  const aprobarYEnviar = useCallback(
+    (firmadoPor: string) => {
+      if (resuelto === undefined) return;
+
+      const { evento, paquete } = resuelto;
+
+      /*
+       * La regla se comprueba aquí y no solo escondiendo el botón. Un oficio sin
+       * decreto que lo ampare no se remite, y esconder el control deja la regla
+       * a merced de la pantalla: cuando esto hable con el backend, la misma
+       * comprobación tiene que estar del otro lado.
+       */
+      if (evento.declaratoria === 'Ninguna') return;
+
+      setFirmaLocal({ paqueteId: paquete.id, por: firmadoPor, en: new Date().toISOString() });
+    },
+    [resuelto],
+  );
+
+  const descargarCsv = useCallback(() => {
+    if (resuelto === undefined) return;
+
+    const { evento, paquete } = resuelto;
+    const contenido = armarCsvPaquete(paquete, danosDelEvento(evento.id));
     const archivo = new Blob([contenido], { type: 'text/csv;charset=utf-8' });
     const direccion = URL.createObjectURL(archivo);
 
@@ -244,7 +367,7 @@ export function usePaqueteMinisterio(codigoSector: string | undefined): UsoPaque
      * todavía no ha terminado de leer el blob.
      */
     window.setTimeout(() => URL.revokeObjectURL(direccion), 0);
-  }, [paquete]);
+  }, [resuelto]);
 
-  return { datos, envio, aprobarYEnviar, descargarCsv };
+  return { datos, envio, informe, generarInforme, aprobarYEnviar, descargarCsv, descargarPdf };
 }

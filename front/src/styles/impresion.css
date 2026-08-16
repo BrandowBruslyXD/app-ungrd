@@ -1,0 +1,198 @@
+/*
+ * Hoja de impresión: cómo se convierte una pantalla en un documento.
+ *
+ * Aquí no se genera un PDF con una librería. El navegador ya sabe hacerlo
+ * —«Guardar como PDF» en su propio diálogo— y añadir un generador de PDF al
+ * paquete costaría cientos de kilobytes que quien abre esto con una conexión
+ * mala paga en segundos de espera. Lo que falta no es la capacidad de imprimir,
+ * es que lo impreso parezca un oficio y no la fotografía de una pantalla.
+ *
+ * Tres reglas mandan sobre el resto:
+ *
+ * 1. **Nada de tinta decorativa.** Fondos, sombras y colores de marca se van.
+ *    Muchas alcaldías imprimen en láser en blanco y negro, y un encabezado azul
+ *    a sangre sale como una mancha gris que se come el texto.
+ * 2. **Ningún dato puede depender del color.** El nivel de confianza —lo que
+ *    separa un daño verificado por el CMGRD de un autorreporte— lleva su
+ *    palabra escrita. Impreso en gris tiene que seguir leyéndose.
+ * 3. **El corte entre páginas no parte una fila.** El encabezado de cada tabla
+ *    se repite arriba de cada página con `table-header-group`; sin eso, la
+ *    segunda hoja son números sin columna que los nombre.
+ */
+
+/* Se pinta solo en papel. En pantalla no ocupa sitio ni lo lee nadie. */
+.solo-impresion {
+  display: none;
+}
+
+@media print {
+  /*
+   * Márgenes de oficio. El inferior es mayor porque ahí cae la numeración que
+   * el navegador añade desde su diálogo.
+   */
+  @page {
+    size: A4 portrait;
+    margin: 14mm 12mm 16mm;
+  }
+
+  /*
+   * Numeración de páginas por CSS, para los motores que sí implementan las
+   * cajas de margen. Chrome y Firefox las ignoran y usan su propio pie de
+   * página —el de la casilla «Encabezados y pies» del diálogo—, que cumple la
+   * misma función. Va en una regla aparte a propósito: si el motor descarta
+   * esta, los márgenes de arriba sobreviven.
+   */
+  @page {
+    @bottom-right {
+      content: 'Página ' counter(page) ' de ' counter(pages);
+      font-size: 8pt;
+    }
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  body {
+    font-size: 10.5pt;
+    color: #000;
+  }
+
+  /*
+   * Fuera todo lo que es aplicación y no documento: navegación, pie del sitio,
+   * fondo fotográfico, botones y cualquier bloque marcado como tal.
+   */
+  header,
+  footer,
+  nav,
+  .no-imprimir,
+  button {
+    display: none !important;
+  }
+
+  .solo-impresion {
+    display: block !important;
+  }
+
+  /* La hoja del navegador ya es la hoja de papel: sobra la que dibuja la app. */
+  main {
+    display: block !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  .hoja-impresa {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  /*
+   * Color y relieve fuera, en todo. Es una escoba ancha a propósito: el diseño
+   * de pantalla usa decenas de utilidades de fondo y sombra, y enumerarlas una
+   * por una garantiza que la próxima que se añada salga impresa en color.
+   */
+  *,
+  *::before,
+  *::after {
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* La ficha deja de ser una tarjeta y pasa a ser un bloque del documento. */
+  .ficha {
+    margin-bottom: 6mm;
+    border: 0.7pt solid #444 !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+  }
+
+  .ficha-banda {
+    border-bottom: 0.7pt solid #000 !important;
+    padding: 2mm 3mm !important;
+  }
+
+  .ficha-banda h2 {
+    font-size: 11pt;
+  }
+
+  /* En papel no hay barras de desplazamiento: la tabla entra entera o no entra. */
+  .overflow-x-auto,
+  .overflow-hidden {
+    overflow: visible !important;
+  }
+
+  table {
+    width: 100% !important;
+    min-width: 0 !important;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  th,
+  td {
+    min-width: 0 !important;
+    padding: 1.5mm 2mm !important;
+    border: 0.4pt solid #666 !important;
+    vertical-align: top;
+  }
+
+  tr,
+  li,
+  .evitar-corte {
+    break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  /*
+   * El distintivo de confianza pierde su color de fondo, así que necesita un
+   * contorno para seguir leyéndose como una unidad. La palabra ya iba dentro.
+   */
+  .distintivo {
+    padding: 0 1mm;
+    border: 0.4pt solid #555;
+    border-radius: 2pt;
+    font-size: 8pt;
+  }
+
+  /*
+   * En pantalla la cápsula recorta su texto con puntos suspensivos para no
+   * romper la columna. En papel eso sería grave: «Verificado por el CMGRD» y
+   * «Verificado…» no dicen lo mismo, y de esa palabra depende cómo lee el
+   * ministerio la cifra de al lado. Aquí el texto se muestra entero y, si hace
+   * falta, en dos renglones.
+   */
+  .distintivo,
+  .distintivo > span,
+  .distintivo-texto {
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  a {
+    text-decoration: none;
+  }
+}

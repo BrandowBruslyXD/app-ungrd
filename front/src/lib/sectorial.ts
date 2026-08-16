@@ -183,6 +183,33 @@ export function totalesPorMunicipio(danos: readonly DanoSectorizado[]): ResumenM
 }
 
 /**
+ * Cuántos informes de este evento todavía no han salido hacia su ministerio.
+ *
+ * Es la única cifra que ordena la lista de desastres y la que encabeza el
+ * procedimiento de envío del panel, así que la regla vive aquí y no en cada
+ * pantalla: si las dos la contaran por su cuenta, la lista diría «faltan 7» y
+ * el evento abierto diría otra cosa, y ninguna de las dos sería comprobable.
+ *
+ * Un sector sin daños no cuenta como pendiente: que a un ministerio no le toque
+ * nada de esta emergencia no es trabajo por hacer. Y los daños se pasan aparte
+ * de los paquetes porque el panel reclasifica en vivo: un daño que acaba de
+ * recibir sector suma su ministerio a los pendientes en el momento.
+ */
+export function contarPendientesDeEnvio(
+  danos: readonly DanoSectorizado[],
+  paquetes: readonly PaqueteMinisterio[],
+): number {
+  const conDanos = new Set<Sector>();
+  for (const dano of danos) {
+    if (dano.sector !== null) conDanos.add(dano.sector);
+  }
+
+  return paquetes.filter(
+    (paquete) => conDanos.has(paquete.sector) && paquete.estado !== 'Enviado',
+  ).length;
+}
+
+/**
  * Cuenta los municipios por estado de cobertura.
  *
  * La cifra que importa es `enSilencio`: un municipio sin información no es un

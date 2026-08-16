@@ -1,24 +1,37 @@
-import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Coins, Landmark, Layers, MapPinned, Users } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, Coins, Landmark, Layers, ListTree, MapPinned, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import Aviso from '@/components/ui/Aviso';
 import BandaPortada from '@/components/ui/BandaPortada';
 import { FOTOS } from '@/lib/fotos';
-import { resumenCobertura } from '@/lib/sectorial';
-import { mockCobertura, mockDanos, mockEnvios, mockEvento, mockPaquetes } from '@/mocks/mockSectorial';
 import { useTituloPagina } from '@/hooks/useTituloPagina';
-import type { DanoSectorizado, Sector } from '@/types/sectorial';
+import { usePanelEvento } from '../hooks/usePanelEvento';
 import CoberturaTerritorial from '../components/CoberturaTerritorial';
 import RepartoPorSector from '../components/RepartoPorSector';
 import BandejaSinClasificar from '../components/BandejaSinClasificar';
 import BitacoraEnvios from '../components/BitacoraEnvios';
+import ProcedimientoDeEnvio from '../components/ProcedimientoDeEnvio';
 import EntradaDeDatos from '../components/graficas/EntradaDeDatos';
 import {
   diasTranscurridos,
   formatearEntero,
   formatearFecha,
   formatearMillones,
+  lineaDeclaratoria,
 } from '../components/formatoPanel';
+
+/** La puerta del módulo: la lista de desastres en reparto. */
+const RUTA_LISTA = '/gestor/reparto';
+
+/**
+ * Dónde aterriza el primer paso del procedimiento de envío.
+ *
+ * Es un ancla de la misma página y no una ruta nueva: el reparto por sector ya
+ * está en esta pantalla, y sacarlo a otra obligaría a volver para ver el resto
+ * del evento.
+ */
+const ANCLA_REPARTO = 'reparto-por-sector';
 
 /** Una casilla del bloque de datos del evento. */
 interface DatoEvento {
@@ -26,8 +39,24 @@ interface DatoEvento {
   valor: string;
 }
 
+function EnlaceVolver({ etiqueta }: { etiqueta: string }) {
+  return (
+    <Link
+      to={RUTA_LISTA}
+      className="-ml-3 mb-3 inline-flex min-h-control items-center gap-2 rounded-control px-3 text-base font-semibold text-azul-600 hover:bg-azul-50"
+    >
+      <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden="true" />
+      {etiqueta}
+    </Link>
+  );
+}
+
 /**
- * Pantalla A · Panel del evento — el reparto sectorial de la UNGRD.
+ * Pantalla B · Panel de un desastre — el reparto sectorial de la UNGRD.
+ *
+ * El desastre llega por la URL, igual que el código de un reporte ciudadano:
+ * esta pantalla es el detalle de uno de los que lista `/gestor/reparto`, no la
+ * pantalla de un caso único.
  *
  * Los cuatro subpaneles van en este orden porque responden, de arriba abajo, a
  * las cuatro preguntas que el funcionario se hace al abrir el sistema: qué tan
@@ -45,21 +74,45 @@ interface DatoEvento {
  */
 export default function PanelUngrd() {
   const { t } = useTranslation();
-  const evento = mockEvento;
+  const { evento: codigoUrl } = useParams<{ evento: string }>();
 
-  useTituloPagina(t('meta.ungrd.title'), t('meta.ungrd.description'));
+  const {
+    evento,
+    cobertura,
+    resumen,
+    danos,
+    sinClasificar,
+    paquetes,
+    envios,
+    costoEstimado,
+    informesPendientes,
+    asignarSector,
+  } = usePanelEvento(codigoUrl);
+
+  useTituloPagina(evento?.nombre ?? t('meta.ungrd.title'), t('meta.ungrd.description'));
 
   /*
-   * Los daños viven en estado porque el subpanel C los reclasifica.
-   *
-   * No hay backend todavía: la corrección se guarda en memoria y se pierde al
-   * recargar. Es deliberado y preferible a fingir que se guardó —el punto de la
-   * pantalla es que el reparto se recalcula en el momento, no que persista—.
+   * El código de la URL es texto libre: alguien puede escribirlo a mano o
+   * llegar de un enlace viejo. Se responde con lenguaje comprensible y una
+   * salida, no con una pantalla en blanco.
    */
-  const [danos, setDanos] = useState<readonly DanoSectorizado[]>(mockDanos);
-
-  const sinClasificar = useMemo(() => danos.filter((dano) => dano.sector === null), [danos]);
-  const cobertura = useMemo(() => resumenCobertura(mockCobertura), []);
+  if (evento === null) {
+    return (
+      <div className="animate-fade-in mx-auto w-full max-w-3xl px-4 py-8 lg:px-8 lg:py-10">
+        <EnlaceVolver etiqueta={t('ungrd.panel.volverALista')} />
+        <h1 className="text-2xl sm:text-3xl">{t('ungrd.panel.noEncontradoTitulo')}</h1>
+        <div className="mt-4">
+          <Aviso tono="alerta" urgente>
+            <p>{t('ungrd.panel.noEncontradoTexto', { codigo: codigoUrl ?? '' })}</p>
+          </Aviso>
+        </div>
+        <Link to={RUTA_LISTA} className="btn-primary mt-6">
+          <ListTree className="h-5 w-5 shrink-0" aria-hidden="true" />
+          {t('ungrd.panel.noEncontradoVolver')}
+        </Link>
+      </div>
+    );
+  }
 
   /*
    * Las cuatro cifras salen de contar los datos que hay, nunca están escritas.
@@ -68,19 +121,14 @@ export default function PanelUngrd() {
    * vacío: aquí el funcionario decide a qué municipio llama y qué le manda a un
    * ministerio con esos números delante.
    */
-  const costoEstimado = useMemo(
-    () => danos.reduce((total, dano) => total + (dano.costoEstimado ?? 0), 0),
-    [danos],
-  );
-
   const indicadores: { etiqueta: string; valor: string; icono: LucideIcon; clases: string }[] = [
     {
       // «11 de 24» es el dolor entero en una cifra: de los municipios afectados,
       // de cuántos sabemos algo.
       etiqueta: t('ungrd.panel.indMunicipios'),
       valor: t('ungrd.panel.deTotal', {
-        valor: formatearEntero(cobertura.conInformacion),
-        total: formatearEntero(cobertura.totalMunicipios),
+        valor: formatearEntero(resumen.conInformacion),
+        total: formatearEntero(resumen.totalMunicipios),
       }),
       icono: MapPinned,
       clases: 'text-alerta-600 bg-alerta-50',
@@ -107,21 +155,10 @@ export default function PanelUngrd() {
     },
   ];
 
-  const declaratoria =
-    evento.declaratoria === 'Ninguna'
-      ? t('ungrd.declaratoria.Ninguna')
-      : t('ungrd.panel.declaratoriaLinea', {
-          tipo: t(`ungrd.declaratoria.${evento.declaratoria}`),
-          nivel:
-            evento.nivelDeclaratoria === undefined
-              ? t('ungrd.panel.sinDato')
-              : t(`ungrd.nivelDeclaratoria.${evento.nivelDeclaratoria}`),
-        });
-
   const datosEvento: DatoEvento[] = [
     { etiqueta: t('ungrd.panel.datoCodigo'), valor: evento.codigo },
     { etiqueta: t('ungrd.panel.datoTipo'), valor: t(`census.eventTypes.${evento.tipoEvento}`) },
-    { etiqueta: t('ungrd.panel.datoDeclaratoria'), valor: declaratoria },
+    { etiqueta: t('ungrd.panel.datoDeclaratoria'), valor: lineaDeclaratoria(evento, t) },
     {
       etiqueta: t('ungrd.panel.datoDecreto'),
       valor: evento.numeroDecreto ?? t('ungrd.panel.sinDato'),
@@ -143,17 +180,11 @@ export default function PanelUngrd() {
   const dias =
     evento.fechaDeclaratoria === undefined ? null : diasTranscurridos(evento.fechaDeclaratoria);
 
-  function asignarSector(danoId: string, sector: Sector): void {
-    setDanos((previos) =>
-      previos.map((dano) =>
-        dano.id === danoId ? { ...dano, sector, clasificadoPor: 'Funcionario' } : dano,
-      ),
-    );
-  }
-
   return (
     <div className="animate-fade-in mx-auto w-full max-w-6xl px-4 py-8 lg:px-8 lg:py-10">
       {/* ── Encabezado del evento ────────────────────────────────────────── */}
+      <EnlaceVolver etiqueta={t('ungrd.panel.volverALista')} />
+
       <BandaPortada
         titulo={evento.nombre}
         descripcion={t('ungrd.panel.subtitulo')}
@@ -185,6 +216,16 @@ export default function PanelUngrd() {
         ))}
       </dl>
 
+      {/*
+        El procedimiento va arriba, no al fondo: es lo que un funcionario nuevo
+        necesita saber antes de bajar a las trece filas.
+      */}
+      <ProcedimientoDeEnvio
+        anclaReparto={ANCLA_REPARTO}
+        puedeRemitir={evento.declaratoria !== 'Ninguna'}
+        informesPendientes={informesPendientes}
+      />
+
       {/* ── Cuatro indicadores ───────────────────────────────────────────── */}
       <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <h2 className="solo-lector">{t('ungrd.panel.indicadoresTitulo')}</h2>
@@ -214,18 +255,24 @@ export default function PanelUngrd() {
           separaría ese par y retrasaría el reparto, que es otra pregunta.
         */}
         <CoberturaTerritorial
-          cobertura={mockCobertura}
+          cobertura={cobertura}
           cierre={
             <EntradaDeDatos
               danos={danos}
               desde={evento.fechaDeclaratoria}
-              municipiosEnSilencio={cobertura.enSilencio}
+              municipiosEnSilencio={resumen.enSilencio}
             />
           }
         />
-        <RepartoPorSector danos={danos} paquetes={mockPaquetes} />
+
+        {/* `scroll-mt` deja aire arriba: sin él, el encabezado fijo tapa la
+            banda del bloque al que acaba de saltar el primer paso. */}
+        <div id={ANCLA_REPARTO} className="scroll-mt-24">
+          <RepartoPorSector danos={danos} paquetes={paquetes} codigoEvento={evento.codigo} />
+        </div>
+
         <BandejaSinClasificar danos={sinClasificar} onAsignar={asignarSector} />
-        <BitacoraEnvios envios={mockEnvios} />
+        <BitacoraEnvios envios={envios} />
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { renderWithI18n } from '@/test/render';
-import { mockDanosSinSector } from '@/mocks/mockSectorial';
+import { mockDanosSinSector, mockEvento } from '@/mocks/mockSectorial';
 import PanelUngrd from './PanelUngrd';
 
 /*
@@ -14,10 +14,13 @@ import PanelUngrd from './PanelUngrd';
  * la pantalla no cambiaría: parecería que el sistema perdió su trabajo.
  */
 
-function montar() {
+/** El desastre llega por la URL: el panel es el detalle de uno de la lista. */
+function montar(codigo: string = mockEvento.codigo) {
   return renderWithI18n(
-    <MemoryRouter initialEntries={['/gestor/reparto']}>
-      <PanelUngrd />
+    <MemoryRouter initialEntries={[`/gestor/reparto/${codigo}`]}>
+      <Routes>
+        <Route path="/gestor/reparto/:evento" element={<PanelUngrd />} />
+      </Routes>
     </MemoryRouter>,
   );
 }
@@ -187,5 +190,84 @@ describe('PanelUngrd — panel del evento', () => {
       expect(within(fila).getByText('Simulado')).toBeInTheDocument();
     }
     expect(screen.getByText('Ningún correo sale de verdad')).toBeInTheDocument();
+  });
+});
+
+/*
+ * El panel dejó de ser la pantalla de un caso único: es el detalle de uno de
+ * los desastres de la lista, y el desastre llega por la URL. Lo que se prueba
+ * aquí es esa costura —volver, el evento correcto, el informe que cuelga del
+ * evento— y el procedimiento de envío, que el cliente pidió que no se pudiera
+ * pasar por alto.
+ */
+describe('PanelUngrd — el desastre viene de la URL', () => {
+  it('ofrece volver a la lista de desastres', () => {
+    montar();
+
+    expect(screen.getByRole('link', { name: 'Volver a la lista de desastres' })).toHaveAttribute(
+      'href',
+      '/gestor/reparto',
+    );
+  });
+
+  it('abre el desastre que pide la URL, no el primero sembrado', () => {
+    montar('EVT-2026-08-14-007');
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Sismo de la cordillera Central/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Decreto Departamental 0311 de 2026')).toBeInTheDocument();
+  });
+
+  it('pone el procedimiento de tres pasos antes de las cifras del evento', () => {
+    montar();
+
+    const pasos = screen.getByRole('region', { name: 'Cómo se remite el informe de un ministerio' });
+
+    expect(within(pasos).getByText('1 · Genere el informe')).toBeInTheDocument();
+    expect(within(pasos).getByText('2 · Descargue el PDF')).toBeInTheDocument();
+    expect(within(pasos).getByText('3 · Envíelo por correo')).toBeInTheDocument();
+    expect(within(pasos).getByRole('link', { name: 'Ir al reparto por sector' })).toHaveAttribute(
+      'href',
+      '#reparto-por-sector',
+    );
+
+    const cifras = screen.getByRole('heading', { level: 2, name: 'Cifras del evento' });
+    expect(pasos.compareDocumentPosition(cifras)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  it('lleva de cada sector al informe del ministerio dentro de ese desastre', () => {
+    montar();
+
+    expect(screen.getByRole('link', { name: 'Abrir el paquete de Transporte' })).toHaveAttribute(
+      'href',
+      '/gestor/reparto/EVT-2026-08-15-003/Transporte',
+    );
+  });
+
+  /*
+   * Un oficio sin decreto que lo ampare no se manda. La pantalla lo dice en vez
+   * de ofrecer el paso: un botón que no debería usarse tarde o temprano se usa.
+   */
+  it('en un desastre sin declaratoria explica por qué el envío no procede', () => {
+    montar('EVT-2026-08-11-004');
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Deslizamientos de la cordillera nariñense/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/no hay decreto que citar/i)).toBeInTheDocument();
+    expect(screen.queryByText(/firme el envío/i)).toBeNull();
+  });
+
+  it('explica el código que no corresponde a ningún desastre y ofrece la lista', () => {
+    montar('EVT-QUE-NO-EXISTE');
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'No encontramos ese desastre' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Ver la lista de desastres' })).toHaveAttribute(
+      'href',
+      '/gestor/reparto',
+    );
   });
 });
