@@ -286,6 +286,9 @@ llega en `null` (no se calcula distancia en esta ruta).
 ]
 ```
 
+> `distanciaKm` llega en `null` por diseño: `/api/reportes/mios` no calcula distancia al usuario,
+> aunque el reporte tenga coordenadas.
+
 ---
 
 ### `PATCH /api/reportes/{codigo}/estado` 🔒 Gestor | Admin
@@ -515,7 +518,7 @@ Comprobación de vida. Misma respuesta en ambas rutas (`/health` para sondas de 
 | Nombres de campos en `camelCase` | ✅ |
 | Enums como texto (no número) | ✅ |
 | Forma de error unificada | ✅ |
-| Modelo de datos alineado | Ver [MODELO-DATOS.md](MODELO-DATOS.md) |
+| Modelo de datos alineado | ✅ Ver [MODELO-DATOS.md](MODELO-DATOS.md) |
 
 **Regla:** cualquier cambio a nombres de campo o forma de respuesta se acuerda en el grupo **antes**
 de mergear. Este documento cierra el issue [#2](https://github.com/jasonfabian8/app-ungrd/issues/2).
