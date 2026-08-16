@@ -66,11 +66,21 @@ public class AlmacenamientoDeArchivosAzure : IAlmacenamientoDeArchivos
         try
         {
             BlobContainerClient contenedorCliente = _cliente.GetBlobContainerClient(contenedor.ANombre());
-            if (!_contenedoresVerificados.ContainsKey(contenedor))
+            if (_contenedoresVerificados.TryAdd(contenedor, true))
             {
-                await contenedorCliente.CreateIfNotExistsAsync(
-                    PublicAccessType.None, cancellationToken: conTimeout.Token);
-                _contenedoresVerificados[contenedor] = true;
+                // TryAdd es atómico: si dos subidas llegan a la vez para un contenedor nuevo,
+                // solo una entra aquí. Si falla, se retira la marca para que el siguiente
+                // intento vuelva a verificar en vez de quedar "envenenado" hasta reiniciar.
+                try
+                {
+                    await contenedorCliente.CreateIfNotExistsAsync(
+                        PublicAccessType.None, cancellationToken: conTimeout.Token);
+                }
+                catch
+                {
+                    _contenedoresVerificados.TryRemove(contenedor, out _);
+                    throw;
+                }
             }
 
             string nombreBlob = $"{Guid.NewGuid():N}{ExtensionPara(tipoContenido)}";
