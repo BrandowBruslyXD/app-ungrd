@@ -2,106 +2,372 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * ConectaRiesgo — capa base.
+ *
+ * Direccion: «la planilla que habla claro». El mundo de este producto no es el
+ * de las apps, es el del formato oficial: el FR-1703-SMD-08, el numero de folio,
+ * el sello. Se toma prestada esa autoridad visual y se hace legible para quien
+ * nunca ha usado una app.
+ */
+
 @layer base {
   * {
     -webkit-tap-highlight-color: transparent;
   }
 
   html {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Evita que iOS agrande el texto al girar el telefono. */
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-slate-50 text-slate-800;
-    line-height: 1.5;
+    @apply bg-papel text-base text-tinta-900;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    line-height: 1.2;
+  /*
+   * Los encabezados NO fijan color: lo heredan del contenedor.
+   *
+   * Antes esta regla llevaba `text-tinta-900` y fue un error caro: cualquier
+   * titulo dentro de una banda azul oscura salia en negro sobre azul, ilegible.
+   * El color del texto es responsabilidad del contenedor —claro u oscuro—, no
+   * del nivel de encabezado.
+   */
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-bold tracking-tight;
+    color: inherit;
+    line-height: 1.15;
+  }
+
+  /*
+   * Foco visible, sin excepciones. Mucha gente mayor navega con teclado o con
+   * un lapiz capacitivo y necesita ver donde esta parada. 3px porque 2 se pierde
+   * bajo el sol.
+   */
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    @apply outline-none ring-[3px] ring-azul-500 ring-offset-2 ring-offset-papel;
+  }
+
+  /* Sobre fondo oscuro el anillo azul desaparece: ahi manda el amarillo. */
+  .sobre-oscuro :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    @apply ring-oro-400 ring-offset-azul-800;
+  }
+
+  /*
+   * Red de seguridad contra desbordes.
+   *
+   * Al subir la escala tipografica de 16 a 18px, varios contenedores quedaron
+   * dimensionados para el tamaño anterior y su contenido empezo a salirse. La
+   * causa casi siempre es la misma: una palabra larga —un codigo de folio, un
+   * nombre de vereda, un correo— que no puede partirse y estira la caja.
+   *
+   * Esto lo corta de raiz para todo texto, en vez de ir parcheando pantalla por
+   * pantalla cada vez que aparece una etiqueta mas larga de lo previsto.
+   */
+  p,
+  li,
+  span,
+  td,
+  th,
+  label,
+  h1,
+  h2,
+  h3,
+  h4 {
+    overflow-wrap: anywhere;
   }
 }
 
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-ungrd-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-ungrd-700 hover:shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  /* ── Superficies ──────────────────────────────────────────────────────────
+   * La «ficha» es una hoja de papel sobre el escritorio: esquina de documento
+   * (10px), no de burbuja, y sombra apenas perceptible.
+   */
+  /* `min-w-0` para que la ficha pueda encogerse dentro de una rejilla o de un
+   * flex en vez de empujar a sus hermanas fuera de la pantalla. */
+  .ficha {
+    @apply min-w-0 rounded-ficha border border-papel-borde bg-white shadow-ficha;
   }
 
+  .ficha-pulsable {
+    @apply ficha transition-shadow duration-150 hover:shadow-ficha-alta focus-within:shadow-ficha-alta;
+  }
+
+  /*
+   * La banda de encabezado es el gesto estructural que viene del formato
+   * oficial, donde el bloque superior lleva proceso, titulo y codigo. Aqui
+   * identifica de que trata la ficha sin que el usuario tenga que leer todo.
+   */
+  .ficha-banda {
+    @apply flex items-center gap-3 rounded-t-ficha border-b-2 border-azul-700 bg-azul-600 px-4 py-3 text-white sm:px-5;
+  }
+
+  /* ── Controles ────────────────────────────────────────────────────────────
+   * Piso de 56px. La accion principal, 64px. El dedo puede venir mojado.
+   */
+  .btn {
+    @apply inline-flex min-h-control items-center justify-center gap-2.5 rounded-control px-6
+           text-base font-bold transition-colors duration-150
+           disabled:cursor-not-allowed disabled:opacity-45;
+  }
+
+  .btn-primary {
+    @apply btn bg-azul-600 text-white hover:bg-azul-700 active:bg-azul-800;
+  }
+
+  /*
+   * La accion principal va en amarillo bandera, no en azul. Es el color mas
+   * visible que hay y quien llega con una emergencia tiene que encontrar el
+   * boton sin buscarlo. El texto va en tinta, que sobre este amarillo da 12:1.
+   */
   .btn-accent {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gold-500 px-5 py-3 text-base font-semibold text-ungrd-900 shadow-sm transition-all duration-200 hover:bg-gold-400 hover:shadow-md active:scale-[0.98];
+    @apply btn bg-oro-400 text-tinta-900 shadow-sm hover:bg-oro-300 active:bg-oro-500;
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-red-700 hover:shadow-md active:scale-[0.98];
+    @apply btn bg-alerta-600 text-white hover:bg-alerta-700;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-base font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98];
+    @apply btn border-2 border-tinta-200 bg-white text-tinta-800 hover:border-tinta-300 hover:bg-tinta-50;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-100 active:scale-[0.98];
+    @apply btn px-4 text-tinta-700 hover:bg-tinta-100;
   }
 
-  .card {
-    @apply rounded-2xl border border-slate-200/60 bg-white shadow-sm transition-shadow duration-200;
+  /* La accion que abre el flujo principal de cada rol. Una por pantalla. */
+  .btn-grande {
+    @apply min-h-control-lg w-full text-lg;
   }
 
-  .card-hover {
-    @apply card hover:shadow-md hover:border-slate-200;
+  /* ── Formularios ──────────────────────────────────────────────────────────*/
+  .etiqueta {
+    @apply mb-1.5 block text-base font-semibold text-tinta-900;
   }
 
-  .input-field {
-    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-800 placeholder:text-slate-400 transition-all duration-200 focus:border-ungrd-400 focus:outline-none focus:ring-2 focus:ring-ungrd-100;
+  /* Aclaracion bajo la etiqueta: para que sirve el campo, en lenguaje llano. */
+  .etiqueta-ayuda {
+    @apply mb-2 block text-sm text-tinta-500;
   }
 
-  .textarea-field {
-    @apply input-field resize-none;
+  .campo {
+    @apply min-h-control w-full rounded-control border-2 border-tinta-200 bg-white px-4 py-3
+           text-base text-tinta-900 placeholder:text-tinta-400
+           focus:border-azul-500 focus:outline-none focus:ring-[3px] focus:ring-azul-100;
   }
 
-  .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  .campo-error {
+    @apply border-alerta-600 focus:border-alerta-600 focus:ring-alerta-100;
   }
 
-  .severity-Baja { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
-  .severity-Media { @apply bg-amber-50 text-amber-700 border border-amber-200; }
-  .severity-Alta { @apply bg-red-50 text-red-700 border border-red-200; }
+  .campo-area {
+    @apply campo resize-y;
+  }
 
-  .status-Reportado { @apply bg-slate-100 text-slate-600; }
-  .status-Verificado { @apply bg-ungrd-50 text-ungrd-700; }
-  .status-Asignado { @apply bg-gold-50 text-gold-800; }
-  .status-EnAtencion { @apply bg-ungrd-100 text-ungrd-700; }
-  .status-Atendido { @apply bg-blue-50 text-blue-700; }
-  .status-Cerrado { @apply bg-emerald-50 text-emerald-700; }
+  /*
+   * Opcion grande: en vez de un radio de 16px con una etiqueta al lado, una caja
+   * completa que se toca con el pulgar. Es la diferencia entre poder responder y
+   * no poder, para una mano que tiembla o una pantalla rayada.
+   */
+  .opcion {
+    @apply flex min-h-control w-full items-center gap-3 rounded-control border-2 border-tinta-200
+           bg-white px-4 py-3 text-left text-base font-medium text-tinta-800
+           transition-colors duration-150 hover:border-tinta-300 hover:bg-tinta-50;
+  }
+
+  .opcion-activa {
+    @apply border-azul-600 bg-azul-50 text-azul-900 ring-1 ring-azul-600;
+  }
+
+  /* ── Avisos ───────────────────────────────────────────────────────────────
+   * Borde grueso a la izquierda: se distingue del cuerpo aunque la pantalla
+   * este en blanco y negro o el usuario no distinga colores.
+   */
+  .aviso {
+    @apply flex gap-3 rounded-r-ficha border-l-4 px-4 py-3.5 text-base;
+  }
+
+  .aviso-info {
+    @apply aviso border-azul-600 bg-azul-50 text-azul-900;
+  }
+
+  .aviso-alerta {
+    @apply aviso border-alerta-600 bg-alerta-50 text-alerta-900;
+  }
+
+  .aviso-espera {
+    @apply aviso border-espera-600 bg-espera-50 text-espera-900;
+  }
+
+  .aviso-seguro {
+    @apply aviso border-seguro-600 bg-seguro-50 text-seguro-900;
+  }
+
+  /* ── Distintivos ──────────────────────────────────────────────────────────
+   * Nunca solo color: el componente que los usa antepone un glifo o un punto.
+   *
+   * El tamaño va fijo en 13px y NO sigue la escala del cuerpo. Cuando la escala
+   * subio a 18px, las capsulas subieron con ella y «Avalado por CMGRD» dejo de
+   * caber en una columna de tablero de 180px: se salia de la tarjeta. Una
+   * capsula es metadato, no texto de lectura, y su tamaño es independiente.
+   *
+   * `max-w-full` y `min-w-0` son el cinturon de seguridad: por larga que sea la
+   * etiqueta, la capsula se encoge antes que empujar a su contenedor.
+   */
+  .distintivo {
+    @apply inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full px-2.5 py-1
+           text-[0.8125rem] font-semibold leading-tight;
+  }
+
+  /* El texto de la capsula nunca parte una palabra ni desborda: se recorta. */
+  .distintivo > span,
+  .distintivo-texto {
+    @apply min-w-0 truncate;
+  }
+
+  .estado-Reportado {
+    @apply bg-tinta-100 text-tinta-700;
+  }
+  .estado-Verificado {
+    @apply bg-azul-50 text-azul-700;
+  }
+  .estado-Asignado {
+    @apply bg-espera-50 text-espera-700;
+  }
+  .estado-EnAtencion {
+    @apply bg-azul-100 text-azul-800;
+  }
+  .estado-Atendido {
+    @apply bg-seguro-50 text-seguro-700;
+  }
+  .estado-Cerrado {
+    @apply bg-tinta-100 text-tinta-600;
+  }
+
+  .prioridad-Baja {
+    @apply bg-seguro-50 text-seguro-700;
+  }
+  .prioridad-Media {
+    @apply bg-espera-50 text-espera-700;
+  }
+  .prioridad-Alta {
+    @apply bg-alerta-50 text-alerta-700;
+  }
+
+  /* ── El talon ─────────────────────────────────────────────────────────────
+   * Elemento firma. Es el recibo que hoy no existe: la investigacion dice que el
+   * ciudadano se queda sin nada que consultar porque el numero de folio del RUD
+   * es interno del funcionario. Este talon es suyo.
+   *
+   * El troquelado se dibuja con gradientes radiales en los bordes: media luna
+   * del color del fondo, repetida. Sin imagenes, sin peso.
+   */
+  .talon {
+    @apply relative bg-azul-600 text-white;
+    border-radius: 0.625rem;
+  }
+
+  .talon::before,
+  .talon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background-image: radial-gradient(circle at 6px 50%, theme('colors.papel.DEFAULT') 6px, transparent 6.5px);
+    background-size: 20px 20px;
+    background-repeat: repeat-x;
+  }
+
+  .talon::before {
+    top: -1px;
+    background-position: 0 -10px;
+  }
+
+  .talon::after {
+    bottom: -1px;
+    background-position: 0 10px;
+  }
+
+  /* El codigo en si: monoespaciado, grande y espaciado para poder dictarlo. */
+  .talon-codigo {
+    @apply font-mono text-xl font-bold tracking-[0.08em] text-white sm:text-2xl;
+  }
 }
 
 @layer utilities {
   .animate-slide-up {
-    animation: slideUp 0.3s ease-out;
+    animation: slideUp 0.25s ease-out;
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.4s ease-out;
+    animation: fadeIn 0.3s ease-out;
   }
 
   .animate-scale-in {
     animation: scaleIn 0.2s ease-out;
   }
+
+  /* Solo para lectores de pantalla: el texto que da contexto sin ocupar sitio. */
+  .solo-lector {
+    @apply absolute h-px w-px overflow-hidden whitespace-nowrap border-0 p-0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/*
+ * Quien pidio menos movimiento lo recibe. Tambien ayuda en telefonos lentos,
+ * donde una animacion mal pintada se ve como que la app se trabo.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

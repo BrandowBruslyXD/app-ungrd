@@ -86,7 +86,11 @@ La emergencia. Es el centro del sistema.
 | `ActualizadoEn` | datetime | ✅ | UTC |
 | `SincronizadoEn` | datetime? | ❌ | Cuándo subió, si se capturó sin señal |
 
-**Tipo:** `Incendio` · `Inundacion` · `Deslizamiento` · `ViaAfectada` · `ColapsoEstructural` · `Otro`
+**Tipo:** `Incendio` · `Inundacion` · `Deslizamiento` · `ViaAfectada` · `ColapsoEstructural` ·
+`Sismo` · `Vendaval` · `AvenidaTorrencial` · `Otro`
+
+> Los tres últimos se agregaron porque el agente telefónico los dicta y devolvían 500 (issue #71).
+> `AvenidaTorrencial` va **sin espacio**: es una creciente súbita que arrastra lodo, distinta de una inundación lenta.
 
 **Estado:** `Reportado` → `Verificado` → `Asignado` → `EnAtencion` → `Atendido` → `Cerrado`
 

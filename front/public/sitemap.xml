@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Solo van las rutas que son contenido público y tienen sentido en un buscador.
+
+  Quedan fuera a propósito los paneles operativos, el asistente de censo y el
+  detalle de un reporte: son herramientas de trabajo, y el detalle además
+  contiene datos de una persona identificada.
+
+  AL DESPLEGAR: reemplazar DOMINIO por el dominio real y registrar el sitemap en
+  Google Search Console. Eso último no se puede automatizar desde aquí porque
+  exige verificar la propiedad del dominio con la cuenta del equipo.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://DOMINIO/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://DOMINIO/reportar</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://DOMINIO/ayudas</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://DOMINIO/alertas</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://DOMINIO/entrar</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

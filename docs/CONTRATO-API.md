@@ -59,7 +59,8 @@ Estos son los únicos valores válidos. **El frontend puede confiar en ellos par
 Rol:        Ciudadano | Gestor | Admin
 
 Tipo:       Incendio | Inundacion | Deslizamiento
-            ViaAfectada | ColapsoEstructural | Otro
+            ViaAfectada | ColapsoEstructural
+            Sismo | Vendaval | AvenidaTorrencial | Otro
 
 Estado:     Reportado | Verificado | Asignado
             EnAtencion | Atendido | Cerrado
@@ -70,6 +71,8 @@ Canal:      Web | WhatsApp | Telefono
 ```
 
 > Sin tildes ni eñes en los valores de enum, para evitar problemas de codificación entre C# y JavaScript. Las tildes van solo en los textos que ve el usuario, que los pone el frontend.
+>
+> ⚠️ **`AvenidaTorrencial` va sin espacio.** El agente telefónico dice "avenida torrencial" al hablar, pero el valor que viaja es una sola palabra. Mandar `"Avenida torrencial"` devuelve 400.
 
 **Flujo de estados válido:**
 

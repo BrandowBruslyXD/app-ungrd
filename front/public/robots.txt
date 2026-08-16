@@ -1,0 +1,19 @@
+# ConectaRiesgo
+#
+# La portada y las preguntas frecuentes son contenido público y se indexan: si
+# alguien busca «cómo reportar una inundación» queremos que llegue aquí.
+#
+# El resto de la aplicación son herramientas de trabajo, no contenido. No tiene
+# sentido indexar el asistente de censo ni los paneles operativos, y el detalle
+# de un reporte lleva datos de una persona concreta: ese no se indexa nunca.
+
+User-agent: *
+Allow: /$
+Allow: /entrar
+Disallow: /reporte/
+Disallow: /rescatista
+Disallow: /socorro
+Disallow: /gestor
+Disallow: /mis-reportes
+
+Sitemap: /sitemap.xml

@@ -1,18 +1,80 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-CO">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ConectaRiesgo - Gestión de Desastres</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <meta property="og:image" content="/ConectaRiesgoAI.png">
-    <meta property="og:image:alt" content="ConectaRiesgoAI">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="/ConectaRiesgoAI.png">
-</head>
+
+    <title>Reporta una emergencia y sigue tu caso · ConectaRiesgo</title>
+    <meta
+      name="description"
+      content="Reporta inundaciones, deslizamientos, incendios o vías afectadas en Colombia. Recibe un código y sigue tu caso. Gratis y sin registro."
+    />
+    <meta name="theme-color" content="#12386b" />
+
+    <!--
+      Estas etiquetas van escritas aquí y no puestas por JavaScript por una razón
+      concreta de este proyecto: WhatsApp es un canal principal, y el robot que
+      arma la vista previa de un enlace compartido **no ejecuta JavaScript**.
+      Si el título y la imagen se pusieran desde React, un enlace compartido en
+      un grupo de vecinos aparecería sin nada.
+
+      Las rutas internas sí cambian el título desde React (`useTituloPagina`),
+      que para Google es suficiente porque sí renderiza.
+
+      AL DESPLEGAR: reemplazar la ruta relativa de `og:image` por la URL absoluta
+      del dominio y descomentar `og:url` y el enlace canónico.
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ConectaRiesgo" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:title" content="Reporta una emergencia y sigue tu caso" />
+    <meta
+      property="og:description"
+      content="Cuenta qué pasó, recibe un código y mira quién atiende tu caso. Gratis, sin registro. Reportar no te inscribe en el censo de damnificados."
+    />
+    <meta property="og:image" content="/imagenes/derrumbe-via-montana-1600.jpg" />
+    <meta
+      property="og:image:alt"
+      content="Carretera de montaña con un derrumbe visible sobre la vía."
+    />
+    <!-- <meta property="og:url" content="https://DOMINIO/" /> -->
+    <!-- <link rel="canonical" href="https://DOMINIO/" /> -->
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Reporta una emergencia y sigue tu caso" />
+    <meta
+      name="twitter:description"
+      content="Cuenta qué pasó, recibe un código y mira quién atiende tu caso. Gratis y sin registro."
+    />
+    <meta name="twitter:image" content="/imagenes/derrumbe-via-montana-1600.jpg" />
+
+    <!--
+      Sin fuentes externas a propósito. Quien usa esto puede estar en 3G o sin
+      señal: una petición a fonts.googleapis.com retrasa el primer texto en
+      pantalla y sin conexión falla. La pila del sistema pinta al instante.
+    -->
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "ConectaRiesgo",
+        "url": "/",
+        "applicationCategory": "GovernmentApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "es-CO",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "COP" },
+        "description": "Plataforma ciudadana para reportar emergencias en Colombia y seguir el caso hasta que sea atendido, con verificación satelital y transparencia del gasto público.",
+        "audience": {
+          "@type": "Audience",
+          "audienceType": "Ciudadanos, organismos de socorro y consejos municipales de gestión del riesgo",
+          "geographicArea": { "@type": "Country", "name": "Colombia" }
+        }
+      }
+    </script>
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
