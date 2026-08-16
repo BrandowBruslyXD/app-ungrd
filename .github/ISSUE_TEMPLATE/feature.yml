@@ -89,7 +89,7 @@ body:
         - [ ] Al menos un test cubre el camino que falla, no solo el feliz
         - [ ] Build y tests en verde
         - [ ] Backend: la rebanada es autocontenida y no referencia tipos de otras rebanadas
-        - [ ] Frontend: sin `any` y sin textos de UI hardcodeados
+        - [ ] Frontend: sin `any`
         - [ ] Quien consulta o modifica un dato tiene permiso sobre él (verificado con un test)
     validations:
       required: false
