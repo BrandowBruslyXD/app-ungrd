@@ -101,7 +101,7 @@ describe('ManagerDashboard — observación satelital', () => {
     expect(await screen.findByText('USGS')).toBeInTheDocument();
     expect(screen.getByText('GDACS')).toBeInTheDocument();
     expect(screen.getByText('NASA GIBS')).toBeInTheDocument();
-    expect(screen.getByText(/El más reciente, hace 2 horas/)).toBeInTheDocument();
+    expect(screen.getByText(/hace 2 horas/)).toBeInTheDocument();
   });
 
   it('ManagerDashboard_enNingunTexto_apareceLaExpresionTiempoReal', async () => {
@@ -146,7 +146,7 @@ describe('ManagerDashboard — observación satelital', () => {
     // El de Mocoa cae junto a un reporte y lo corrobora; el de Bogotá no tiene
     // ninguno cerca, y eso significa que pasó algo donde nadie ha avisado.
     expect(
-      await screen.findByText(/1 señal sin ningún reporte ciudadano cerca/),
+      await screen.findByText(/1 señal sin ningún reporte cerca/),
     ).toBeInTheDocument();
   });
 
@@ -156,7 +156,7 @@ describe('ManagerDashboard — observación satelital', () => {
     montar();
     await screen.findByText('USGS');
 
-    expect(screen.queryByText(/sin ningún reporte ciudadano cerca/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/sin ningún reporte cerca/)).not.toBeInTheDocument();
   });
 
   it('ManagerDashboard_todasLasFuentesCaidas_noDejaErrorNiHuecoEnPantalla', async () => {
@@ -186,9 +186,15 @@ describe('ManagerDashboard — observación satelital', () => {
     const tablero = screen.getByRole('heading', { level: 2, name: 'Tablero de triage' });
     expect(tablero).toBeInTheDocument();
 
-    for (const columna of ['Reportados', 'Verificados', 'Asignados', 'En atención']) {
-      expect(screen.getByRole('button', { name: new RegExp(columna) })).toBeInTheDocument();
-    }
+    /*
+     * La cola es una lista, no un tablero de columnas: lo que tiene que seguir
+     * en pie es que cada reporte esté, con su título entero y su enlace al
+     * detalle. Antes se comprobaban las columnas del kanban, que ya no existen.
+     */
+    expect(
+      screen.getByRole('link', { name: /Inundación en vereda El Carmen/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Deslizamiento en vía principal/ })).toBeInTheDocument();
   });
 
   it('ManagerDashboard_mapa_arrancaEnRelieveYOfreceLasTresCapas', async () => {
@@ -249,7 +255,10 @@ describe('ManagerDashboard — observación satelital', () => {
      * señales sin reporte, que es el único sitio donde alguien podría sacar esa
      * conclusión; ocupando dos líneas fijas solo era ruido.
      */
-    const aviso = await screen.findByText(/sin ningún reporte ciudadano cerca/);
-    expect(aviso).toHaveAttribute('title', expect.stringMatching(/no lo pone en duda/));
+    const aviso = await screen.findByText(/sin ningún reporte cerca/);
+    expect(aviso.closest('p')).toHaveAttribute(
+      'title',
+      expect.stringMatching(/no lo pone en duda/),
+    );
   });
 });

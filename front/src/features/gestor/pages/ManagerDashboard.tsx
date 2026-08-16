@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Clock, Satellite, ChevronDown, ChevronRight, Building2 } from 'lucide-react';
+import { Satellite, ChevronRight, Building2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { listReportes } from '@/api/reportes';
-import { SeverityBadge } from '@/components/shared/StatusBadge';
+import { SeverityBadge, StatusBadge } from '@/components/shared/StatusBadge';
 import EmergencyIcon from '@/components/shared/EmergencyIcon';
 import TrustBadge from '@/components/shared/TrustBadge';
 import BandaPortada from '@/components/ui/BandaPortada';
@@ -24,7 +24,7 @@ import {
   type SenalGeolocalizada,
 } from '@/features/gestor/lib/cruce';
 import { useTituloPagina } from '@/hooks/useTituloPagina';
-import type { Prioridad, Report, ReportStatus } from '@/types';
+import type { Prioridad, Report } from '@/types';
 
 /** Prioridad del contrato → color de la chincheta y de la leyenda. */
 const TONO_POR_PRIORIDAD: Record<Prioridad, TonoReporte> = {
@@ -41,89 +41,49 @@ function tiempoTranscurrido(iso: string, t: TFunction): string {
 }
 
 /**
- * Tarjeta de un reporte dentro del tablero.
+ * Una fila de la cola de trabajo.
  *
- * Lleva tres distintivos, no cinco. El estado se quitó porque **es la columna
- * en la que está**: repetirlo gastaba el ancho que necesitaba el título. Y el
- * nivel de confianza va compacto («4/4» con su icono) porque «Avalado por
- * CMGRD» a tamaño completo no cabe en una columna de tablero y terminaba
- * saliéndose de la tarjeta.
+ * Antes esto era una tarjeta dentro de un tablero de seis columnas, y ese
+ * formato costaba caro: el título se cortaba en «Vendaval destruyó tech…», dos
+ * columnas quedaban vacías ocupando el mismo ancho que las llenas, y el resto se
+ * salía de la pantalla con desplazamiento horizontal. Un kanban sirve cuando se
+ * arrastra entre columnas; aquí nadie arrastra nada.
+ *
+ * La fila muestra el título entero, que es lo que el gestor lee para decidir.
  */
-function TarjetaReporte({ reporte }: { reporte: Report }) {
+function FilaReporte({ reporte }: { reporte: Report }) {
   const { t } = useTranslation();
 
   return (
-    <Link
-      to={`/reporte/${reporte.id}`}
-      className="ficha-pulsable block min-w-0 p-3"
-      title={reporte.title}
-    >
-      <div className="flex min-w-0 items-start gap-2.5">
+    <li>
+      <Link
+        to={`/reporte/${reporte.id}`}
+        className="flex items-start gap-3 px-4 py-3 hover:bg-azul-50/60 focus-visible:bg-azul-50"
+      >
         <EmergencyIcon type={reporte.type} size="sm" />
+
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 font-semibold leading-snug text-tinta-900">{reporte.title}</p>
-          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5">
-            <SeverityBadge severity={reporte.prioridad} />
-            <TrustBadge level={reporte.trustLevel} compacto />
-            {reporte.satelliteVerified && (
-              <span className="distintivo bg-seguro-50 text-seguro-700" title={t('manager.satelliteOk')}>
-                <Satellite className="h-4 w-4 shrink-0" aria-hidden="true" />
-              </span>
-            )}
-          </div>
-          <p className="mt-2 flex items-center gap-1.5 text-sm text-tinta-500">
-            <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
-            {tiempoTranscurrido(reporte.createdAt, t)}
+          <p className="font-semibold leading-snug text-tinta-900">{reporte.title}</p>
+          <p className="mt-1 text-sm text-tinta-600">
+            {reporte.location} · {tiempoTranscurrido(reporte.createdAt, t)}
           </p>
         </div>
-      </div>
-    </Link>
-  );
-}
 
-/** Una columna del tablero, plegable en móvil. */
-function ColumnaTriaje({
-  etiqueta,
-  reportes,
-  abiertaPorDefecto,
-}: {
-  etiqueta: string;
-  reportes: Report[];
-  abiertaPorDefecto: boolean;
-}) {
-  const { t } = useTranslation();
-  const [abierta, setAbierta] = useState(abiertaPorDefecto);
-
-  return (
-    <div className="ficha overflow-hidden lg:min-w-0 lg:flex-1">
-      <button
-        type="button"
-        onClick={() => setAbierta(!abierta)}
-        aria-expanded={abierta}
-        className="flex min-h-[3rem] w-full items-center justify-between gap-2 px-3 text-left hover:bg-tinta-50 lg:pointer-events-none"
-      >
-        <span className="min-w-0 truncate font-bold text-tinta-900">{etiqueta}</span>
-        <span className="flex items-center gap-2">
-          <span className="distintivo bg-azul-600 text-white">{reportes.length}</span>
-          <ChevronDown
-            className={`h-5 w-5 shrink-0 text-tinta-400 transition-transform lg:hidden ${abierta ? 'rotate-180' : ''}`}
-            aria-hidden="true"
-          />
-        </span>
-      </button>
-
-      <div className={`${abierta ? 'block' : 'hidden'} border-t border-papel-borde p-2 lg:block`}>
-        {reportes.length === 0 ? (
-          <p className="px-2 py-6 text-center text-sm text-tinta-400">{t('manager.emptyColumn')}</p>
-        ) : (
-          <div className="space-y-2">
-            {reportes.map((reporte) => (
-              <TarjetaReporte key={reporte.id} reporte={reporte} />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+          <SeverityBadge severity={reporte.prioridad} />
+          <StatusBadge status={reporte.status} />
+          <TrustBadge level={reporte.trustLevel} compacto />
+          {reporte.satelliteVerified && (
+            <span
+              className="distintivo bg-seguro-50 text-seguro-700"
+              title={t('manager.satelliteOk')}
+            >
+              <Satellite className="h-4 w-4 shrink-0" aria-hidden="true" />
+            </span>
+          )}
+        </div>
+      </Link>
+    </li>
   );
 }
 
@@ -145,14 +105,24 @@ export default function ManagerDashboard() {
 
   useTituloPagina(t('meta.manager.title'), t('meta.manager.description'));
 
-  const columnas: { estado: ReportStatus; etiqueta: string }[] = [
-    { estado: 'Reportado', etiqueta: t('manager.colReported') },
-    { estado: 'Verificado', etiqueta: t('manager.colVerified') },
-    { estado: 'Asignado', etiqueta: t('manager.colAssigned') },
-    { estado: 'EnAtencion', etiqueta: t('manager.colInCare') },
-    { estado: 'Atendido', etiqueta: t('manager.colAttended') },
-    { estado: 'Cerrado', etiqueta: t('manager.colClosed') },
-  ];
+  /*
+   * El orden de la cola es el orden de atención: prioridad primero y, a igual
+   * prioridad, lo que lleva más tiempo esperando. Lo ya atendido y lo cerrado
+   * baja al final, porque no exige nada del gestor pero tampoco desaparece: si
+   * alguien pregunta por un caso resuelto, sigue estando.
+   */
+  const cola = useMemo(() => {
+    const peso: Record<Prioridad, number> = { Alta: 0, Media: 1, Baja: 2 };
+    const resuelto = (r: Report): number =>
+      r.status === 'Atendido' || r.status === 'Cerrado' ? 1 : 0;
+
+    return [...reportes].sort(
+      (a, b) =>
+        resuelto(a) - resuelto(b) ||
+        peso[a.prioridad] - peso[b.prioridad] ||
+        Date.parse(a.createdAt) - Date.parse(b.createdAt),
+    );
+  }, [reportes]);
 
   /*
    * Cifras calculadas sobre los reportes que hay, no escritas a mano.
@@ -328,24 +298,26 @@ export default function ManagerDashboard() {
         cargando={cargando}
       />
 
-      {/* ── Tablero de triaje ───────────────────────────────────────────────
-          En móvil son secciones plegables, una debajo de otra. Desde `lg` son
-          columnas con desplazamiento horizontal, cada una con ancho mínimo para
-          que la tarjeta de adentro no se estruje. */}
-      <section className="mt-8">
-        <h2 className="mb-3 text-lg">{t('manager.triageBoard')}</h2>
+      {/* ── Cola de trabajo ─────────────────────────────────────────────────
+          Una lista y no un tablero de seis columnas. El kanban servía para
+          arrastrar entre estados y aquí nadie arrastra: lo único que hacía era
+          cortar los títulos, dejar columnas vacías ocupando el mismo ancho que
+          las llenas y empujar el resto fuera de la pantalla.
 
-        <div className="space-y-2 lg:flex lg:space-x-3 lg:space-y-0 lg:overflow-x-auto lg:pb-2">
-          {columnas.map(({ estado, etiqueta }, indice) => (
-            <div key={estado} className="lg:w-60 lg:shrink-0">
-              <ColumnaTriaje
-                etiqueta={etiqueta}
-                reportes={reportes.filter((r) => r.status === estado)}
-                abiertaPorDefecto={indice === 0}
-              />
-            </div>
-          ))}
+          El orden es el de atención: primero lo urgente, y a igual prioridad lo
+          que lleva más tiempo esperando. Eso responde «¿qué atiendo ahora?»,
+          que es la pregunta que trae al gestor a esta pantalla. */}
+      <section className="mt-8">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 className="text-lg">{t('manager.triageBoard')}</h2>
+          <p className="text-sm text-tinta-600">{t('manager.colaOrden')}</p>
         </div>
+
+        <ul className="ficha divide-y divide-papel-borde overflow-hidden">
+          {cola.map((reporte) => (
+            <FilaReporte key={reporte.id} reporte={reporte} />
+          ))}
+        </ul>
 
         <Link
           to="/alertas"

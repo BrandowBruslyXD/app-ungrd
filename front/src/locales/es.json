@@ -847,18 +847,18 @@
       "estadoRespondiendo": "Respondiendo",
       "gibsFuente": "NASA GIBS",
       "gibsQueEs": "Imagen satelital diaria del territorio",
-      "gibsHallazgo": "Última pasada del satélite: {{fecha}}",
-      "gibsCuando": "El satélite pasa dos veces al día y la imagen se publica entre una y tres horas después.",
+      "gibsHallazgo": "imagen del {{fecha}}",
+      "gibsCuando": "",
       "usgsQueEs": "Red sísmica mundial del servicio geológico de Estados Unidos",
-      "usgsHallazgo_one": "{{count}} sismo en Colombia y su entorno en los últimos siete días",
-      "usgsHallazgo_other": "{{count}} sismos en Colombia y su entorno en los últimos siete días",
-      "usgsCuando": "El más reciente, {{tiempo}}",
+      "usgsHallazgo_one": "{{count}} sismo en 7 días",
+      "usgsHallazgo_other": "{{count}} sismos en 7 días",
+      "usgsCuando": "{{tiempo}}",
       "gdacsQueEs": "Alertas multiamenaza de Naciones Unidas y la Comisión Europea",
-      "gdacsHallazgo_one": "{{count}} alerta activa que afecta a Colombia",
-      "gdacsHallazgo_other": "{{count}} alertas activas que afectan a Colombia",
-      "gdacsCuando": "La más reciente, {{tiempo}}",
-      "sinReporte_one": "{{count}} señal sin ningún reporte ciudadano cerca: puede haber ocurrido algo donde nadie ha avisado.",
-      "sinReporte_other": "{{count}} señales sin ningún reporte ciudadano cerca: puede haber ocurrido algo donde nadie ha avisado.",
+      "gdacsHallazgo_one": "{{count}} alerta activa",
+      "gdacsHallazgo_other": "{{count}} alertas activas",
+      "gdacsCuando": "{{tiempo}}",
+      "sinReporte_one": "{{count}} señal sin ningún reporte cerca",
+      "sinReporte_other": "{{count}} señales sin ningún reporte cerca",
       "notaAusencia": "Que no haya señal externa cerca de un reporte no lo pone en duda. El satélite pasa dos veces al día, puede haber nubes o ser de noche, y estas fuentes no observan deslizamientos ni crecientes de quebrada.",
       "haceInstantes": "hace un momento",
       "haceMinutos_one": "hace {{count}} minuto",
@@ -870,7 +870,8 @@
       "procedencia": "Imágenes satelitales de la NASA · Sismos del USGS · Alertas de GDACS"
     },
     "deTotal": "de {{total}} reportes",
-    "avanceAria": "{{cerradas}} de {{total}} reportes ya atendidos o cerrados"
+    "avanceAria": "{{cerradas}} de {{total}} reportes ya atendidos o cerrados",
+    "colaOrden": "Por prioridad y tiempo de espera"
   },
   "ungrd": {
     "sectores": {

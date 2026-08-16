@@ -69,13 +69,18 @@ function textoDesde(iso: string | null, t: TFunction): string {
  * ficha—. Queda el dato y la hora, que es lo que se mira.
  */
 function LineaFuente({ ficha }: { ficha: Ficha }) {
+  /*
+   * Texto corrido, no una caja flex por trozo.
+   *
+   * La versión anterior ponía cada parte en su propio elemento flexible con
+   * `min-w-0`, y eso le da permiso al navegador para encoger la caja hasta cero
+   * cuando el espacio aprieta: el resultado fue el texto partido letra por letra
+   * en vertical. Como aquí no hay nada que truncar, el texto se deja fluir.
+   */
   return (
-    <li className="flex min-w-0 items-baseline gap-2">
-      <span className="shrink-0 font-semibold text-tinta-900">{ficha.fuente}</span>
-      <span className="min-w-0 text-tinta-700">{ficha.hallazgo}</span>
-      {ficha.cuando !== '' && (
-        <span className="shrink-0 text-tinta-500">· {ficha.cuando}</span>
-      )}
+    <li className="text-tinta-700">
+      <span className="font-semibold text-tinta-900">{ficha.fuente}</span> {ficha.hallazgo}
+      {ficha.cuando !== '' && <span className="text-tinta-500"> · {ficha.cuando}</span>}
     </li>
   );
 }
@@ -147,8 +152,11 @@ export default function FranjaSenales({
         {t('manager.observacion.franjaTitulo')}
       </h2>
 
-      <div className="ficha flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 text-sm">
-        <ul className="flex min-w-0 flex-1 flex-wrap gap-x-5 gap-y-1.5">
+      <div className="ficha px-4 py-3 text-sm">
+        {/* Rejilla y no flex: cada fuente ocupa una columna con ancho propio y
+            baja a la siguiente fila cuando no cabe, sin poder encogerse por
+            debajo de su contenido. */}
+        <ul className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2 lg:grid-cols-3">
           {fichas.map((ficha) => (
             <LineaFuente key={ficha.clave} ficha={ficha} />
           ))}
@@ -167,11 +175,11 @@ export default function FranjaSenales({
          */}
         {sinReporte > 0 && (
           <p
-            className="flex shrink-0 items-center gap-1.5 font-semibold text-espera-700"
+            className="mt-2 flex items-start gap-1.5 border-t border-papel-borde pt-2 font-semibold text-espera-700"
             title={t('manager.observacion.notaAusencia')}
           >
-            <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
-            {t('manager.observacion.sinReporte', { count: sinReporte })}
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>{t('manager.observacion.sinReporte', { count: sinReporte })}</span>
           </p>
         )}
       </div>
