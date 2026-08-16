@@ -2,22 +2,44 @@ import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithI18n } from '@/test/render';
 import { SeverityBadge, StatusBadge } from './StatusBadge';
+import type { ReportStatus, Prioridad } from '@/types';
 
 describe('StatusBadge', () => {
-  it('muestra la etiqueta de estado en atención', () => {
-    renderWithI18n(<StatusBadge status="EnAtencion" />);
-    expect(screen.getByText('En atención')).toBeInTheDocument();
-  });
+  const casos: { status: ReportStatus; etiqueta: string }[] = [
+    { status: 'Reportado', etiqueta: 'Reportado' },
+    { status: 'Verificado', etiqueta: 'Verificado' },
+    { status: 'Asignado', etiqueta: 'Asignado' },
+    { status: 'EnAtencion', etiqueta: 'En atención' },
+    { status: 'Atendido', etiqueta: 'Atendido' },
+    { status: 'Cerrado', etiqueta: 'Cerrado' },
+  ];
 
-  it('muestra la etiqueta de estado cerrado', () => {
-    renderWithI18n(<StatusBadge status="Cerrado" />);
-    expect(screen.getByText('Cerrado')).toBeInTheDocument();
+  it.each(casos)(
+    'muestra la etiqueta "$etiqueta" cuando el estado es $status',
+    ({ status, etiqueta }) => {
+      renderWithI18n(<StatusBadge status={status} />);
+      expect(screen.getByText(etiqueta)).toBeInTheDocument();
+    },
+  );
+
+  it('no muestra la etiqueta de otro estado cuando el estado es Reportado', () => {
+    renderWithI18n(<StatusBadge status="Reportado" />);
+    expect(screen.queryByText('En atención')).not.toBeInTheDocument();
   });
 });
 
 describe('SeverityBadge', () => {
-  it('muestra la prioridad alta', () => {
-    renderWithI18n(<SeverityBadge severity="Alta" />);
-    expect(screen.getByText('Alta')).toBeInTheDocument();
-  });
+  const casos: { severity: Prioridad; etiqueta: string }[] = [
+    { severity: 'Baja', etiqueta: 'Baja' },
+    { severity: 'Media', etiqueta: 'Media' },
+    { severity: 'Alta', etiqueta: 'Alta' },
+  ];
+
+  it.each(casos)(
+    'muestra la etiqueta "$etiqueta" cuando la prioridad es $severity',
+    ({ severity, etiqueta }) => {
+      renderWithI18n(<SeverityBadge severity={severity} />);
+      expect(screen.getByText(etiqueta)).toBeInTheDocument();
+    },
+  );
 });
