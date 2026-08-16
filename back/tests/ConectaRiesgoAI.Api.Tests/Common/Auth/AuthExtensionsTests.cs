@@ -28,7 +28,8 @@ public class AuthExtensionsTests
                 ["Jwt:Secret"] = "clave-de-pruebas-unicamente-no-usar-en-produccion-32+",
                 ["Jwt:Issuer"] = "ConectaRiesgoAI.Tests",
                 ["Jwt:Audience"] = "ConectaRiesgoAI.Tests",
-                ["Jwt:HorasDeVigencia"] = "1"
+                ["Jwt:HorasDeVigencia"] = "1",
+                ["IngestaBot:ApiKey"] = "clave-de-pruebas-unicamente-no-usar-en-produccion"
             })
             .Build();
 
