@@ -59,7 +59,8 @@ Se anotan para no volver a discutir lo mismo a las 3 de la mañana.
 | D15 | **Backend en Azure Container Apps + Azure Database for PostgreSQL Flexible Server** (región `brazilsouth`), no en Railway/Render ni Neon como se sugería antes | El App Service Plan chocó con cuota de cómputo en 0 en la suscripción (`Intelapps Subscription`); Container Apps usa cuota de consumo y no tuvo ese problema. Se aprovecha la suscripción de Azure ya disponible. Cada push a `main` que toca `back/` se despliega solo vía `deploy-backend.yml` (GitHub Actions + Azure Container Registry) |
 | D2 | **Sin monitoreo de X** | Buscar publicaciones dejó de ser gratis. Se usa Bluesky, que sí lo es |
 | D3 | **Integraciones como clientes HTTP internos** en `back/src/ConectaRiesgoAI.Api/Integrations/` | Detalle en `docs/ARQUITECTURA.md`. ⚠️ **Sin ejecutar todavía:** ya existen microservicios reales en `servicios/` (`ms-satelital`, `ms-transparencia`, `ms-social`) que cubren esto mismo — falta decidir si se migran a `Integrations/` o si esta decisión se revierte |
-| D4 | **Sin panel de administrador** (pantalla 6) | No aporta al pitch y cuesta horas |
+| D4 | **Sin panel de administrador** (pantalla 6) | No aporta al pitch y cuesta horas. ⚠️ **En revisión:** la entrevista con la ingeniera de la UNGRD cambió el argumento — el panel de reparto sectorial sí aporta, y mucho. Ver D15 |
+| D15 | **Reparto sectorial a ministerios: diseño aprobado, construcción pendiente de decisión** | El dolor real de la UNGRD es repartir la información entre ministerios, hoy a mano y con un mes de demora. Diseño completo y nueve decisiones tomadas en `docs/REPARTO-SECTORIAL.md`: envío de correo **simulado**, entregable **PDF + CSV**, aprobación **humana** obligatoria, ministerios que **no entran al sistema**, tres fuentes con nivel de confianza visible, clasificación determinista primero, agrupación por evento, trece sectores del formato oficial FR-1703-SMD-09, correos falsos en la demo. **Falta decidir si desplaza a la Fase 1 como diferenciador del pitch** — ver `FASES.md`, Fase 3.5 |
 | D5 | **Sin modo offline** en el hackathon | 5-6 horas de trabajo y es lo que más fácil se rompe en vivo. Se muestra el indicador y se cuenta como visión |
 | D6 | **Registro de damnificados en Fase 3** | La Fase 1 sola ya es demostrable. Empezar por lo grande es apostar todo |
 | D7 | **Sin PostGIS** | Haversine en C# alcanza y ahorra una hora de pelear con extensiones |
@@ -67,6 +68,7 @@ Se anotan para no volver a discutir lo mismo a las 3 de la mañana.
 | D9 | **Respaldo de SECOP** marcado como no real | `datos.gov.co` estuvo caído. Mostrarlo como real sería engañar al jurado |
 | D16 | **Backfill de `Reporte.Clase = AfectacionPropia`** para los reportes previos a la migración `AgregaCamposParaWhatsapp` | Es una suposición, no un dato real: no hay forma de saber retroactivamente si esos reportes eran un aviso sobre un evento o una afectación propia. Quien construya reportes o filtros por `Clase` debe saber que los históricos están adivinados |
 | D17 | **Azure Blob Storage además de Cloudinary, no en reemplazo** — `POST /api/evidencias` sube server-side a dos contenedores privados (`evidencias`, `censo`) con URL firmada. Coexiste con el flujo Cloudinary client-side de `CONTRATO-API.md` sección 2; no se tocó ese endpoint | Issue #47: Azure Container Apps no tiene disco persistente, y las fotos del censo (documentos, rostros) necesitan un contenedor con la protección más alta de la Ley 1581. Unificar ambos flujos de subida queda para cuando exista `CrearReporte` |
+| D18 | **`GET /api/ingesta/reportes/{codigo}` devuelve `200` siempre**, con `estado: "No encontrado"` para códigos inexistentes | El bot de WhatsApp no diferencia `200`/`404` con ramas de código; tratar ambos casos como texto simplifica la lógica del bot y elimina una clase de error en producción |
 
 ---
 
@@ -81,6 +83,9 @@ Se anotan para no volver a discutir lo mismo a las 3 de la mañana.
 | R5 | **Alguien sube una credencial** | Media | Repo público: quedaría expuesta. Casilla en la plantilla de PR |
 | R6 | **Meter funcionalidades tarde** | Alta | Congelación en la hora 16, sin excepciones |
 | R7 | **Datos personales reales en la demo** | Media | Solo datos inventados. Nunca una cédula real |
+| R8 | **El panel de reparto sectorial se come el tiempo de la Fase 1** | Alta | Es más grande que el censo de damnificados, que ya era lo primero que se corta. Se construye **solo la pantalla del paquete del ministerio** y el resto se cuenta como lo que sigue. Ver `FASES.md`, Fase 3.5 |
+| R9 | **Presentar el envío de correo como real** | Media | Es simulado. Se marca en la interfaz y se dice en el pitch, igual que el respaldo de SECOP (D9). Si el jurado lo descubre, cuesta más que reconocerlo |
+| R10 | **Enviar un correo de prueba a un ministerio de verdad** | Baja | Los correos de destino son configurables y en la demo son `@ejemplo.gov.co`. Ninguna dirección real en el código ni en los datos sembrados |
 
 ---
 

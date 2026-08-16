@@ -91,6 +91,36 @@ El flujo de 5 pasos del boceto: brigadista que registra personas afectadas con d
 
 ---
 
+## Fase 3.5 · Reparto sectorial a ministerios — el panel de la UNGRD
+**Estado: 🟠 propuesta escrita · pendiente de una decisión del equipo**
+
+Convierte la información consolidada de una emergencia en **el paquete que le toca a cada
+ministerio** (PDF de oficio + CSV de detalle), listo para que un funcionario lo apruebe y lo envíe.
+
+Sale de la entrevista con la ingeniera de la UNGRD: hoy ese reparto se hace a mano y **el Plan de
+Acción Específico tarda cerca de un mes en consolidarse**. Diseño completo, con las nueve decisiones
+ya tomadas, en **[REPARTO-SECTORIAL.md](REPARTO-SECTORIAL.md)**.
+
+**Por qué lleva número intermedio y no es la Fase 4:** no es visión, es construible — pero depende
+de que existan daños que repartir, y esos vienen de la Fase 3 o de una carga de EDAN municipal. Con
+solo reportes ciudadanos, lo que le llega al ministerio es la fuente **menos** útil para él.
+
+**La decisión pendiente, y es del equipo:** cuál es el diferenciador del pitch.
+
+| | Diferenciador | A favor | En contra |
+|:---|:---|:---|:---|
+| **A** | El ciudadano ve avanzar su caso | Casi construido, emociona, se demuestra en dos pantallas | Es lo que cualquiera esperaría de una app de reportes |
+| **B** | La UNGRD reparte en minutos lo que hoy tarda un mes | Le habla al dolor real de la entidad, sale de una entrevista, nadie más lo va a presentar | Necesita datos que hoy no existen y un panel entero |
+
+**Camino intermedio recomendado:** terminar A completo y de B construir **solo la pantalla del
+paquete del ministerio** con datos sembrados, contando el resto como lo que sigue. Una pantalla
+funcionando vale más que cuatro a medias.
+
+> ⚠️ Esta fase **revierte la decisión D4** («sin panel de administrador»). No se empieza hasta que
+> el equipo lo confirme y quede anotado en `CONTROL.md`.
+
+---
+
 ## Fase 4 · Lo que viene después
 **Estado: ⬜ solo para el pitch — no se construye**
 
