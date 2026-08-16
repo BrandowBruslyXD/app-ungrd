@@ -41,6 +41,31 @@ export class ErrorApi extends Error {
   }
 }
 
+/**
+ * Hace que cancelar la señal de quien llama cancele también la petición.
+ *
+ * No se usa `AbortSignal.any`, que es exactamente esto en una línea, porque
+ * llegó a Safari en la 17.4 y esta app tiene que funcionar en los teléfonos
+ * viejos que suele haber en una emergencia.
+ *
+ * Devuelve la función que suelta el oyente: sin ella, una señal reutilizada
+ * entre muchas llamadas los va acumulando.
+ */
+function enlazarCancelacion(externa: AbortSignal | null | undefined, propio: AbortController) {
+  if (!externa) {
+    return () => {};
+  }
+
+  if (externa.aborted) {
+    propio.abort(externa.reason);
+    return () => {};
+  }
+
+  const alCancelar = () => propio.abort(externa.reason);
+  externa.addEventListener('abort', alCancelar, { once: true });
+  return () => externa.removeEventListener('abort', alCancelar);
+}
+
 /** Traduce un código HTTP a algo que una persona en emergencia pueda entender. */
 function mensajePorEstado(estado: number): string {
   if (estado === 401 || estado === 403) return 'Tu sesión no es válida. Vuelve a iniciar sesión.';
@@ -64,18 +89,29 @@ function mensajePorEstado(estado: number): string {
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const control = new AbortController();
   const temporizador = setTimeout(() => control.abort(), TIEMPO_LIMITE_MS);
+  const desatar = enlazarCancelacion(init?.signal, control);
 
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...init,
-      signal: init?.signal ?? control.signal,
+      // Siempre la propia, nunca la de quien llama: pasar la externa tal cual
+      // dejaba la petición sin tiempo límite. La cancelación del llamador llega
+      // igual, reenviada por `enlazarCancelacion`.
+      signal: control.signal,
       headers: {
         'Content-Type': 'application/json',
         ...init?.headers,
       },
     });
   } catch (causa) {
+    // Que el llamador cancele —una pantalla que se cierra a medio cargar— no es
+    // un fallo que haya que contarle a nadie. Se propaga como cancelación para
+    // que quien la pidió la reconozca, en vez de pintar un error que no ocurrió.
+    if (init?.signal?.aborted) {
+      throw causa;
+    }
+
     // Sin respuesta: o se agotó el tiempo, o no hay conexión.
     const abortado = causa instanceof DOMException && causa.name === 'AbortError';
     throw new ErrorApi(
@@ -87,6 +123,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
       true
     );
   } finally {
+    desatar();
     clearTimeout(temporizador);
   }
 

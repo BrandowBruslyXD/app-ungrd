@@ -17,6 +17,12 @@ env:
   RESOURCE_GROUP: conectariesgoai-rg
   CONTAINER_APP: conectariesgoai-api
 
+  # Desde dónde puede llamarse a la API: el frontend desplegado. Va aquí y no en
+  # un panel de Azure para que quede versionado —quien cambie el dominio ve que
+  # también hay que tocar esto— y para que un contenedor recreado no pierda la
+  # configuración. Si son varios, se separan por comas y sin barra final.
+  ORIGENES_WEB: https://conectariesgoai.vercel.app
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -43,7 +49,43 @@ jobs:
           az containerapp update \
             --name ${{ env.CONTAINER_APP }} \
             --resource-group ${{ env.RESOURCE_GROUP }} \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --set-env-vars "CORS_ORIGENES=${{ env.ORIGENES_WEB }}"
+
+      # Comprueba que el navegador del ciudadano podrá llamar a la API.
+      #
+      # Se hace desde fuera y no leyendo la configuración a propósito: lo que
+      # importa no es que la variable exista, sino que la respuesta traiga el
+      # encabezado. Sin él, la aplicación desplegada carga y se queda vacía, y el
+      # único rastro es un error en la consola del navegador que nadie mira.
+      - name: Verificar que CORS permite al frontend
+        run: |
+          API="https://$(az containerapp show \
+            --name ${{ env.CONTAINER_APP }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --query properties.configuration.ingress.fqdn -o tsv)"
+
+          echo "Comprobando $API contra ${{ env.ORIGENES_WEB }}"
+
+          # La revisión nueva tarda unos segundos en recibir tráfico.
+          for intento in 1 2 3 4 5 6; do
+            permitido=$(curl -s -m 20 -i -X OPTIONS "$API/api/reportes" \
+              -H "Origin: ${{ env.ORIGENES_WEB }}" \
+              -H "Access-Control-Request-Method: GET" \
+              | grep -i "access-control-allow-origin" || true)
+
+            if [ -n "$permitido" ]; then
+              echo "✓ $permitido"
+              exit 0
+            fi
+
+            echo "  intento $intento: todavía sin encabezado, reintentando…"
+            sleep 10
+          done
+
+          echo "✗ La API no autoriza a ${{ env.ORIGENES_WEB }}."
+          echo "  El frontend desplegado no podrá llamarla: revisa CORS_ORIGENES."
+          exit 1
 
       - name: Cerrar sesión en Azure
         if: always()
