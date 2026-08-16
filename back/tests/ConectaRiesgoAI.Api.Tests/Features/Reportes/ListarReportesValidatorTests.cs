@@ -27,6 +27,26 @@ public class ListarReportesValidatorTests
     }
 
     [Fact]
+    public void Validate_RadioKmSinLatNiLng_FallaEnVezDeIgnorarElRadioEnSilencio()
+    {
+        var query = new ListarReportesQuery(null, null, null, null, 10, null, null);
+
+        var resultado = _validador.Validate(query);
+
+        Assert.Contains(resultado.Errors, e => e.PropertyName == "radioKm");
+    }
+
+    [Fact]
+    public void Validate_RadioKmConLatYLng_NoFalla()
+    {
+        var query = new ListarReportesQuery(null, null, 4.71, -74.07, 10, null, null);
+
+        var resultado = _validador.Validate(query);
+
+        Assert.True(resultado.IsValid);
+    }
+
+    [Fact]
     public void Validate_SinFiltros_NoTieneErrores()
     {
         var resultado = _validador.Validate(new ListarReportesQuery(null, null, null, null, null, null, null));

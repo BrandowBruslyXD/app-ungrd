@@ -19,5 +19,11 @@ public class ListarReportesValidator : AbstractValidator<ListarReportesQuery>
         RuleFor(x => x.Lng)
             .InclusiveBetween(-180, 180).WithMessage("La longitud debe estar entre -180 y 180")
             .When(x => x.Lng is not null);
+        // Sin lat/lng, ListarReportesHandler no puede calcular distancia y el filtro de radio
+        // nunca se evalúa: en vez de degradar en silencio a "sin filtrar", se rechaza explícito.
+        RuleFor(x => x)
+            .Must(x => x.RadioKm is null || (x.Lat is not null && x.Lng is not null))
+            .WithName("radioKm")
+            .WithMessage("radioKm requiere que también se envíen lat y lng");
     }
 }
