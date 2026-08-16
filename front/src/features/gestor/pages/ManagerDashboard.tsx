@@ -1,17 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  AlertTriangle,
-  Clock,
-  CheckCircle2,
-  Satellite,
-  TrendingUp,
-  ChevronDown,
-  ChevronRight,
-  Building2,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { Clock, Satellite, ChevronDown, ChevronRight, Building2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { listReportes } from '@/api/reportes';
 import { SeverityBadge } from '@/components/shared/StatusBadge';
@@ -172,31 +162,22 @@ export default function ManagerDashboard() {
    * gestión que muestra números que nadie midió es peor que uno vacío: el
    * funcionario toma decisiones con ellos.
    */
-  const indicadores: { etiqueta: string; valor: number; icono: LucideIcon; clases: string }[] = [
-    {
-      etiqueta: t('manager.statReports'),
-      valor: reportes.length,
-      icono: TrendingUp,
-      clases: 'text-azul-600 bg-azul-50',
-    },
-    {
-      etiqueta: t('manager.statActive'),
-      valor: reportes.filter((r) => r.status !== 'Cerrado' && r.status !== 'Atendido').length,
-      icono: AlertTriangle,
-      clases: 'text-alerta-600 bg-alerta-50',
-    },
-    {
-      etiqueta: t('manager.statAttended'),
-      valor: reportes.filter((r) => r.status === 'Atendido' || r.status === 'Cerrado').length,
-      icono: CheckCircle2,
-      clases: 'text-seguro-600 bg-seguro-50',
-    },
-    {
-      etiqueta: t('manager.statToVerify'),
-      valor: reportes.filter((r) => r.status === 'Reportado').length,
-      icono: Satellite,
-      clases: 'text-oro-800 bg-oro-50',
-    },
+  const activas = reportes.filter((r) => r.status !== 'Cerrado' && r.status !== 'Atendido').length;
+  const cerradas = reportes.length - activas;
+  const porVerificar = reportes.filter((r) => r.status === 'Reportado').length;
+
+  /*
+   * Una sola cifra manda y las demás la acompañan.
+   *
+   * Antes eran cuatro tarjetas idénticas con el número a 48 px: cuatro
+   * protagonistas es ninguno, y el funcionario tenía que leer las cuatro para
+   * saber si le tocaba hacer algo. Lo que le importa al abrir el panel es
+   * cuántas emergencias siguen abiertas; el resto es contexto de esa cifra.
+   */
+  const acompanantes: { etiqueta: string; valor: number; alerta?: boolean }[] = [
+    { etiqueta: t('manager.statToVerify'), valor: porVerificar, alerta: porVerificar > 0 },
+    { etiqueta: t('manager.statAttended'), valor: cerradas },
+    { etiqueta: t('manager.statReports'), valor: reportes.length },
   ];
 
   /*
@@ -262,19 +243,52 @@ export default function ManagerDashboard() {
         />
       </div>
 
-      {/* ── Indicadores ──────────────────────────────────────────────────── */}
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {indicadores.map(({ etiqueta, valor, icono: Icono, clases }) => (
-          <div key={etiqueta} className="ficha min-w-0 p-4">
-            <span
-              className={`inline-flex h-10 w-10 items-center justify-center rounded-control ${clases}`}
-            >
-              <Icono className="h-5 w-5" aria-hidden="true" />
+      {/* ── Indicadores ──────────────────────────────────────────────────────
+          Una franja, no cuatro tarjetas: la cifra que exige acción a la
+          izquierda y el contexto a la derecha, separado por filetes de 1 px. Sin
+          iconos en cuadros de color — no aportaban ningún dato y son el adorno
+          que hace que un tablero parezca hecho en serie. */}
+      <section className="ficha flex flex-wrap items-stretch gap-y-4 px-5 py-4">
+        <div className="min-w-0 flex-1 pr-6">
+          <p className="text-sm text-tinta-600">{t('manager.statActive')}</p>
+          <p className="mt-0.5 flex items-baseline gap-2">
+            <span className="text-4xl font-bold tabular-nums leading-none text-tinta-900">
+              {activas}
             </span>
-            <p className="mt-2 text-2xl font-bold text-tinta-900">{valor}</p>
-            <p className="text-sm leading-snug text-tinta-600">{etiqueta}</p>
+            <span className="text-sm text-tinta-500">
+              {t('manager.deTotal', { total: reportes.length })}
+            </span>
+          </p>
+          {/* El avance del municipio, sin inventar un porcentaje: la barra ES la proporción. */}
+          <div
+            className="mt-3 flex h-1.5 gap-0.5 overflow-hidden rounded-full bg-neutro-200"
+            role="img"
+            aria-label={t('manager.avanceAria', { cerradas, total: reportes.length })}
+          >
+            <span className="bg-alerta-600" style={{ flex: activas || 0.001 }} />
+            <span className="bg-seguro-600" style={{ flex: cerradas || 0.001 }} />
           </div>
-        ))}
+        </div>
+
+        <dl className="flex flex-1 flex-wrap items-center justify-end gap-x-6 gap-y-3 sm:flex-nowrap">
+          {acompanantes.map(({ etiqueta, valor, alerta }) => (
+            <div
+              key={etiqueta}
+              className="min-w-0 border-l border-neutro-200 pl-6 first:border-l-0 first:pl-0 sm:first:border-l sm:first:pl-6"
+            >
+              <dd className="flex items-center gap-1.5 text-2xl font-semibold tabular-nums leading-none text-tinta-900">
+                {alerta && (
+                  <span
+                    className="h-1.5 w-1.5 shrink-0 rounded-full bg-alerta-600"
+                    aria-hidden="true"
+                  />
+                )}
+                {valor}
+              </dd>
+              <dt className="mt-1 whitespace-nowrap text-sm text-tinta-600">{etiqueta}</dt>
+            </div>
+          ))}
+        </dl>
       </section>
 
       {/* ── Observación del territorio ──────────────────────────────────────
@@ -283,7 +297,12 @@ export default function ManagerDashboard() {
           está en que un sismo del USGS y un reporte ciudadano caigan en el mismo
           punto y se confirmen. */}
       <section className="mt-8">
-        <h2 className="mb-3 text-lg">{t('manager.observacion.tituloMapa')}</h2>
+        {/* La procedencia va junto al título y no escondida bajo el mapa: es lo que
+            convierte una imagen bonita en un dato que alguien puede ir a verificar. */}
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 className="text-lg">{t('manager.observacion.tituloMapa')}</h2>
+          <p className="text-sm text-tinta-600">{t('manager.observacion.procedencia')}</p>
+        </div>
 
         <div className="ficha overflow-hidden">
           <MapaObservacion

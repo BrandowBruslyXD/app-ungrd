@@ -866,8 +866,11 @@
       "haceHoras_one": "hace {{count}} hora",
       "haceHoras_other": "hace {{count}} horas",
       "haceDias_one": "hace {{count}} día",
-      "haceDias_other": "hace {{count}} días"
-    }
+      "haceDias_other": "hace {{count}} días",
+      "procedencia": "Imágenes satelitales de la NASA · Sismos del USGS · Alertas de GDACS"
+    },
+    "deTotal": "de {{total}} reportes",
+    "avanceAria": "{{cerradas}} de {{total}} reportes ya atendidos o cerrados"
   },
   "ungrd": {
     "sectores": {
