@@ -1,0 +1,667 @@
+[
+ {
+  "categoria": "Accesorios",
+  "producto": "Esterilizador de Productos de Belleza Uvc",
+  "precio_cop": 110000
+ },
+ {
+  "categoria": "Accesorios",
+  "producto": "Toalla Para El Cabello En Satin Y Terciopelo De Coral Holy",
+  "precio_cop": 25000
+ },
+ {
+  "categoria": "Accesorios",
+  "producto": "Pinza para Pestañas Holy",
+  "precio_cop": 1500
+ },
+ {
+  "categoria": "Accesorios",
+  "producto": "Pinza Dual System Moldeadora",
+  "precio_cop": 500
+ },
+ {
+  "categoria": "Bronceadores",
+  "producto": "Bronceador de Coco Hidratante",
+  "precio_cop": 40000
+ },
+ {
+  "categoria": "Bronceadores",
+  "producto": "Bronceador de Zanahoria y Canela 250ML",
+  "precio_cop": 38000
+ },
+ {
+  "categoria": "Cepillo secador",
+  "producto": "Kit Cepillo Secador Blow Out Duo + Estuche para el cepillo secador",
+  "precio_cop": 245000
+ },
+ {
+  "categoria": "Cepillo secador",
+  "producto": "Cepillo Secador Blow Out Duo Holy",
+  "precio_cop": 220000
+ },
+ {
+  "categoria": "Cepillo secador",
+  "producto": "Kit Cepillo Secador ProDry + Estuche Para El Cepillo Secador",
+  "precio_cop": 192000
+ },
+ {
+  "categoria": "Cepillo secador",
+  "producto": "Kit Cepillo Secador Oro Rosa Holy + Estuche Cepillo Secador",
+  "precio_cop": 187000
+ },
+ {
+  "categoria": "Cepillo secador",
+  "producto": "Cepillo Secador de Cabello ProDry Holy",
+  "precio_cop": 180000
+ },
+ {
+  "categoria": "Cepillo secador",
+  "producto": "Cepillo Secador Oro Rosa Holy",
+  "precio_cop": 160000
+ },
+ {
+  "categoria": "Cepillo secador",
+  "producto": "Estuche Protector para El Cepillo Secador",
+  "precio_cop": 60000
+ },
+ {
+  "categoria": "Cuidado corporal",
+  "producto": "Exfoliante Corporal de Piedra Volcanica y Rosas",
+  "precio_cop": 58000
+ },
+ {
+  "categoria": "Cuidado corporal",
+  "producto": "Mantequilla Corporal con Glitter",
+  "precio_cop": 57000
+ },
+ {
+  "categoria": "Cuidado corporal",
+  "producto": "Loción hidratante corporal",
+  "precio_cop": 35000
+ },
+ {
+  "categoria": "Cuidado corporal",
+  "producto": "Splash Golden Glow Holy",
+  "precio_cop": 30000
+ },
+ {
+  "categoria": "Cuidado corporal",
+  "producto": "Set de Bombas Efervescentes Exfoliantes E Hidratantes",
+  "precio_cop": 10000
+ },
+ {
+  "categoria": "Cuidado de pies",
+  "producto": "Removedor Recargable De Callos Para Pies",
+  "precio_cop": 140000
+ },
+ {
+  "categoria": "Cuidado facial",
+  "producto": "Limpiador Facial Skin Scrubber Ultrasónico",
+  "precio_cop": 80000
+ },
+ {
+  "categoria": "Cuidado facial",
+  "producto": "Rodillo Facial de Cuarzo Rosa Holy",
+  "precio_cop": 30000
+ },
+ {
+  "categoria": "Cuidado facial",
+  "producto": "Gua Sha Facial de Cuarzo Rosa Holy",
+  "precio_cop": 30000
+ },
+ {
+  "categoria": "Cuidado facial",
+  "producto": "Esferas Faciales Holy",
+  "precio_cop": 25000
+ },
+ {
+  "categoria": "Cuidado facial",
+  "producto": "Parches de Rescate Para Granitos SOS",
+  "precio_cop": 25000
+ },
+ {
+  "categoria": "Cuidado facial",
+  "producto": "Tónico Bruma Facial de Rosas y Colágeno",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Cuidado facial",
+  "producto": "Antifaz Para Dormir En Satín Holy",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Depilación",
+  "producto": "Depiladora 2 En 1 Holy",
+  "precio_cop": 100000
+ },
+ {
+  "categoria": "Depilación",
+  "producto": "Depilador Facial 2 en 1 Holy",
+  "precio_cop": 60000
+ },
+ {
+  "categoria": "Kits",
+  "producto": "Kit Brillo y Confianza Total",
+  "precio_cop": 233750
+ },
+ {
+  "categoria": "Kits",
+  "producto": "Kit Brillo y confianza",
+  "precio_cop": 199750
+ },
+ {
+  "categoria": "Kits",
+  "producto": "Kit Ritual Brillo y Volumen",
+  "precio_cop": 180000
+ },
+ {
+  "categoria": "Kits",
+  "producto": "Kit Ritual Definicion",
+  "precio_cop": 120000
+ },
+ {
+  "categoria": "Kits",
+  "producto": "Kit Relajación Facial Holy",
+  "precio_cop": 100000
+ },
+ {
+  "categoria": "Kits",
+  "producto": "Kit Ritual Glow",
+  "precio_cop": 80500
+ },
+ {
+  "categoria": "Kits",
+  "producto": "Kit Rosé Ritual",
+  "precio_cop": 65000
+ },
+ {
+  "categoria": "Kits",
+  "producto": "Kit Satín Holy",
+  "precio_cop": 60000
+ },
+ {
+  "categoria": "Kits",
+  "producto": "Kit Yoga Facial Holy",
+  "precio_cop": 48000
+ },
+ {
+  "categoria": "Kits",
+  "producto": "Set Cubre Pezón En Gota Por 5 Pares",
+  "precio_cop": 5000
+ },
+ {
+  "categoria": "Maquillaje",
+  "producto": "Brochas Deluxe Holy",
+  "precio_cop": 50000
+ },
+ {
+  "categoria": "Maquillaje",
+  "producto": "Soporte En Espiral Para Esponja - Dorado",
+  "precio_cop": 2000
+ },
+ {
+  "categoria": "Masaje y cuidado",
+  "producto": "Cepillo Masajeador Capilar Eléctrico – Estimulador de Crecimiento",
+  "precio_cop": 100000
+ },
+ {
+  "categoria": "Masaje y cuidado",
+  "producto": "Masajeador Facial Reductor de Papada y Arrugas",
+  "precio_cop": 60000
+ },
+ {
+  "categoria": "Masaje y cuidado",
+  "producto": "Masajeador Facial Beauty Bar Holy",
+  "precio_cop": 40000
+ },
+ {
+  "categoria": "Masaje y cuidado",
+  "producto": "Cepillo Masajeador Corporal Estimulante Holy",
+  "precio_cop": 30000
+ },
+ {
+  "categoria": "Masaje y cuidado",
+  "producto": "Cepillo Masajeador de Silicona para Cuero Cabelludo",
+  "precio_cop": 25000
+ },
+ {
+  "categoria": "Masaje y cuidado",
+  "producto": "Cepillo Capilar Masajeador Relajante",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Masaje y cuidado",
+  "producto": "Cepillo Capilar Masajeador Relajante Holy",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Otros",
+  "producto": "Ultrabond Primer Holy - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Otros",
+  "producto": "Espuma Facial Limpiadora Detox Coconut",
+  "precio_cop": 18000
+ },
+ {
+  "categoria": "Otros",
+  "producto": "Cinta Doble Faz para Ropa",
+  "precio_cop": 15000
+ },
+ {
+  "categoria": "Otros",
+  "producto": "Porta blender Holy",
+  "precio_cop": 10000
+ },
+ {
+  "categoria": "Otros",
+  "producto": "Crema Facial en Gel con Perlas",
+  "precio_cop": 8000
+ },
+ {
+  "categoria": "Otros",
+  "producto": "Balsamo Hidratante Sweet Cheese",
+  "precio_cop": 6000
+ },
+ {
+  "categoria": "Otros",
+  "producto": "Bolsa de regalo Premium Rosa",
+  "precio_cop": 6000
+ },
+ {
+  "categoria": "Otros",
+  "producto": "Bolsa de regalo Navidad",
+  "precio_cop": 6000
+ },
+ {
+  "categoria": "Otros",
+  "producto": "Recipiente de Cristal para Monómero",
+  "precio_cop": 1000
+ },
+ {
+  "categoria": "Perfumería capilar",
+  "producto": "Perfume Capilar de Miel Brillo Intenso",
+  "precio_cop": 57000
+ },
+ {
+  "categoria": "Perfumería capilar",
+  "producto": "Perfume Capilar de Miel - Masmelo",
+  "precio_cop": 56000
+ },
+ {
+  "categoria": "Perfumería capilar",
+  "producto": "Perfume Capilar de Miel - Pistacho",
+  "precio_cop": 56000
+ },
+ {
+  "categoria": "Perfumería capilar",
+  "producto": "Perfume Capilar y Corporal Majestuosa",
+  "precio_cop": 32000
+ },
+ {
+  "categoria": "Perfumería capilar",
+  "producto": "Perfume Capilar Flor de Fuego",
+  "precio_cop": 25000
+ },
+ {
+  "categoria": "Perfumería capilar",
+  "producto": "Perfume Capilar Flor de Cerezo",
+  "precio_cop": 25000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Profesional Babyliss Pro Optima 3000 Azul Cobalto 1″¼",
+  "precio_cop": 589000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Profesional Babyliss Pro Optima 3000 Azul 1\"¼",
+  "precio_cop": 589000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Profesional Babyliss Pro Optima 3000 Rose Gold 1″¼",
+  "precio_cop": 589000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Profesional Babyliss Pro Optima 3000 Rainbow 1″¼",
+  "precio_cop": 589000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Babyliss Profesional Nano Titanium Digital XL 1¼”",
+  "precio_cop": 510000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Profesional Babyliss Nano Titanium Digital Ancha 1″¾",
+  "precio_cop": 456000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Profesional Babyliss Digital Azul 1″¼",
+  "precio_cop": 446500
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Profesional Nano Titanium Ultra Delgada 1”",
+  "precio_cop": 405000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Babyliss Profesional Nano Titanium Ultra Delgada 1”",
+  "precio_cop": 405000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Babyliss Nano Titanium Ultra Delgada 2”",
+  "precio_cop": 403750
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Babyliss Nano Titanium Ancha Azul 1\"½",
+  "precio_cop": 361000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Babyliss Nano Titanium Ancha Lavanda 1\"½",
+  "precio_cop": 361000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Babyliss Nano Titanium Ancha Degrade 1\" ½",
+  "precio_cop": 361000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Babyliss Sol Gel Clasica 1\"",
+  "precio_cop": 304000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Babyliss Porcelain Ceramic Ancha Negra 1\"½",
+  "precio_cop": 248000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Remington Botanicals con Extractos Naturales",
+  "precio_cop": 237500
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Remington Keratina Y Argan",
+  "precio_cop": 232500
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Remington Aguacate con Macadamia",
+  "precio_cop": 199500
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Plancha Remington Wet2Straight Alisa en Húmedo y Seco",
+  "precio_cop": 190000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Cepillo Eléctrico Alisador Portátil con Pantalla",
+  "precio_cop": 70000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Termoalisante Dos En Uno",
+  "precio_cop": 35000
+ },
+ {
+  "categoria": "Plancha y alisado",
+  "producto": "Guante Resistente al Calor para Plancha y Rizadora de Cabello",
+  "precio_cop": 10000
+ },
+ {
+  "categoria": "Rizado",
+  "producto": "Kit Rizador + Guante Resistente al Calor",
+  "precio_cop": 30000
+ },
+ {
+  "categoria": "Rizado",
+  "producto": "Rizador Espiral de Cabello para Rizos Definidos by Holy Cosmetics",
+  "precio_cop": 30000
+ },
+ {
+  "categoria": "Secador",
+  "producto": "Secador Remington Shine Therapy- Aguacate Con Macadamia",
+  "precio_cop": 247000
+ },
+ {
+  "categoria": "Secador",
+  "producto": "Secador Remington Power Shine 2200",
+  "precio_cop": 180500
+ },
+ {
+  "categoria": "Tratamiento capilar",
+  "producto": "Mascarilla Capilar Reparación Intensiva",
+  "precio_cop": 68000
+ },
+ {
+  "categoria": "Tratamiento capilar",
+  "producto": "Miel Capilar Reparadora con Argán",
+  "precio_cop": 57000
+ },
+ {
+  "categoria": "Tratamiento capilar",
+  "producto": "Bio Mascarilla para Crecimiento Capilar",
+  "precio_cop": 40500
+ },
+ {
+  "categoria": "Tratamiento capilar",
+  "producto": "Aceite Reparador De Puntas",
+  "precio_cop": 30000
+ },
+ {
+  "categoria": "Tratamiento capilar",
+  "producto": "Ondas Sin Calor Rodillo Flexible de satin Holy",
+  "precio_cop": 25000
+ },
+ {
+  "categoria": "Tratamiento capilar",
+  "producto": "Mascarilla en Barra de Té Verde",
+  "precio_cop": 5600
+ },
+ {
+  "categoria": "Tratamiento capilar",
+  "producto": "Brocha para Mascarilla Holy",
+  "precio_cop": 5000
+ },
+ {
+  "categoria": "Tratamiento capilar",
+  "producto": "Mascarilla De Aloe",
+  "precio_cop": 4000
+ },
+ {
+  "categoria": "Tratamiento capilar",
+  "producto": "Mascarilla Control Grasa",
+  "precio_cop": 4000
+ },
+ {
+  "categoria": "Tratamiento capilar",
+  "producto": "Mascarilla Colageno Para Labios",
+  "precio_cop": 1000
+ },
+ {
+  "categoria": "Tratamiento capilar",
+  "producto": "Mascarilla Colageno para Ojos",
+  "precio_cop": 1000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Pulidor de Uñas Recargable Holy",
+  "precio_cop": 240000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Pulidor de Uñas Recargable 30.000 Rpm",
+  "precio_cop": 220000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Pulidor de Uñas Glam 35.000 Rpm",
+  "precio_cop": 160000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Colector Extractor de Polvo para Uñas Luxury - 45W",
+  "precio_cop": 100000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Sauna Facial Ionic",
+  "precio_cop": 50000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Polvo Acrílico para Uñas 45G Holy",
+  "precio_cop": 25000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Glue Gel Holy",
+  "precio_cop": 25000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Punta Tifon para Pulidor de Uñas Holy",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Punta de Barril para Pulidor de Uñas Holy",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Punta Proyectil para Pulidor de Uñas Holy",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Punta Redonda para Pulidor de Uñas Holy",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Punta de Seguridad Redonda para Pulidor de Uñas Holy",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Rosa con Brillo Ke75 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Rosa con Brillo KE81 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Rosa Pastel Summer Sunshine 10 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Escarchado Diamond HD01 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Rosa Summer Sunshine 11 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Café Nude Colors 01 - 15 ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Punta Conica para Bordes",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Amarillo Sumer Sunshine 08 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Rosa Pink 02 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Naranja Summer Sunshine 12 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Nude KE52 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Fucsia Rose Red 05 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Fucsia Rose Red 08 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Rosa RE96 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Rosa Candy Colors 03 - 15ML",
+  "precio_cop": 20000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Kit Removedor y Empujador de Cutícula Holy",
+  "precio_cop": 15000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Rosa Summer Sunshine 11 - 7.3ML",
+  "precio_cop": 10000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Guantes Protectores UV LED para Manicura y Uñas de Gel",
+  "precio_cop": 10000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Rosa Pink 02 - 7.3ML",
+  "precio_cop": 10000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Esmalte Semipermanente Café Nude Colors 08 - 7.3ML",
+  "precio_cop": 10000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Lápiz con Efecto Espejo para Uñas - Dorado",
+  "precio_cop": 5000
+ },
+ {
+  "categoria": "Uñas",
+  "producto": "Lima para Uñas 100/180",
+  "precio_cop": 2000
+ }
+]

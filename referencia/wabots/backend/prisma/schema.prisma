@@ -1,0 +1,473 @@
+// Esquema de datos — Plataforma de Bots de WhatsApp (multi-tenant).
+// Cada empresa cliente = un Tenant aislado, con su propia instancia en Evolution API.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────
+
+enum AdminRole {
+  SUPERADMIN
+  ADMIN
+}
+
+enum TenantStatus {
+  ACTIVE // bot encendido: escucha y responde 24/7
+  SUSPENDED // bot apagado manualmente: ignora mensajes, 0 consumo
+  PENDING // creado pero aún sin conectar WhatsApp (sin QR escaneado)
+}
+
+enum WhatsappConnectionState {
+  DISCONNECTED
+  CONNECTING
+  QR_PENDING
+  CONNECTED
+}
+
+enum MessageDirection {
+  IN
+  OUT
+}
+
+enum ConversationStatus {
+  ACTIVE
+  ENDED
+  HANDED_OVER // transferida a un humano
+}
+
+enum IntegrationType {
+  AI_API // la API que responde "como la persona"
+  GMAIL
+  CALENDAR
+  HTTP
+}
+
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+
+// ─────────────────────────────────────────────────────────────
+// ADMIN (solo tú accedes a la plataforma)
+// ─────────────────────────────────────────────────────────────
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  email        String?   @unique
+  passwordHash String
+  name         String
+  role         AdminRole @default(SUPERADMIN)
+  isActive     Boolean   @default(true)
+  // Se incrementa al cerrar sesión o cambiar la contraseña; invalida de inmediato
+  // todos los tokens (acceso y refresco) emitidos con un valor anterior.
+  tokenVersion Int       @default(0)
+  // Sesión ÚNICA activa: al iniciar sesión en otro dispositivo se genera un
+  // sessionId nuevo (desconecta el anterior). sessionUa ata la sesión a ese
+  // dispositivo (un token copiado a otro equipo se rechaza).
+  sessionId        String?
+  // Nonce del refresh token vigente: ROTA en cada renovación. Un refresh con un
+  // nonce que no coincide (ni el actual ni el anterior) = token viejo reusado/
+  // robado → se invalida la sesión. `Prev` da una ventana de gracia para no
+  // expulsar al usuario si dos pestañas renuevan casi a la vez.
+  sessionRefreshId     String?
+  sessionRefreshPrevId String?
+  // Cuándo rotó el nonce por última vez: el `prev` solo se acepta durante una
+  // ventana CORTA tras la rotación (segundos, para la carrera multi-pestaña).
+  // Fuera de esa ventana, un nonce viejo = token robado → sesión revocada.
+  sessionRefreshRotatedAt DateTime?
+  sessionUa        String?
+  sessionIp        String?
+  sessionCreatedAt DateTime?
+  // Última actividad de la sesión: se refresca en cada request autenticado.
+  // Si supera la ventana de inactividad, la sesión se invalida (aunque el
+  // navegador esté cerrado, un cron la limpia) — cierre por inactividad real.
+  sessionLastSeenAt DateTime?
+  // Bloqueo por cuenta: intentos fallidos consecutivos y, al superar el máximo,
+  // instante hasta el que el login queda penalizado para este usuario.
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  lastLoginAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@map("admin_users")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TENANT = EMPRESA CLIENTE (carril aislado)
+// ─────────────────────────────────────────────────────────────
+
+model Tenant {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique // identificador legible/único
+  status    TenantStatus @default(PENDING)
+  notes     String?
+  // Correo del cliente-empresa (dueño del negocio) para invitarlo a sus citas.
+  // Disponible en los flujos como variable {{clienteEmail}}.
+  clientEmail String?
+
+  // Proveedor de canal de mensajería: 'EVOLUTION' (por defecto) | 'TWILIO'.
+  channelProvider String @default("EVOLUTION")
+  // Configuración del canal (secretos cifrados con CryptoService). Ej. Twilio.
+  channelConfig   Json   @default("{}")
+
+  // Integración con Evolution API
+  evolutionInstanceName String?                 @unique // nombre de la instancia en Evolution
+  phoneNumber           String? // número de WhatsApp conectado
+  connectionState       WhatsappConnectionState @default(DISCONNECTED)
+  lastQrCode            String? // último QR en base64 (efímero)
+  webhookToken          String                  @unique @default(cuid()) // valida los webhooks entrantes
+
+  // Flujo activo que atiende los mensajes de esta empresa
+  activeFlowId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  flows         Flow[]
+  conversations Conversation[]
+  messages      MessageLog[]
+  integrations  Integration[]
+  events        EventLog[]
+  aiUsage       AiUsageRecord[]
+  topUps        CreditTopUp[]
+  reminders     Reminder[]
+  mediaFiles    MediaFile[]
+
+  @@index([status])
+  @@map("tenants")
+}
+
+// ─────────────────────────────────────────────────────────────
+// FLOW = grafo de nodos (bot conversacional). También plantillas.
+// ─────────────────────────────────────────────────────────────
+
+model Flow {
+  id          String  @id @default(cuid())
+  tenantId    String? // null = plantilla global reutilizable
+  name        String
+  description String?
+  isTemplate  Boolean @default(false)
+  version     Int     @default(1)
+
+  // Grafo serializado: { nodes: Node[], edges: Edge[] }  (ver CONTRACTS.md)
+  graph Json @default("{\"nodes\":[],\"edges\":[]}")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant        Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+
+  @@index([tenantId])
+  @@index([isTemplate])
+  @@map("flows")
+}
+
+// ─────────────────────────────────────────────────────────────
+// CONVERSATION = estado de un contacto dentro de un flujo (stateful)
+// ─────────────────────────────────────────────────────────────
+
+model Conversation {
+  id          String             @id @default(cuid())
+  tenantId    String
+  contactPhone String            // jid/número del cliente final
+  contactName String?
+  status      ConversationStatus @default(ACTIVE)
+
+  currentFlowId String?
+  currentNodeId String? // nodo donde quedó esperando la conversación
+  variables     Json   @default("{}") // memoria de la conversación
+
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  flow      Flow?        @relation(fields: [currentFlowId], references: [id])
+  messages  MessageLog[]
+  reminders Reminder[]
+  media     MediaFile[]
+
+  @@unique([tenantId, contactPhone])
+  @@index([tenantId, status])
+  // Listado del dashboard: conversaciones del tenant por actividad reciente.
+  @@index([tenantId, lastMessageAt])
+  @@map("conversations")
+}
+
+// ─────────────────────────────────────────────────────────────
+// MESSAGE LOG = historial de mensajes (entrantes/salientes)
+// ─────────────────────────────────────────────────────────────
+
+model MessageLog {
+  id             String           @id @default(cuid())
+  tenantId       String
+  conversationId String?
+  direction      MessageDirection
+  type           String           @default("text") // text | image | document | audio | interactive ...
+  content        Json // { text } | { mediaUrl, caption } | { buttons } ...
+  nodeId         String? // nodo que produjo el mensaje (si saliente)
+  externalId     String? // id del mensaje en WhatsApp/Evolution
+  createdAt      DateTime         @default(now())
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([conversationId])
+  @@map("message_logs")
+}
+
+// ─────────────────────────────────────────────────────────────
+// INTEGRATION = credenciales/config de servicios externos por tenant
+// Los secretos van CIFRADOS (AES-256-GCM) dentro de `config`.
+// ─────────────────────────────────────────────────────────────
+
+model Integration {
+  id        String          @id @default(cuid())
+  // tenantId nullable: null = integración GLOBAL/plataforma reutilizable por todos.
+  tenantId  String?
+  type      IntegrationType
+  name      String
+  isActive  Boolean         @default(true)
+  config    Json            @default("{}") // secretos cifrados
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  // Relación opcional: las integraciones de plataforma no pertenecen a un tenant.
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, type, name])
+  @@index([tenantId])
+  @@map("integrations")
+}
+
+// ─────────────────────────────────────────────────────────────
+// EVENT LOG = auditoría y diagnóstico
+// ─────────────────────────────────────────────────────────────
+
+model EventLog {
+  id        String   @id @default(cuid())
+  tenantId  String?
+  level     LogLevel @default(INFO)
+  source    String   @default("system") // engine | whatsapp | auth | ...
+  message   String
+  meta      Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([level])
+  @@map("event_logs")
+}
+
+// ─────────────────────────────────────────────────────────────
+// AI USAGE RECORD = metering de consumo de IA por cliente (tenant)
+// Un registro por invocación al LLM. Permite agregar consumo/costo.
+// ─────────────────────────────────────────────────────────────
+
+model AiUsageRecord {
+  id               String   @id @default(cuid())
+  tenantId         String?
+  conversationId   String?
+  flowId           String?
+  nodeId           String?
+  provider         String
+  model            String
+  source           String   @default("platform") // platform | tenant | node | builder
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  totalTokens      Int      @default(0)
+  costUsd          Decimal  @default(0) @db.Decimal(12, 6)
+  createdAt        DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([provider, model])
+  @@map("ai_usage_records")
+}
+
+// ─────────────────────────────────────────────────────────────
+// CREDIT TOP-UP = recarga de saldo prepago por cliente (tenant).
+// El saldo NO se materializa; se calcula como:
+//   restante = SUM(topUps.amountUsd) - SUM(aiUsage.costUsd)
+// Así no hay riesgo de desincronización.
+// ─────────────────────────────────────────────────────────────
+
+model CreditTopUp {
+  id        String   @id @default(cuid())
+  tenantId  String
+  amountUsd Decimal  @default(0) @db.Decimal(12, 6)
+  note      String?
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@map("credit_topups")
+}
+
+// ─────────────────────────────────────────────────────────────
+// REMINDER = recordatorio de cita para el CLIENTE FINAL (quien
+// escribe a la empresa). Se crea desde un nodo `reminder` del flujo
+// (el agente DECIDE agendarlo). Un cron lo evalúa cuando llega su
+// hora (`sendAt` = cita − leadMinutes): antes de enviar, un LLM
+// escanea la conversación y decide si enviarlo o no, y redacta el
+// mensaje. Persiste con o sin Google Calendar conectado.
+// ─────────────────────────────────────────────────────────────
+
+model Reminder {
+  id             String @id @default(cuid())
+  tenantId       String
+  conversationId String? // para escanear el historial de la conversación
+
+  contactPhone String // a quién se le recuerda (cliente final)
+  contactName  String?
+
+  appointmentAt DateTime // instante absoluto (UTC) de la cita
+  appointmentRaw String? // texto capturado original "YYYY-MM-DD HH:mm"
+  timezone      String   @default("America/Bogota")
+  leadMinutes   Int      @default(120) // minutos antes de la cita para evaluar/enviar
+  sendAt        DateTime // cuándo evaluar/enviar (appointmentAt − leadMinutes)
+
+  instructions String? // guía para el agente al decidir/redactar
+
+  // Snapshot del LLM que decide/redacta (apiKey cifrada con CryptoService).
+  llmMode   String  @default("node") // node | platform | tenant
+  provider  String?
+  model     String?
+  apiKeyEnc String? // API key cifrada (solo llmMode=node)
+  baseUrl   String?
+
+  status    ReminderStatus @default(PENDING)
+  attempts  Int            @default(0)
+  decision  String? // resumen de la decisión del agente (enviado/omitido y por qué)
+  sentText  String? // texto realmente enviado
+  sentAt    DateTime?
+  lastError String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([status, sendAt])
+  @@index([tenantId, createdAt])
+  @@map("reminders")
+}
+
+// ─────────────────────────────────────────────────────────────
+// MEDIA FILE = adjunto archivado en disco (audios OGG/imágenes), asociado a
+// su empresa/flujo/conversación para gestionarlo desde el dashboard. El
+// archivo físico vive en el árbol data/preview-media (ver PreviewMediaService).
+// ─────────────────────────────────────────────────────────────
+
+model MediaFile {
+  id             String  @id @default(cuid())
+  tenantId       String? // null = flujo sin empresa (rama sin-empresa/)
+  flowId         String?
+  conversationId String?
+  contactPhone   String? // null = prueba del editor (_pruebas)
+
+  kind     String // audio | image
+  mimeType String
+  path     String @unique // ruta relativa dentro del árbol de media
+  bytes    Int    @default(0)
+  origin   String @default("real") // real | prueba
+
+  createdAt DateTime @default(now())
+
+  tenant       Tenant?       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([conversationId])
+  @@map("media_files")
+}
+
+enum ReminderStatus {
+  PENDING // esperando su hora
+  SENT // enviado
+  SKIPPED // el agente decidió NO enviarlo (p.ej. cliente canceló)
+  CANCELLED // cancelado manualmente
+  FAILED // error tras varios intentos
+}
+
+// ─────────────────────────────────────────────────────────────
+// DEEPSEEK WEB = proveedor de IA vía SESIÓN WEB de DeepSeek (sin API key), para
+// ahorrar costos. Totalmente AISLADO: la API key del nodo queda solo como
+// fallback. Sin relaciones a las tablas existentes (aditivo puro).
+// ─────────────────────────────────────────────────────────────
+
+// Cuenta del pool. bearer+cookies CIFRADOS (CryptoService AES-256-GCM). El
+// login se captura en LOCAL (AWS WAF no se resuelve headless) y se sincroniza
+// aquí cifrado; el server solo refresca/rota. Nunca se guarda la contraseña.
+model DeepseekAccount {
+  id         String    @id @default(cuid())
+  label      String // etiqueta legible (email/apodo)
+  status     String    @default("active") // active | cooldown | failed | banned
+  bearerEnc  String? // bearer JWT cifrado
+  cookieEnc  String? // cookies cifradas (opcional)
+  failCount  Int       @default(0)
+  lastUsedAt DateTime?
+  lastError  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([status])
+  @@map("deepseek_accounts")
+}
+
+// Espejo CIFRADO de las conversaciones servidas por DeepSeek-web (además de
+// vivir en DeepSeek). role: user|assistant|system. source: chat (agéntico) |
+// builder (CLI de flujos). internal=true marca el PRIMING (system prompt), que
+// NUNCA se muestra al usuario.
+model DeepseekMessage {
+  id             String   @id @default(cuid())
+  tenantId       String?
+  conversationId String?
+  chatSessionId  String
+  source         String   @default("chat") // chat | builder
+  role           String // user | assistant | system
+  contentEnc     String // contenido cifrado
+  internal       Boolean  @default(false) // priming/system: oculto al usuario
+  createdAt      DateTime @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([chatSessionId, createdAt])
+  @@map("deepseek_messages")
+}
+
+// Mapeo de una conversación de negocio → su chat_session en DeepSeek. sessionKey
+// identifica al consumidor: "chat:<tenant>:<contacto>" (agéntico) o
+// "builder:<id>" (CLI de flujos). Guarda el hilo (currentMessageId) y el hash
+// del system prompt con que se primó (si cambia, se re-crea/re-prima).
+model DeepseekSession {
+  id               String   @id @default(cuid())
+  sessionKey       String   @unique
+  source           String   @default("chat")
+  accountId        String? // qué cuenta del pool la atiende
+  chatSessionId    String
+  currentMessageId Int? // último message_id (parent del próximo turno)
+  systemPromptHash String? // detecta cambios del system prompt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("deepseek_sessions")
+}
