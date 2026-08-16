@@ -45,6 +45,26 @@ PostgreSQL en Azure Database for PostgreSQL Flexible Server. Cada push a `main` 
 dispara [`deploy-backend.yml`](.github/workflows/deploy-backend.yml), que reconstruye la imagen y
 la despliega automáticamente.
 
+## Usuarios de demo
+
+La migración inicial siembra tres cuentas —una por rol— para poder probar login sin pasar por
+`/api/auth/registro` (que solo crea Ciudadanos). Quedan en la base en cuanto corrés
+`dotnet ef database update`:
+
+| Rol | Email | Password |
+|:---|:---|:---|
+| Ciudadano | `ciudadano@conectariesgoai.demo` | `Demo1234!` |
+| Gestor | `gestor@conectariesgoai.demo` | `Demo1234!` |
+| Admin | `admin@conectariesgoai.demo` | `Demo1234!` |
+
+Probar con `POST http://localhost:5000/api/auth/login` (o desde `/swagger`):
+
+```bash
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{ "email": "gestor@conectariesgoai.demo", "password": "Demo1234!" }'
+```
+
 ## Documentación
 
 | Documento | Para qué |
