@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Features.Reportes.MisReportes;
@@ -15,6 +16,7 @@ public class MisReportesHandlerTests
         Municipio = "Bogotá",
         Latitud = 4.71,
         Longitud = -74.07,
+        IdentificadorCanal = IdentificadorCanalReporte.ParaWeb(usuarioId),
         UsuarioId = usuarioId,
         CreadoEn = creadoEn,
         ActualizadoEn = creadoEn

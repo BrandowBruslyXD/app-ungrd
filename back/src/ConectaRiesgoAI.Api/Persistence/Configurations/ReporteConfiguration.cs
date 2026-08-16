@@ -1,5 +1,6 @@
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
+using ConectaRiesgoAI.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -28,8 +29,16 @@ public class ReporteConfiguration : IEntityTypeConfiguration<Reporte>
             .HasDefaultValue(ConfianzaReporte.Autorreportado);
         builder.Property(r => r.Canal).HasConversion<string>().HasMaxLength(20).IsRequired()
             .HasDefaultValue(CanalOrigen.Web);
+        builder.Property(r => r.IdentificadorCanal).HasMaxLength(120).IsRequired();
+        builder.Property(r => r.ReferenciaExterna).HasMaxLength(160);
 
         builder.HasIndex(r => r.Codigo).IsUnique();
+
+        // Idempotencia de webhooks: solo aplica cuando hay referencia externa (web queda fuera).
+        builder.HasIndex(r => new { r.Canal, r.ReferenciaExterna })
+            .IsUnique()
+            .HasFilter("\"ReferenciaExterna\" IS NOT NULL")
+            .HasDatabaseName(IndicesPostgres.ReportesCanalReferenciaExterna);
 
         // El mapa y el dashboard filtran por estas tres todo el tiempo.
         builder.HasIndex(r => r.Estado);

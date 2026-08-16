@@ -1,4 +1,5 @@
 using ConectaRiesgoAI.Api.Common.Auth;
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Features.Reportes.ActualizarEstado;
@@ -46,6 +47,7 @@ public class ActualizarEstadoHandlerTests
             Municipio = "Bogotá",
             Latitud = 4.710989,
             Longitud = -74.072092,
+            IdentificadorCanal = IdentificadorCanalReporte.ParaWeb(1),
             Usuario = usuario
         };
         db.Reportes.Add(reporte);

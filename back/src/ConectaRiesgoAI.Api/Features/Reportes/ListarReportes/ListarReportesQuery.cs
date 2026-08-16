@@ -6,6 +6,7 @@ namespace ConectaRiesgoAI.Api.Features.Reportes.ListarReportes;
 public record ListarReportesQuery(
     TipoReporte? Tipo,
     EstadoReporte? Estado,
+    CanalOrigen? Canal,
     double? Lat,
     double? Lng,
     double? RadioKm,

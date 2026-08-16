@@ -1,3 +1,4 @@
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Domain.Entities;
 using ConectaRiesgoAI.Api.Domain.Enums;
 using ConectaRiesgoAI.Api.Features.Estadisticas.ResumenEstadisticas;
@@ -9,7 +10,7 @@ public class ResumenEstadisticasHandlerTests
 {
     private static Reporte NuevoReporte(
         string codigo, TipoReporte tipo, EstadoReporte estado, string municipio,
-        double? lat, double? lng, DateTime creadoEn) => new()
+        double? lat, double? lng, DateTime creadoEn, CanalOrigen canal = CanalOrigen.Web) => new()
     {
         Codigo = codigo,
         Tipo = tipo,
@@ -18,6 +19,10 @@ public class ResumenEstadisticasHandlerTests
         Municipio = municipio,
         Latitud = lat,
         Longitud = lng,
+        Canal = canal,
+        IdentificadorCanal = canal == CanalOrigen.Web
+            ? IdentificadorCanalReporte.ParaWeb(1)
+            : IdentificadorCanalReporte.ParaTelefono("573001234567"),
         UsuarioId = 1,
         CreadoEn = creadoEn,
         ActualizadoEn = creadoEn
@@ -35,6 +40,8 @@ public class ResumenEstadisticasHandlerTests
 
         Assert.Equal(6, resultado.PorTipo.Count);
         Assert.All(Enum.GetValues<TipoReporte>(), tipo => Assert.Equal(0, resultado.PorTipo[tipo.ToString()]));
+        Assert.Equal(3, resultado.PorCanal.Count);
+        Assert.All(Enum.GetValues<CanalOrigen>(), canal => Assert.Equal(0, resultado.PorCanal[canal.ToString()]));
         Assert.Equal(0, resultado.TotalHoy);
         Assert.Equal(0, resultado.Atendidos);
         Assert.Equal(0, resultado.PorcentajeAtendidos);
@@ -163,8 +170,10 @@ public class ResumenEstadisticasHandlerTests
     public async Task Handle_ConReporteSinCoordenadas_NoRompeElFiltroGeografico()
     {
         using var contexto = AppDbContextPruebas.Crear();
-        contexto.Reportes.Add(
-            NuevoReporte("RPT-WHATSAPP", TipoReporte.Incendio, EstadoReporte.Reportado, "Bogotá", null, null, DateTime.UtcNow));
+        var reporteWhatsapp = NuevoReporte("RPT-WHATSAPP", TipoReporte.Incendio, EstadoReporte.Reportado, "Bogotá", null, null, DateTime.UtcNow);
+        reporteWhatsapp.Canal = CanalOrigen.WhatsApp;
+        reporteWhatsapp.IdentificadorCanal = IdentificadorCanalReporte.ParaTelefono("573001234567");
+        contexto.Reportes.Add(reporteWhatsapp);
         await contexto.SaveChangesAsync();
         var handler = new ResumenEstadisticasHandler(contexto);
 
@@ -173,5 +182,40 @@ public class ResumenEstadisticasHandlerTests
 
         Assert.Equal(0, resultado.PorTipo[TipoReporte.Incendio.ToString()]);
         Assert.Equal(0, resultado.TotalHoy);
+    }
+
+    [Fact]
+    public async Task Handle_PorCanalIncluyeLasTresLlaves_YCuentaPorCanal()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Reportes.AddRange(
+            NuevoReporte("RPT-WEB", TipoReporte.Incendio, EstadoReporte.Reportado, "Bogotá", 4.71, -74.07, DateTime.UtcNow),
+            NuevoReporte("RPT-WA", TipoReporte.Inundacion, EstadoReporte.Reportado, "Bogotá", 4.71, -74.07, DateTime.UtcNow, CanalOrigen.WhatsApp),
+            NuevoReporte("RPT-TEL", TipoReporte.Deslizamiento, EstadoReporte.Reportado, "Bogotá", 4.71, -74.07, DateTime.UtcNow, CanalOrigen.Telefono),
+            NuevoReporte("RPT-WA2", TipoReporte.Otro, EstadoReporte.Reportado, "Bogotá", 4.71, -74.07, DateTime.UtcNow, CanalOrigen.WhatsApp));
+        await contexto.SaveChangesAsync();
+        var handler = new ResumenEstadisticasHandler(contexto);
+
+        var resultado = await handler.Handle(QuerySinFiltros(), CancellationToken.None);
+
+        Assert.Equal(3, resultado.PorCanal.Count);
+        Assert.Equal(1, resultado.PorCanal[CanalOrigen.Web.ToString()]);
+        Assert.Equal(2, resultado.PorCanal[CanalOrigen.WhatsApp.ToString()]);
+        Assert.Equal(1, resultado.PorCanal[CanalOrigen.Telefono.ToString()]);
+    }
+
+    [Fact]
+    public async Task Handle_ReporteSinGps_CuentaEnPorCanalSinFiltroGeografico()
+    {
+        using var contexto = AppDbContextPruebas.Crear();
+        contexto.Reportes.Add(NuevoReporte(
+            "RPT-WA-SIN-GPS", TipoReporte.Incendio, EstadoReporte.Reportado, "Bogotá",
+            null, null, DateTime.UtcNow, CanalOrigen.WhatsApp));
+        await contexto.SaveChangesAsync();
+        var handler = new ResumenEstadisticasHandler(contexto);
+
+        var resultado = await handler.Handle(QuerySinFiltros(), CancellationToken.None);
+
+        Assert.Equal(1, resultado.PorCanal[CanalOrigen.WhatsApp.ToString()]);
     }
 }

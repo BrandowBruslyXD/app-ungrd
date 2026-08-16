@@ -24,6 +24,7 @@ public class MisReportesHandler(AppDbContext context)
                 r.UrlFoto,
                 r.Estado,
                 r.Prioridad,
+                r.Canal,
                 null,
                 r.CreadoEn))
             .ToListAsync(cancellationToken);

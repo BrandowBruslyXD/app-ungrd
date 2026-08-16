@@ -6,5 +6,6 @@ namespace ConectaRiesgoAI.Api.Domain.Enums;
 public enum CanalOrigen
 {
     Web,
-    WhatsApp
+    WhatsApp,
+    Telefono
 }

@@ -30,8 +30,19 @@ public class Reporte
     /// <summary>Nivel de respaldo del dato: no es lo mismo autorreportado que censado.</summary>
     public ConfianzaReporte Confianza { get; set; } = ConfianzaReporte.Autorreportado;
 
-    /// <summary>Canal por el que entró el reporte: web con GPS, o WhatsApp con ubicación en texto.</summary>
+    /// <summary>Canal por el que entró el reporte: web con GPS, WhatsApp con ubicación en texto, o llamada telefónica.</summary>
     public CanalOrigen Canal { get; set; } = CanalOrigen.Web;
+
+    /// <summary>
+    /// Quién reportó en ese canal: <c>usuario:12</c> en web, o el número E.164 en WhatsApp y teléfono.
+    /// </summary>
+    public string IdentificadorCanal { get; set; } = null!;
+
+    /// <summary>
+    /// Id de la interacción externa (<c>wamid</c> de Meta, <c>call_id</c> de Dapta). Nulo en web.
+    /// Con índice único parcial habilita idempotencia ante reintentos de webhooks.
+    /// </summary>
+    public string? ReferenciaExterna { get; set; }
 
     public EstadoReporte Estado { get; set; } = EstadoReporte.Reportado;
     public Prioridad Prioridad { get; set; } = Prioridad.Media;

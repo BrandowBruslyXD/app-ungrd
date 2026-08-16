@@ -163,6 +163,7 @@ Alimenta el mapa y el dashboard.
 |:---|:---|:---|
 | `tipo` | `Incendio` | Filtra por tipo |
 | `estado` | `EnAtencion` | Filtra por estado |
+| `canal` | `WhatsApp` | Filtra por canal de origen (`Web` · `WhatsApp` · `Telefono`) |
 | `lat` `lng` `radioKm` | `4.71` `-74.07` `10` | Solo reportes dentro del radio |
 | `municipio` | `Bogotá` | Filtra por municipio |
 | `limite` | `50` | Máximo de resultados (por defecto 100) |
@@ -181,6 +182,7 @@ Alimenta el mapa y el dashboard.
     "urlFoto": "https://res.cloudinary.com/.../foto.jpg",
     "estado": "EnAtencion",
     "prioridad": "Alta",
+    "canal": "Web",
     "distanciaKm": 2.3,
     "creadoEn": "2026-08-15T14:30:00Z"
   }
@@ -208,6 +210,7 @@ El detalle completo. **Alimenta la pantalla de seguimiento, que es el corazón d
   "urlFoto": "https://res.cloudinary.com/.../foto.jpg",
   "estado": "EnAtencion",
   "prioridad": "Alta",
+  "canal": "Web",
   "creadoEn": "2026-08-15T14:30:00Z",
   "reportadoPor": "María R.",
 
@@ -274,6 +277,7 @@ Parámetros opcionales: `municipio`, `lat`, `lng`, `radioKm`.
 ```json
 {
   "porTipo": { "Incendio": 3, "Inundacion": 2, "Deslizamiento": 1, "ViaAfectada": 0, "ColapsoEstructural": 0, "Otro": 0 },
+  "porCanal": { "Web": 20, "WhatsApp": 15, "Telefono": 12 },
   "totalHoy": 47,
   "atendidos": 35,
   "porcentajeAtendidos": 74,
@@ -281,7 +285,7 @@ Parámetros opcionales: `municipio`, `lat`, `lng`, `radioKm`.
 }
 ```
 
-> Devuelve **ceros, no un error**, cuando no hay datos. `porTipo` siempre trae las 6 llaves aunque valgan `0`, para que el frontend no tenga que preguntar si existen.
+> Devuelve **ceros, no un error**, cuando no hay datos. `porTipo` siempre trae las 6 llaves aunque valgan `0`, para que el frontend no tenga que preguntar si existen. `porCanal` siempre trae `Web`, `WhatsApp` y `Telefono` con el mismo criterio.
 
 ---
 

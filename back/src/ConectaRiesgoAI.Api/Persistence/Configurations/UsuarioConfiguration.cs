@@ -33,7 +33,9 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
 
         // Nulo mientras el usuario no haya escrito por WhatsApp: Postgres no cuenta los NULL
         // como duplicados, así que varios usuarios sin teléfono conviven sin problema.
-        builder.HasIndex(u => u.Telefono).IsUnique();
+        builder.HasIndex(u => u.Telefono)
+            .IsUnique()
+            .HasDatabaseName(IndicesPostgres.UsuariosTelefono);
 
         // Un usuario de cada rol para poder probar la demo sin registrar nada a mano.
         builder.HasData(

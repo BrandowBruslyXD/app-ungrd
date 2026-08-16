@@ -3,6 +3,7 @@ using ConectaRiesgoAI.Api.Common.Auth;
 using ConectaRiesgoAI.Api.Common.Behaviors;
 using ConectaRiesgoAI.Api.Common.Endpoints;
 using ConectaRiesgoAI.Api.Common.Errors;
+using ConectaRiesgoAI.Api.Common.Reportes;
 using ConectaRiesgoAI.Api.Integrations.Secop;
 using ConectaRiesgoAI.Api.Integrations.Storage;
 using ConectaRiesgoAI.Api.Persistence;
@@ -44,6 +45,10 @@ builder.Services.AddMediatR(cfg =>
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
+// --- Identidad de canal en reportes --------------------------------------
+builder.Services.AddScoped<IResolutorUsuarioPorTelefono, ResolutorUsuarioPorTelefono>();
+builder.Services.AddScoped<IBuscadorReporteIdempotente, BuscadorReporteIdempotente>();
 
 // --- Integraciones externas -----------------------------------------------
 // Timeout corto (5s, exigido por CONTRATO-API.md): un SECOP caído o lento no puede tumbar

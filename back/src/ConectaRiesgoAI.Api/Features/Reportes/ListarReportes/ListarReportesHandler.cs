@@ -23,6 +23,7 @@ public class ListarReportesHandler(AppDbContext context)
             .AsNoTracking()
             .Where(r => query.Tipo == null || r.Tipo == query.Tipo)
             .Where(r => query.Estado == null || r.Estado == query.Estado)
+            .Where(r => query.Canal == null || r.Canal == query.Canal)
             .Where(r => query.Municipio == null || EF.Functions.ILike(r.Municipio, query.Municipio))
             .ToListAsync(cancellationToken);
 
@@ -38,11 +39,11 @@ public class ListarReportesHandler(AppDbContext context)
 
         if (tieneUbicacion && query.RadioKm is { } radioKm)
         {
-            conDistancia = conDistancia.Where(x => x.DistanciaKm <= radioKm);
+            conDistancia = conDistancia.Where(x => x.DistanciaKm is not null && x.DistanciaKm <= radioKm);
         }
 
         var ordenados = tieneUbicacion
-            ? conDistancia.OrderBy(x => x.DistanciaKm)
+            ? conDistancia.OrderBy(x => x.DistanciaKm ?? double.MaxValue)
             : conDistancia.OrderByDescending(x => x.Reporte.CreadoEn);
 
         return ordenados
@@ -58,6 +59,7 @@ public class ListarReportesHandler(AppDbContext context)
                 x.Reporte.UrlFoto,
                 x.Reporte.Estado,
                 x.Reporte.Prioridad,
+                x.Reporte.Canal,
                 x.DistanciaKm,
                 x.Reporte.CreadoEn))
             .ToList();
