@@ -208,7 +208,7 @@ PostgreSQL
 
 ### 6.3 Por qué un microservicio aparte
 
-Igual que `ms-satelital`, `ms-social` y `ms-transparencia`: si WhatsApp o el proveedor se caen, **el backend y la app web siguen funcionando**. Y quien lo construya no depende de que el backend esté terminado.
+Igual que `ms-bot-api`: si WhatsApp o el proveedor se caen, **el backend y la app web siguen funcionando**. Y quien lo construya no depende de que el backend esté terminado.
 
 ### 6.4 El estado de la conversación
 
