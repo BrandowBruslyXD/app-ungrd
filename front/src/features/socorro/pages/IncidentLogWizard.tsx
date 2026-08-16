@@ -15,7 +15,7 @@ import { EDAN_EVENT_TYPES } from '@/types/edan';
 import type { EdanEventType, IncidentStatus } from '@/types/edan';
 import { COLOMBIAN_DEPARTMENTS } from '@/mocks/mockEdan';
 import { INCIDENT_STEP_COUNT, useIncidentLog } from '@/hooks/useIncidentLog';
-import type { IncidentCountKey } from '@/hooks/useIncidentLog';
+import type { IncidentPersonCountKey } from '@/hooks/useIncidentLog';
 
 const STEP_NUMBERS = [1, 2, 3, 4] as const;
 
@@ -27,14 +27,14 @@ const STATUS_COLORS: Record<IncidentStatus, string> = {
   cerrado: 'border-emerald-200 bg-emerald-50 text-emerald-700',
 };
 
-const COUNT_FIELDS: readonly { key: IncidentCountKey; icon: typeof Activity; color: string }[] = [
+const COUNT_FIELDS: readonly { key: IncidentPersonCountKey; icon: typeof Activity; color: string }[] = [
   { key: 'personsInjured', icon: Activity, color: 'text-red-600' },
   { key: 'personsDead', icon: AlertTriangle, color: 'text-slate-800' },
   { key: 'personsMissing', icon: Users, color: 'text-amber-600' },
   { key: 'personsEvacuated', icon: Users, color: 'text-blue-600' },
 ];
 
-const COUNT_LABEL_KEYS: Record<Exclude<IncidentCountKey, 'familiesAffected'>, string> = {
+const COUNT_LABEL_KEYS: Record<IncidentPersonCountKey, string> = {
   personsInjured: 'incident.injured',
   personsDead: 'incident.dead',
   personsMissing: 'incident.missing',

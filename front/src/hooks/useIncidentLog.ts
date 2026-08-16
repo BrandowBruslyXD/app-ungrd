@@ -21,12 +21,13 @@ export interface IncidentForm {
 
 export const INCIDENT_STEP_COUNT = 4;
 
-export type IncidentCountKey =
+export type IncidentPersonCountKey =
   | 'personsInjured'
   | 'personsDead'
   | 'personsMissing'
-  | 'personsEvacuated'
-  | 'familiesAffected';
+  | 'personsEvacuated';
+
+export type IncidentCountKey = IncidentPersonCountKey | 'familiesAffected';
 
 function createInitialForm(): IncidentForm {
   return {
